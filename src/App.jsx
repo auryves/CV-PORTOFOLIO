@@ -60,20 +60,6 @@ const TESTIMONIALS = [
     context: 'Dédicace personnelle dans le magazine Sika Finance — Référence de l\'information financière en Côte d\'Ivoire',
     initial: 'DA',
   },
-  {
-    quote: 'Les populations voient encore l\'assurance comme une dépense, pas comme une protection.',
-    author: 'Stan Zézé-Bayard',
-    role: 'Directeur Général — Bloomfield Investment Corporation',
-    context: 'Table Ronde Bloomfield Intelligence · Assurance Vie & Fonds de Pension en Côte d\'Ivoire',
-    initial: 'SZ',
-  },
-  {
-    quote: 'La création de richesse doit venir avant la prudence.',
-    author: 'DG · Caisse Nationale de Prévoyance Sociale',
-    role: 'CNPS Côte d\'Ivoire',
-    context: 'Table Ronde Bloomfield Intelligence · Assurance Vie & Fonds de Pension en Côte d\'Ivoire',
-    initial: 'CN',
-  },
 ]
 
 // ── publications LinkedIn ─────────────────────────────────────────────────────
