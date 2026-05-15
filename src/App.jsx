@@ -181,8 +181,13 @@ function Navbar() {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? 'glass' : ''}`}
-      style={{ padding: scrolled ? '16px 0' : '28px 0' }}
+      className="fixed top-0 inset-x-0 z-50 transition-all duration-500"
+      style={{
+        padding: scrolled ? '16px 0' : '28px 0',
+        background: scrolled ? undefined : 'linear-gradient(to bottom, rgba(7,7,15,0.9) 0%, transparent 100%)',
+        backdropFilter: scrolled ? 'blur(24px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
+      }}
     >
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <a href="#hero" className="serif" style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textDecoration: 'none' }}>
@@ -239,7 +244,7 @@ function Hero() {
   }, [text, del, titleIdx])
 
   return (
-    <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '0 24px' }}>
+    <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '120px 24px 100px' }}>
       {/* Orbs */}
       <div className="orb" style={{ width: 500, height: 500, top: '10%', left: '-10%', background: '#B57BEE', animationDelay: '0s' }} />
       <div className="orb" style={{ width: 400, height: 400, bottom: '10%', right: '-8%', background: '#6C3AED', animationDelay: '3s' }} />
@@ -287,7 +292,7 @@ function Hero() {
         </motion.div>
 
         {/* Stats */}
-        <motion.div {...fadeUp(2.6)} style={{ display: 'flex', justifyContent: 'center', gap: 48, marginTop: 72 }}>
+        <motion.div {...fadeUp(2.6)} style={{ display: 'flex', justifyContent: 'center', gap: 48, marginTop: 64, paddingBottom: 24 }}>
           {[['3', 'Apps fintech'], ['19', 'Ans'], ['BRVM', 'Marchés africains']].map(([v, l]) => (
             <div key={l} style={{ textAlign: 'center' }}>
               <div className="serif grad-gold" style={{ fontSize: 36, fontWeight: 300, lineHeight: 1 }}>{v}</div>
@@ -297,12 +302,14 @@ function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Scroll hint */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5 }}
-        style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-        <span className="label">Scroll</span>
+      {/* Scroll hint — positionné proprement en bas */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5 }}
+        style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, zIndex: 20 }}
+      >
         <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}
-          style={{ width: 1, height: 40, background: 'linear-gradient(to bottom, rgba(181,123,238,0.6), transparent)' }} />
+          style={{ width: 1, height: 36, background: 'linear-gradient(to bottom, rgba(212,175,106,0.5), transparent)' }} />
+        <span className="label" style={{ fontSize: 10, letterSpacing: '0.3em' }}>Scroll</span>
       </motion.div>
     </section>
   )
@@ -671,7 +678,7 @@ function Contact() {
               {[
                 { l: 'Email', v: 'auryvesb@gmail.com', h: 'mailto:auryvesb@gmail.com' },
                 { l: 'WhatsApp', v: '+225 01 41 56 41 16', h: 'https://wa.me/2250141564116' },
-                { l: 'LinkedIn', v: 'auryves-bedje-2981bb331', h: 'https://linkedin.com/in/auryves-bedje-2981bb331' },
+                { l: 'LinkedIn', v: 'Auryves Bedje', h: 'https://linkedin.com/in/auryves-bedje-2981bb331' },
                 { l: 'Localisation', v: 'Abidjan, Cocody Riviera Palmeraie', h: null },
               ].map(c => (
                 <div key={c.l} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 20 }}>
