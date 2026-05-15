@@ -101,6 +101,91 @@ const LINKEDIN_POSTS = [
   },
 ]
 
+// ── certifications ────────────────────────────────────────────────────────────
+const CERTIFICATIONS = [
+  {
+    title: 'Analyse des données — Kobotoolbox',
+    issuer: 'British International University Abidjan',
+    date: 'Avril 2026',
+    badge: 'PECB · Microsoft Partner',
+    color: '#B57BEE',
+    icon: '📊',
+    file: '/certs/kobotoolbox.pdf',
+  },
+  {
+    title: 'Programme JA Social Equity',
+    issuer: 'JA Africa · JA Worldwide · DigiFemmes CI',
+    date: '28 Novembre 2025',
+    badge: 'Zurich Foundation',
+    color: '#D4AF6A',
+    icon: '🌍',
+    file: '/certs/Bedje Ahimon raphet jacques auryves.pdf',
+  },
+  {
+    title: 'JA Digital Entrepreneurship Education',
+    issuer: 'JA Deep · JA Africa',
+    date: '27 Novembre 2025',
+    badge: 'Certificat de Réussite',
+    color: '#4ade80',
+    icon: '🚀',
+    file: '/certs/Certificate_of_Completion.pdf',
+  },
+  {
+    title: 'Pack Microsoft Office Complet',
+    issuer: 'Udemy — Dr. Firas · Europe Innovation',
+    date: '4 Octobre 2024',
+    badge: '22.5h · Débutant à Expert',
+    color: '#60a5fa',
+    icon: '💼',
+    file: '/certs/certificat pack microsoft.pdf',
+  },
+  {
+    title: 'Google Docs',
+    issuer: 'Google Cloud · Coursera',
+    date: '14 Mai 2025',
+    badge: 'Course Certificate',
+    color: '#4ade80',
+    icon: '📝',
+    file: '/certs/Coursera 6BH9WQOSCRDC.pdf',
+  },
+  {
+    title: 'Google Sheets',
+    issuer: 'Google Cloud · Coursera',
+    date: '14 Mai 2025',
+    badge: 'Course Certificate',
+    color: '#4ade80',
+    icon: '📈',
+    file: '/certs/Coursera KJ1J40I8FRB5.pdf',
+  },
+  {
+    title: 'Google Drive',
+    issuer: 'Google Cloud · Coursera',
+    date: '14 Mai 2025',
+    badge: 'Course Certificate',
+    color: '#4ade80',
+    icon: '☁️',
+    file: '/certs/Coursera QO8HDXXN96TT.pdf',
+  },
+  {
+    title: 'Gmail',
+    issuer: 'Google Cloud · Coursera',
+    date: '14 Mai 2025',
+    badge: 'Course Certificate',
+    color: '#f87171',
+    icon: '✉️',
+    file: '/certs/Coursera ZUIGNYSR48U1.pdf',
+  },
+  {
+    title: 'Getting Started with Microsoft Word',
+    issuer: 'Coursera Project Network',
+    date: '15 Mai 2025',
+    badge: 'Project Certificate',
+    color: '#60a5fa',
+    icon: '📄',
+    file: '/certs/Coursera F4I8U3R6I81G.pdf',
+  },
+]
+
 // ── données ───────────────────────────────────────────────────────────────────
 const TITLES = ['Fintech Builder', 'Digital Finance Student', 'African FinTech Entrepreneur', 'Analyste Marchés BRVM']
 
@@ -304,7 +389,7 @@ function Navbar() {
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
-  const links = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['Networking', '#networking'], ['Contact', '#contact']]
+  const links = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['Certifs', '#certifications'], ['Networking', '#networking'], ['Contact', '#contact']]
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
@@ -871,6 +956,113 @@ function CVSection() {
   )
 }
 
+// ── certifications ────────────────────────────────────────────────────────────
+function Certifications() {
+  const scrollRef = useRef(null)
+  const paused = useRef(false)
+  const rafRef = useRef(null)
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    let pos = 0
+    const speed = 0.5
+    const animate = () => {
+      if (!paused.current && el) {
+        pos += speed
+        if (pos >= el.scrollWidth / 2) pos = 0
+        el.scrollLeft = pos
+      }
+      rafRef.current = requestAnimationFrame(animate)
+    }
+    rafRef.current = requestAnimationFrame(animate)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  }, [])
+
+  const items = [...CERTIFICATIONS, ...CERTIFICATIONS]
+
+  return (
+    <section id="certifications" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 60 }}>
+          <div className="label-gold" style={{ marginBottom: 20 }}>Mes accréditations</div>
+          <div className="divider" />
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
+            <h2 className="display-lg">Certifications</h2>
+            <div className="label" style={{ color: 'rgba(255,255,255,0.25)' }}>{CERTIFICATIONS.length} certificats · Cliquer pour télécharger</div>
+          </div>
+        </motion.div>
+
+        {/* Carousel auto-scroll */}
+        <div
+          ref={scrollRef}
+          onMouseEnter={() => { paused.current = true }}
+          onMouseLeave={() => { paused.current = false }}
+          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 4 }}
+        >
+          {items.map((c, i) => (
+            <a
+              key={i}
+              href={c.file}
+              target="_blank"
+              rel="noreferrer"
+              style={{ flexShrink: 0, width: 260, textDecoration: 'none', display: 'block' }}
+            >
+              <motion.div
+                whileHover={{ translateY: -4, borderColor: c.color.replace(')', ', 0.5)').replace('rgb', 'rgba') }}
+                style={{
+                  padding: '28px 24px',
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 4,
+                  height: '100%',
+                  transition: 'border-color 0.3s, transform 0.3s',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* barre colorée en haut */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: c.color, opacity: 0.6 }} />
+
+                <div style={{ fontSize: 28, marginBottom: 16 }}>{c.icon}</div>
+
+                <div style={{ fontSize: 14, fontFamily: 'Cormorant Garamond, serif', fontWeight: 400, color: 'rgba(255,255,255,0.85)', marginBottom: 8, lineHeight: 1.4 }}>
+                  {c.title}
+                </div>
+
+                <div style={{ fontSize: 11, color: c.color, letterSpacing: '0.06em', marginBottom: 6, opacity: 0.9 }}>
+                  {c.issuer}
+                </div>
+
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+                  {c.date}
+                </div>
+
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 10px', border: `1px solid ${c.color}40`, color: c.color, borderRadius: 2, opacity: 0.8 }}>
+                  {c.badge}
+                </div>
+
+                {/* icône téléchargement */}
+                <div style={{ position: 'absolute', top: 16, right: 16, fontSize: 12, color: 'rgba(255,255,255,0.15)' }}>↗</div>
+              </motion.div>
+            </a>
+          ))}
+        </div>
+
+        {/* Compteur */}
+        <motion.div {...fadeUp(0.3)} style={{ marginTop: 32, display: 'flex', gap: 32, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+          {[['9', 'Certificats obtenus'], ['3', 'Plateformes (Udemy · Coursera · JA)'], ['2026', 'Dernière certification']].map(([v, l]) => (
+            <div key={l}>
+              <div className="serif grad-gold" style={{ fontSize: 28, fontWeight: 300, lineHeight: 1 }}>{v}</div>
+              <div className="label" style={{ marginTop: 6 }}>{l}</div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
 // ── timeline ──────────────────────────────────────────────────────────────────
 function Timeline() {
   return (
@@ -1209,6 +1401,7 @@ export default function App() {
               <Testimonials />
               <Skills />
               <CVSection />
+              <Certifications />
               <Timeline />
               <Networking />
               <Publications />
