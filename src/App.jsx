@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import './index.css'
 
-// ── fade-up variant ────────────────────────────────────────────────────────────
+// ── animation helpers ──────────────────────────────────────────────────────────
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
@@ -16,106 +16,116 @@ const fadeIn = (delay = 0) => ({
   transition: { duration: 0.9, delay },
 })
 
-// ── data ───────────────────────────────────────────────────────────────────────
-const TITLES = ['Fintech Builder', 'Digital Finance Student', 'African FinTech Entrepreneur']
+// ── BRVM ticker data (valeurs réalistes BRVM 2025) ────────────────────────────
+const TICKER = [
+  { sym: 'BRVM Composite', val: '220.45', chg: '+1.24%', up: true },
+  { sym: 'BRVM 10', val: '185.32', chg: '+0.83%', up: true },
+  { sym: 'SONATEL', val: '14 500', chg: '+2.10%', up: true },
+  { sym: 'ECOBANK CI', val: '12.45', chg: '+0.48%', up: true },
+  { sym: 'BOA CI', val: '4 200', chg: '-0.31%', up: false },
+  { sym: 'TOTAL CI', val: '2 780', chg: '+1.82%', up: true },
+  { sym: 'ORANGE CI', val: '11 500', chg: '+0.70%', up: true },
+  { sym: 'NSIA Banque CI', val: '3 980', chg: '-0.50%', up: false },
+  { sym: 'CORIS BANK', val: '7 850', chg: '+1.12%', up: true },
+  { sym: 'SIB', val: '3 400', chg: '+0.82%', up: true },
+  { sym: 'SICOR', val: '5 200', chg: '+0.23%', up: true },
+  { sym: 'PALM CI', val: '6 100', chg: '+0.45%', up: true },
+  { sym: 'SAPH', val: '3 800', chg: '-0.26%', up: false },
+  { sym: 'CFAO CI', val: '925', chg: '+1.09%', up: true },
+]
+
+// ── marchés africains ─────────────────────────────────────────────────────────
+const EXCHANGES = [
+  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '45+ titres cotés, 8 pays d\'Afrique de l\'Ouest', cap: '~7 000 Mds FCFA', featured: true },
+  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande capitalisation boursière d\'Afrique', cap: '~18 000 Mds $' },
+  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: '2ème bourse d\'Afrique sub-saharienne', cap: '~1 000 Mds $' },
+  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'Marché en forte croissance, libellé en cedis', cap: '~70 Mds $' },
+  { name: 'NSE', city: 'Nairobi', country: 'Kenya', flag: '🇰🇪', desc: 'Hub financier de l\'Afrique de l\'Est', cap: '~30 Mds $' },
+  { name: 'EGX', city: 'Le Caire', country: 'Égypte', flag: '🇪🇬', desc: 'Plus ancienne bourse du continent', cap: '~50 Mds $' },
+  { name: 'BVMAC', city: 'Libreville', country: 'Zone CEMAC', flag: '🇬🇦', desc: 'Bourse régionale d\'Afrique Centrale', cap: '~500 Mds FCFA' },
+  { name: 'DSE', city: 'Dar es Salaam', country: 'Tanzanie', flag: '🇹🇿', desc: 'Marché émergent en développement rapide', cap: '~15 Mds $' },
+]
+
+// ── valeurs BRVM suivies ──────────────────────────────────────────────────────
+const BRVM_WATCHLIST = [
+  { name: 'SONATEL', sect: 'Télécoms', why: 'Leader télécoms UEMOA, dividendes stables, forte liquidité' },
+  { name: 'ECOBANK CI', sect: 'Banque', why: 'Pan-africaine, exposition à 35 pays africains' },
+  { name: 'TOTAL CI', sect: 'Énergie', why: 'Distribution pétrolière, croissance soutenue en CI' },
+  { name: 'ORANGE CI', sect: 'Télécoms', why: 'Mobile Money (Orange Money), croissance fintech intégrée' },
+  { name: 'CORIS BANK', sect: 'Banque', why: 'Banque régionale, forte expansion au Burkina et Mali' },
+  { name: 'BOA CI', sect: 'Banque', why: 'Bank of Africa, réseau panafricain solide' },
+]
+
+// ── données ───────────────────────────────────────────────────────────────────
+const TITLES = ['Fintech Builder', 'Digital Finance Student', 'African FinTech Entrepreneur', 'Analyste Marchés BRVM']
 
 const PROJECTS = [
-  {
-    n: '01', name: 'My Invest', cat: 'Investissement Participatif',
-    desc: "Plateforme permettant aux particuliers d'investir dans les TPE/PME africaines. Remboursement basé sur les revenus quotidiens des entreprises — revenue-based financing nouvelle génération.",
-    tags: ['React Native', 'Supabase', 'Mobile Money', 'IA'],
-    status: 'En développement', statusColor: '#4ade80',
-  },
-  {
-    n: '02', name: 'My Invest Social', cat: 'Crowdfunding Solidaire',
-    desc: "Plateforme africaine de solidarité digitale pour soutenir financièrement et émotionnellement des personnes en urgence médicale ou sociale. Crowdfunding communautaire.",
-    tags: ['React Native', 'Mobile Money', 'Feed Social', 'IA'],
-    status: 'En développement', statusColor: '#fb923c',
-  },
-  {
-    n: '03', name: 'Projet Confidentiel', cat: 'Fintech · Bloomberg-style',
-    desc: "Application mobile premium pour un leader de l'information financière africaine. Inspirée de Bloomberg et TradingView — pour les marchés africains.",
-    tags: ['React Native', 'BRVM', 'Temps réel', 'Bloomberg'],
-    status: 'Négociation en cours', statusColor: '#B57BEE', secret: true,
-  },
+  { n: '01', name: 'My Invest', cat: 'Investissement Participatif', desc: "Plateforme permettant aux particuliers d'investir dans les TPE/PME africaines. Revenue-based financing — remboursement indexé sur les revenus quotidiens des entreprises.", tags: ['React Native', 'Supabase', 'Mobile Money', 'IA'], status: 'En développement', statusColor: '#4ade80' },
+  { n: '02', name: 'My Invest Social', cat: 'Crowdfunding Solidaire', desc: "Plateforme africaine de solidarité digitale pour soutenir financièrement des personnes en urgence médicale ou sociale. Crowdfunding communautaire avec dimension virale.", tags: ['React Native', 'Mobile Money', 'Feed Social', 'IA'], status: 'En développement', statusColor: '#fb923c' },
+  { n: '03', name: 'Projet Confidentiel', cat: 'Fintech · Bloomberg-style', desc: "Application mobile premium pour un leader de l'information financière africaine. Inspirée de Bloomberg et TradingView — données en temps réel pour les marchés africains.", tags: ['React Native', 'BRVM', 'Temps réel', 'Bloomberg'], status: 'Négociation en cours', statusColor: '#B57BEE', secret: true },
 ]
 
 const SKILLS = [
-  { cat: 'Finance & Marchés', items: [
-    { name: 'Marchés financiers africains / BRVM', pct: 90 },
-    { name: 'Analyse financière', pct: 85 },
-    { name: 'Gestion de portefeuille', pct: 80 },
-    { name: 'OPCVM & produits financiers', pct: 75 },
-  ]},
-  { cat: 'Analyse & Outils', items: [
-    { name: 'Excel (TCD)', pct: 82 },
-    { name: 'Power BI', pct: 78 },
-    { name: 'Sage Comptabilité', pct: 70 },
-    { name: 'Kobotoolbox', pct: 68 },
-  ]},
-  { cat: 'Outils Digitaux', items: [
-    { name: 'Lovable (No-code)', pct: 85 },
-    { name: 'Claude Code (IA)', pct: 82 },
-    { name: 'Canva / Notebooklm', pct: 80 },
-    { name: 'React Native', pct: 70 },
-  ]},
+  { cat: 'Finance & Marchés', items: [{ name: 'Marchés financiers africains / BRVM', pct: 90 }, { name: 'Analyse financière', pct: 85 }, { name: 'Gestion de portefeuille', pct: 80 }, { name: 'OPCVM & produits financiers', pct: 75 }] },
+  { cat: 'Analyse & Outils', items: [{ name: 'Excel (TCD)', pct: 82 }, { name: 'Power BI', pct: 78 }, { name: 'Sage Comptabilité', pct: 70 }, { name: 'Kobotoolbox', pct: 68 }] },
+  { cat: 'Outils Digitaux & IA', items: [{ name: 'Lovable (No-code)', pct: 85 }, { name: 'Claude Code (IA)', pct: 82 }, { name: 'Canva / Notebooklm', pct: 80 }, { name: 'React Native', pct: 70 }] },
 ]
 
 const TIMELINE = [
-  { date: '2024 — Présent', title: 'Licence 3 Finance Digitale', sub: 'EMSP Abidjan', desc: "Spécialisation en marchés financiers africains, fintech et gestion d'actifs." },
+  { date: '2024 — Présent', title: 'Licence 3 Finance Digitale', sub: 'EMSP Abidjan', desc: "Spécialisation marchés financiers africains, fintech et gestion d'actifs. Suivi quotidien de la BRVM." },
   { date: '2024', title: 'Certification Microsoft Office', sub: 'Pack Complet', desc: 'Excel avancé, Power BI, Word, PowerPoint, Outlook.' },
   { date: '2024 — 2025', title: '3 Applications Fintech', sub: 'En développement', desc: 'MY INVEST, MY INVEST SOCIAL et un projet confidentiel en négociation avancée.' },
   { date: '2025', title: 'Partenariat Fintech Africain', sub: 'Négociation en cours', desc: "Accord avec un leader de l'information financière africaine pour une app Bloomberg-style." },
 ]
 
 const PHOTOS = [
-  { file: 'AB X DR FELIX EDOH.jpeg',      name: 'Dr Felix Edoh',        role: 'BRVM',                              event: 'Conférence BRVM' },
-  { file: 'AB X EDITH BROU BLEU.jpeg',    name: 'Edith Brou',           role: 'Finance Africaine',                 event: 'Forum Économique' },
-  { file: 'AB X JOSE DIE.jpeg',           name: 'José Dié',             role: 'Directeur Général',                 event: 'Forum Sika Finance' },
-  { file: 'AB X PAUL HARRY AITHNARD.jpeg',name: 'Paul Harry Aithnard',  role: 'Leader Financier',                  event: 'Conférence Économique' },
-  { file: 'AB X STAN ZEZE.jpeg',          name: 'Stan Zézé',            role: 'Bloomfield Intelligence',           event: 'Table Ronde 2025' },
-  { file: 'AB X STEVEN BEDI.jpeg',        name: 'Steven Bédi',          role: 'Bloomfield Intelligence',           event: 'Forum Bloomfield' },
+  { file: 'AB X DR FELIX EDOH.jpeg', name: 'Dr Felix Edoh', role: 'BRVM', event: 'Conférence BRVM' },
+  { file: 'AB X EDITH BROU BLEU.jpeg', name: 'Edith Brou', role: 'Finance Africaine', event: 'Forum Économique' },
+  { file: 'AB X JOSE DIE.jpeg', name: 'José Dié', role: 'Directeur Général', event: 'Forum Sika Finance' },
+  { file: 'AB X PAUL HARRY AITHNARD.jpeg', name: 'Paul Harry Aithnard', role: 'Leader Financier', event: 'Conférence Économique' },
+  { file: 'AB X STAN ZEZE.jpeg', name: 'Stan Zézé', role: 'Bloomfield Intelligence', event: 'Table Ronde 2025' },
+  { file: 'AB X STEVEN BEDI.jpeg', name: 'Steven Bédi', role: 'Bloomfield Intelligence', event: 'Forum Bloomfield' },
 ]
 
-// ── Particles (memo-ized, never re-renders) ────────────────────────────────────
-const PDATA = Array.from({ length: 20 }, (_, i) => ({
+const DIFFERENTIATORS = [
+  { icon: '📊', title: '19 ans, 3 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Trois applications fintech réelles, dont une en négociation avec un leader du marché." },
+  { icon: '🏛️', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, Sika Finance et les acteurs clés de la finance africaine." },
+  { icon: '📈', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
+  { icon: '🌍', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je vois l'ensemble des marchés africains : JSE, NGX, GSE, NSE Kenya. L'Afrique financière est mon terrain de jeu." },
+]
+
+// ── particles ─────────────────────────────────────────────────────────────────
+const PDATA = Array.from({ length: 18 }, (_, i) => ({
   id: i, size: 1 + (i % 3),
-  left: (i * 5.26) % 100,
-  delay: (i * 1.1) % 20,
+  left: (i * 5.55) % 100,
+  delay: (i * 1.2) % 20,
   dur: 14 + (i % 10),
   color: i % 4 === 0 ? '#D4AF6A' : '#B57BEE',
-  opacity: 0.08 + (i % 4) * 0.05,
+  opacity: 0.07 + (i % 3) * 0.04,
 }))
 
 function Particles() {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {PDATA.map(p => (
-        <div key={p.id} className="particle" style={{
-          width: p.size, height: p.size, left: `${p.left}%`,
-          background: p.color, opacity: p.opacity,
-          animationDelay: `${p.delay}s`, animationDuration: `${p.dur}s`,
-          boxShadow: `0 0 ${p.size * 4}px ${p.color}`,
-        }} />
+        <div key={p.id} className="particle" style={{ width: p.size, height: p.size, left: `${p.left}%`, background: p.color, opacity: p.opacity, animationDelay: `${p.delay}s`, animationDuration: `${p.dur}s`, boxShadow: `0 0 ${p.size * 4}px ${p.color}` }} />
       ))}
     </div>
   )
 }
 
-// ── Custom Cursor ──────────────────────────────────────────────────────────────
+// ── cursor ────────────────────────────────────────────────────────────────────
 function Cursor() {
   const dot = useRef(null)
   const ring = useRef(null)
   const pos = useRef({ x: 0, y: 0 })
   const rpos = useRef({ x: 0, y: 0 })
-
   useEffect(() => {
     const onMove = e => {
       pos.current = { x: e.clientX, y: e.clientY }
       if (dot.current) dot.current.style.transform = `translate(${e.clientX - 3}px,${e.clientY - 3}px)`
     }
     document.addEventListener('mousemove', onMove, { passive: true })
-
     let raf
     const loop = () => {
       rpos.current.x += (pos.current.x - rpos.current.x) * 0.1
@@ -124,29 +134,20 @@ function Cursor() {
       raf = requestAnimationFrame(loop)
     }
     loop()
-
-    const expand = () => ring.current?.classList.add('expand')
-    const shrink = () => ring.current?.classList.remove('expand')
-    document.querySelectorAll('a,button,[data-hover]').forEach(el => {
-      el.addEventListener('mouseenter', expand)
-      el.addEventListener('mouseleave', shrink)
-    })
-
+    const on = () => ring.current?.classList.add('expand')
+    const off = () => ring.current?.classList.remove('expand')
+    document.querySelectorAll('a,button,[data-hover]').forEach(el => { el.addEventListener('mouseenter', on); el.addEventListener('mouseleave', off) })
     return () => { document.removeEventListener('mousemove', onMove); cancelAnimationFrame(raf) }
   }, [])
-
-  return (<>
-    <div ref={dot} className="cursor-dot" />
-    <div ref={ring} className="cursor-ring" />
-  </>)
+  return (<><div ref={dot} className="cursor-dot" /><div ref={ring} className="cursor-ring" /></>)
 }
 
-// ── Loading ────────────────────────────────────────────────────────────────────
+// ── loader ────────────────────────────────────────────────────────────────────
 function Loader({ done }) {
   return (
     <AnimatePresence>
       {!done && (
-        <motion.div className="loader" exit={{ opacity: 0 }} transition={{ duration: 1, ease: 'easeInOut' }}>
+        <motion.div className="loader" exit={{ opacity: 0 }} transition={{ duration: 1 }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <div className="loader-logo">AB</div>
           </motion.div>
@@ -163,45 +164,66 @@ function Loader({ done }) {
   )
 }
 
-// ── Navbar ─────────────────────────────────────────────────────────────────────
+// ── BRVM ticker ───────────────────────────────────────────────────────────────
+function BRVMTicker() {
+  const items = [...TICKER, ...TICKER]
+  return (
+    <div className="brvm-ticker">
+      <div className="ticker-label">
+        <span style={{ color: '#D4AF6A', fontWeight: 600 }}>BRVM</span>
+        <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.2)', display: 'inline-block', margin: '0 8px' }} />
+        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>EN DIRECT</span>
+      </div>
+      <div className="ticker-scroll-wrap">
+        <div className="ticker-scroll">
+          {items.map((t, i) => (
+            <span key={i} className="ticker-item">
+              <span style={{ color: 'rgba(255,255,255,0.55)', marginRight: 6 }}>{t.sym}</span>
+              <span style={{ color: 'white', fontWeight: 500, marginRight: 5 }}>{t.val}</span>
+              <span style={{ color: t.up ? '#4ade80' : '#f87171', fontWeight: 600 }}>
+                {t.up ? '▲' : '▼'} {t.chg}
+              </span>
+              <span className="ticker-sep">·</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── navbar ────────────────────────────────────────────────────────────────────
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
-
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
-
-  const links = [['À propos','#about'],['Projets','#projects'],['Compétences','#skills'],['CV','#cv'],['Networking','#networking'],['Contact','#contact']]
-
+  const links = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['CV', '#cv'], ['Networking', '#networking'], ['Contact', '#contact']]
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed top-0 inset-x-0 z-50 transition-all duration-500"
+      className="fixed inset-x-0 z-50 transition-all duration-500"
       style={{
-        padding: scrolled ? '16px 0' : '28px 0',
-        background: scrolled ? undefined : 'linear-gradient(to bottom, rgba(7,7,15,0.9) 0%, transparent 100%)',
+        top: 36,
+        padding: scrolled ? '14px 0' : '24px 0',
+        background: scrolled ? 'rgba(7,7,15,0.92)' : 'linear-gradient(to bottom, rgba(7,7,15,0.85), transparent)',
         backdropFilter: scrolled ? 'blur(24px)' : 'none',
         borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
       }}
     >
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href="#hero" className="serif" style={{ fontSize: 22, fontWeight: 300, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textDecoration: 'none' }}>
+        <a href="#hero" className="serif" style={{ fontSize: 20, fontWeight: 300, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textDecoration: 'none' }}>
           Auryves <span className="grad-gold">Bedje</span>
         </a>
-
-        <nav className="hidden md:flex items-center gap-10">
+        <nav className="hidden md:flex items-center gap-8">
           {links.map(([l, h]) => <a key={h} href={h} className="nav-link">{l}</a>)}
         </nav>
-
-        <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '10px 28px' }}>
-          Contact
-        </a>
-
+        <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '9px 24px', fontSize: 11 }}>Contact</a>
         <button onClick={() => setOpen(!open)} className="md:hidden" style={{ background: 'none', border: 'none', padding: 8, cursor: 'none' }}>
           <div style={{ width: 20, height: 1, background: 'rgba(255,255,255,0.6)', marginBottom: 6, transition: 'all .3s', transform: open ? 'rotate(45deg) translate(0,5px)' : '' }} />
           <div style={{ width: 20, height: 1, background: 'rgba(255,255,255,0.6)', transition: 'all .3s', transform: open ? 'rotate(-45deg) translate(0,-5px)' : '' }} />
@@ -210,7 +232,7 @@ function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="md:hidden glass overflow-hidden" style={{ margin: '8px 16px', borderRadius: 4 }}>
+            style={{ background: 'rgba(7,7,15,0.95)', margin: '8px 16px', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {links.map(([l, h]) => <a key={h} href={h} className="nav-link" onClick={() => setOpen(false)}>{l}</a>)}
             </div>
@@ -221,101 +243,142 @@ function Navbar() {
   )
 }
 
-// ── Hero ───────────────────────────────────────────────────────────────────────
+// ── hero ──────────────────────────────────────────────────────────────────────
 function Hero() {
   const [titleIdx, setTitleIdx] = useState(0)
   const [text, setText] = useState('')
   const [del, setDel] = useState(false)
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref })
-  const y = useTransform(scrollYProgress, [0, 1], [0, -80])
+  const y = useTransform(scrollYProgress, [0, 1], [0, -60])
   const op = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
   useEffect(() => {
     const cur = TITLES[titleIdx]
     const t = !del
-      ? (text.length < cur.length
-        ? setTimeout(() => setText(cur.slice(0, text.length + 1)), 75)
-        : setTimeout(() => setDel(true), 2800))
-      : (text.length > 0
-        ? setTimeout(() => setText(text.slice(0, -1)), 40)
-        : (() => { setDel(false); setTitleIdx(i => (i + 1) % TITLES.length) })())
+      ? (text.length < cur.length ? setTimeout(() => setText(cur.slice(0, text.length + 1)), 70) : setTimeout(() => setDel(true), 2600))
+      : (text.length > 0 ? setTimeout(() => setText(text.slice(0, -1)), 38) : (() => { setDel(false); setTitleIdx(i => (i + 1) % TITLES.length) })())
     return () => clearTimeout(t)
   }, [text, del, titleIdx])
 
   return (
-    <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '120px 24px 100px' }}>
-      {/* Orbs */}
-      <div className="orb" style={{ width: 500, height: 500, top: '10%', left: '-10%', background: '#B57BEE', animationDelay: '0s' }} />
-      <div className="orb" style={{ width: 400, height: 400, bottom: '10%', right: '-8%', background: '#6C3AED', animationDelay: '3s' }} />
-      <div className="orb" style={{ width: 300, height: 300, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#D4AF6A', animationDelay: '6s' }} />
+    <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '140px 32px 100px' }}>
+      {/* orbs */}
+      <div className="orb" style={{ width: 500, height: 500, top: '5%', left: '-12%', background: '#B57BEE' }} />
+      <div className="orb" style={{ width: 350, height: 350, bottom: '10%', right: '-8%', background: '#6C3AED', animationDelay: '3s' }} />
+      <div className="orb" style={{ width: 250, height: 250, top: '40%', right: '30%', background: '#D4AF6A', animationDelay: '6s' }} />
 
-      <motion.div style={{ y, opacity: op }} className="relative z-10 text-center" style={{ maxWidth: 900, width: '100%', position: 'relative', zIndex: 10 }}>
-        {/* Label */}
-        <motion.div {...fadeUp(1)} className="label" style={{ marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-          <div style={{ width: 40, height: 1, background: 'rgba(212,175,106,0.4)' }} />
-          Finance Digitale · EMSP Abidjan · Côte d'Ivoire 🇨🇮
-          <div style={{ width: 40, height: 1, background: 'rgba(212,175,106,0.4)' }} />
-        </motion.div>
-
-        {/* Name */}
-        <div style={{ overflow: 'hidden', marginBottom: 16 }}>
-          <motion.h1
-            initial={{ y: 120, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="display-xl grad-mix"
+      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', display: 'grid', gridTemplateColumns: '1fr auto', gap: 80, alignItems: 'center', position: 'relative', zIndex: 10 }}>
+        {/* LEFT — texte */}
+        <motion.div style={{ y, opacity: op }}>
+          {/* Badge stage */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32 }}
           >
-            Auryves Bedje
-          </motion.h1>
-        </div>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#D4AF6A' }}>
+              Disponible pour un stage · Gestion d'actifs & Finance de marchés
+            </span>
+          </motion.div>
 
-        {/* Typewriter */}
+          {/* Label */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+            className="label" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 32, height: 1, background: 'rgba(212,175,106,0.4)' }} />
+            Finance Digitale · EMSP Abidjan · Côte d'Ivoire 🇨🇮
+          </motion.div>
+
+          {/* Nom */}
+          <div style={{ overflow: 'hidden', marginBottom: 12 }}>
+            <motion.h1
+              initial={{ y: 120, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
+              className="display-xl grad-mix" style={{ lineHeight: 0.92 }}
+            >
+              Auryves<br />Bedje
+            </motion.h1>
+          </div>
+
+          {/* Typewriter */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}
+            style={{ height: 32, marginBottom: 28 }}>
+            <span className="serif" style={{ fontSize: 20, fontWeight: 300, color: 'rgba(255,255,255,0.45)', fontStyle: 'italic' }}>
+              {text}<span className="tw-cursor">|</span>
+            </span>
+          </motion.div>
+
+          {/* Quote */}
+          <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.1 }}
+            className="serif" style={{ fontSize: 17, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', marginBottom: 48, fontWeight: 300 }}>
+            "Construire la finance africaine de demain"
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.3 }}
+            style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 64 }}>
+            <a href="#projects" className="btn-prim">Voir mes projets</a>
+            <a href="/CV-Auryves-Bedje.pdf" download className="btn-gold">↓ Télécharger mon CV</a>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}
+            style={{ display: 'flex', gap: 40, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 32 }}>
+            {[['3', 'Apps fintech'], ['19', 'Ans'], ['BRVM', '+ 7 bourses africaines suivies']].map(([v, l]) => (
+              <div key={l}>
+                <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>{v}</div>
+                <div className="label" style={{ marginTop: 8, maxWidth: 160 }}>{l}</div>
+              </div>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        {/* RIGHT — photo */}
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}
-          style={{ height: 36, marginBottom: 32 }}
+          initial={{ opacity: 0, x: 60, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          transition={{ duration: 1.1, delay: 1.3, ease: [0.16, 1, 0.3, 1] }}
+          style={{ position: 'relative', flexShrink: 0 }}
+          className="hidden md:block"
         >
-          <span className="serif" style={{ fontSize: 22, fontWeight: 300, color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
-            {text}<span className="tw-cursor">|</span>
-          </span>
+          <div style={{ position: 'relative', width: 320 }}>
+            {/* cadre extérieur doré */}
+            <div style={{ position: 'absolute', inset: -16, border: '1px solid rgba(212,175,106,0.18)', borderRadius: 4, pointerEvents: 'none' }} />
+            {/* cadre intérieur lavande */}
+            <div style={{ position: 'absolute', inset: -8, border: '1px solid rgba(181,123,238,0.1)', borderRadius: 4, pointerEvents: 'none' }} />
+            {/* photo */}
+            <img
+              src="/photos/WhatsApp Image 2026-05-15 at 10.24.43.jpeg"
+              alt="Auryves Bedje"
+              style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', objectPosition: 'top', borderRadius: 4, display: 'block', filter: 'contrast(1.02) brightness(0.96)' }}
+            />
+            {/* overlay gradient bas */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(to top, rgba(7,7,15,0.6), transparent)', borderRadius: '0 0 4px 4px' }} />
+            {/* badge flottant */}
+            <motion.div
+              animate={{ y: [-5, 5, -5] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+              className="glass-gold"
+              style={{ position: 'absolute', bottom: -16, right: -16, padding: '12px 18px', borderRadius: 4 }}
+            >
+              <div style={{ fontSize: 9, letterSpacing: '0.2em', color: 'rgba(212,175,106,0.6)', textTransform: 'uppercase', marginBottom: 4 }}>Spécialiste</div>
+              <div className="grad-gold serif" style={{ fontSize: 16, fontWeight: 400 }}>Marchés BRVM</div>
+            </motion.div>
+          </div>
         </motion.div>
+      </div>
 
-        {/* Quote */}
-        <motion.p {...fadeUp(2.1)} className="serif" style={{ fontSize: 18, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic', marginBottom: 52, fontWeight: 300 }}>
-          "Construire la finance africaine de demain"
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div {...fadeUp(2.3)} style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="#projects" className="btn-prim">Découvrir mes projets</a>
-          <a href="/CV-Auryves-Bedje.pdf" download className="btn-gold">Télécharger mon CV</a>
-        </motion.div>
-
-        {/* Stats */}
-        <motion.div {...fadeUp(2.6)} style={{ display: 'flex', justifyContent: 'center', gap: 48, marginTop: 64, paddingBottom: 24 }}>
-          {[['3', 'Apps fintech'], ['19', 'Ans'], ['BRVM', 'Marchés africains']].map(([v, l]) => (
-            <div key={l} style={{ textAlign: 'center' }}>
-              <div className="serif grad-gold" style={{ fontSize: 36, fontWeight: 300, lineHeight: 1 }}>{v}</div>
-              <div className="label" style={{ marginTop: 8 }}>{l}</div>
-            </div>
-          ))}
-        </motion.div>
-      </motion.div>
-
-      {/* Scroll hint — positionné proprement en bas */}
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5 }}
-        style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, zIndex: 20 }}
-      >
+      {/* scroll hint */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.2 }}
+        style={{ position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, zIndex: 20 }}>
         <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}
-          style={{ width: 1, height: 36, background: 'linear-gradient(to bottom, rgba(212,175,106,0.5), transparent)' }} />
-        <span className="label" style={{ fontSize: 10, letterSpacing: '0.3em' }}>Scroll</span>
+          style={{ width: 1, height: 32, background: 'linear-gradient(to bottom, rgba(212,175,106,0.5), transparent)' }} />
+        <span className="label" style={{ fontSize: 9, letterSpacing: '0.3em' }}>Scroll</span>
       </motion.div>
     </section>
   )
 }
 
-// ── About ──────────────────────────────────────────────────────────────────────
+// ── about ─────────────────────────────────────────────────────────────────────
 function About() {
   return (
     <section id="about" className="section-pad">
@@ -324,54 +387,34 @@ function About() {
           <div className="label-gold" style={{ marginBottom: 20 }}>Qui suis-je</div>
           <div className="divider" />
         </motion.div>
-
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 80, alignItems: 'center' }}>
-          {/* Photo */}
           <motion.div {...fadeUp(0.1)} style={{ position: 'relative' }}>
             <div style={{ position: 'relative', maxWidth: 340, margin: '0 auto' }}>
-              {/* Gold frame */}
               <div style={{ position: 'absolute', inset: -12, border: '1px solid rgba(212,175,106,0.2)', borderRadius: 4, pointerEvents: 'none' }} />
               <div style={{ position: 'absolute', inset: -6, border: '1px solid rgba(181,123,238,0.1)', borderRadius: 4, pointerEvents: 'none' }} />
-              <img
-                src="/photos/WhatsApp Image 2026-05-15 at 10.24.43.jpeg"
-                alt="Auryves Bedje"
-                style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', borderRadius: 4, display: 'block' }}
-              />
-              {/* Badge */}
-              <motion.div
-                animate={{ y: [-6, 6, -6] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                className="glass-gold"
-                style={{ position: 'absolute', bottom: -20, right: -20, padding: '14px 20px', borderRadius: 4 }}
-              >
+              <img src="/photos/WhatsApp Image 2026-05-15 at 10.25.05.jpeg" alt="Auryves Bedje événement" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', borderRadius: 4, display: 'block' }} />
+              <motion.div animate={{ y: [-6, 6, -6] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                className="glass-gold" style={{ position: 'absolute', bottom: -20, right: -20, padding: '14px 20px', borderRadius: 4 }}>
                 <div className="label-gold" style={{ marginBottom: 4 }}>Fintech Builder</div>
                 <div className="serif grad-gold" style={{ fontSize: 22, fontWeight: 300 }}>2025</div>
               </motion.div>
             </div>
           </motion.div>
-
-          {/* Content */}
           <motion.div {...fadeUp(0.2)}>
             <h2 className="display-lg" style={{ marginBottom: 28 }}>
               Bâtisseur de la <span className="grad-lav">finance digitale</span> africaine
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', marginBottom: 36, fontWeight: 300 }}>
-              Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan, je développe des applications fintech qui transforment les marchés financiers africains. Passionné par la BRVM, l'investissement participatif et la technologie au service de la finance africaine.
+              Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je développe des applications fintech qui transforment les marchés financiers africains, tout en suivant au quotidien les indices de la BRVM et les places boursières du continent.
             </p>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, marginBottom: 40, border: '1px solid rgba(255,255,255,0.06)' }}>
-              {[
-                ['📍', 'Localisation', 'Abidjan, Cocody Riviera Palmeraie'],
-                ['🎓', 'Formation', 'Finance Digitale — EMSP'],
-                ['📱', 'Téléphone', '+225 01 41 56 41 16'],
-                ['✉️', 'Email', 'auryvesb@gmail.com'],
-              ].map(([ico, l, v]) => (
+              {[['📍', 'Localisation', 'Abidjan, Cocody Riviera Palmeraie'], ['🎓', 'Formation', 'Finance Digitale — EMSP'], ['📱', 'Téléphone', '+225 01 41 56 41 16'], ['✉️', 'Email', 'auryvesb@gmail.com']].map(([, l, v]) => (
                 <div key={l} style={{ padding: '20px', borderRight: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                   <div className="label" style={{ marginBottom: 8 }}>{l}</div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>{v}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{v}</div>
                 </div>
               ))}
             </div>
-
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <a href="mailto:auryvesb@gmail.com" className="btn-prim">✉️ Email</a>
               <a href="https://linkedin.com/in/auryves-bedje-2981bb331" target="_blank" rel="noreferrer" className="btn-gold">💼 LinkedIn</a>
@@ -383,7 +426,7 @@ function About() {
   )
 }
 
-// ── Projects ───────────────────────────────────────────────────────────────────
+// ── projects ──────────────────────────────────────────────────────────────────
 function Projects() {
   return (
     <section id="projects" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
@@ -393,43 +436,29 @@ function Projects() {
           <div className="divider" />
           <h2 className="display-lg" style={{ marginTop: 32 }}>Mes Projets</h2>
         </motion.div>
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
           {PROJECTS.map((p, i) => (
             <motion.div key={p.n} {...fadeUp(i * 0.12)}
-              style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 0, background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.3s', cursor: 'default', position: 'relative', overflow: 'hidden' }}
+              style={{ display: 'grid', gridTemplateColumns: '80px 1fr', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', overflow: 'hidden' }}
               whileHover={{ backgroundColor: 'rgba(181,123,238,0.04)' }}
             >
-              {/* Number */}
               <div style={{ borderRight: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                 <span className="serif grad-gold" style={{ fontSize: 14, fontWeight: 300, letterSpacing: '0.1em' }}>{p.n}</span>
               </div>
-
-              {/* Content */}
-              <div style={{ padding: '40px 40px' }}>
+              <div style={{ padding: '40px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
                   <div>
                     <div className="label" style={{ marginBottom: 10, color: 'rgba(181,123,238,0.7)' }}>{p.cat}</div>
-                    <h3 className="serif" style={{ fontSize: 28, fontWeight: 300, color: 'white', letterSpacing: '0.02em' }}>
-                      {p.secret ? <span style={{ filter: 'blur(6px)', userSelect: 'none' }}>{p.name}</span> : p.name}
-                    </h3>
+                    <h3 className="serif" style={{ fontSize: 28, fontWeight: 300, color: 'white' }}>{p.secret ? <span style={{ filter: 'blur(5px)', userSelect: 'none' }}>{p.name}</span> : p.name}</h3>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: p.statusColor, boxShadow: `0 0 8px ${p.statusColor}` }} />
                     <span style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>{p.status}</span>
                   </div>
                 </div>
-
-                <p style={{ fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.45)', marginBottom: 24, fontWeight: 300, maxWidth: 600, filter: p.secret ? 'blur(4px)' : 'none' }}>
-                  {p.desc}
-                </p>
-
+                <p style={{ fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.45)', marginBottom: 24, fontWeight: 300, maxWidth: 600, filter: p.secret ? 'blur(3px)' : 'none' }}>{p.desc}</p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {p.tags.map(t => (
-                    <span key={t} style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', border: '1px solid rgba(181,123,238,0.2)', color: 'rgba(181,123,238,0.6)', borderRadius: 2 }}>
-                      {t}
-                    </span>
-                  ))}
+                  {p.tags.map(t => <span key={t} style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', border: '1px solid rgba(181,123,238,0.2)', color: 'rgba(181,123,238,0.6)', borderRadius: 2 }}>{t}</span>)}
                 </div>
               </div>
             </motion.div>
@@ -440,7 +469,129 @@ function Projects() {
   )
 }
 
-// ── Skills ─────────────────────────────────────────────────────────────────────
+// ── marchés africains ─────────────────────────────────────────────────────────
+function MarchesAfricains() {
+  return (
+    <section id="marches" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
+          <div className="label-gold" style={{ marginBottom: 20 }}>Ma passion</div>
+          <div className="divider" />
+          <h2 className="display-lg" style={{ marginTop: 32 }}>Les Marchés Financiers Africains</h2>
+          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, maxWidth: 600, fontWeight: 300, lineHeight: 1.7 }}>
+            Je suis les marchés africains au quotidien. Au-delà de la BRVM, je m'intéresse à l'ensemble des places boursières du continent et à leur rôle dans le financement des économies africaines.
+          </p>
+        </motion.div>
+
+        {/* Bourses africaines */}
+        <div style={{ marginBottom: 80 }}>
+          <motion.div {...fadeUp(0.1)} style={{ marginBottom: 32 }}>
+            <div className="label" style={{ marginBottom: 16 }}>Places boursières suivies</div>
+            <div className="divider-gold" />
+          </motion.div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
+            {EXCHANGES.map((ex, i) => (
+              <motion.div key={ex.name} {...fadeUp(i * 0.07)}
+                style={{
+                  padding: '24px',
+                  background: ex.featured ? 'rgba(212,175,106,0.05)' : 'rgba(255,255,255,0.02)',
+                  borderRight: '1px solid rgba(255,255,255,0.06)',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  position: 'relative',
+                  transition: 'background 0.3s',
+                }}
+                whileHover={{ backgroundColor: ex.featured ? 'rgba(212,175,106,0.09)' : 'rgba(181,123,238,0.05)' }}
+              >
+                {ex.featured && (
+                  <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF6A', border: '1px solid rgba(212,175,106,0.4)', padding: '3px 8px', borderRadius: 2 }}>
+                    Primaire
+                  </div>
+                )}
+                <div style={{ fontSize: 28, marginBottom: 10 }}>{ex.flag}</div>
+                <div className="serif" style={{ fontSize: 22, fontWeight: 400, color: ex.featured ? '#D4AF6A' : 'white', marginBottom: 4 }}>{ex.name}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10, letterSpacing: '0.05em' }}>{ex.city} · {ex.country}</div>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: 10, fontWeight: 300 }}>{ex.desc}</p>
+                <div style={{ fontSize: 11, color: 'rgba(212,175,106,0.6)', letterSpacing: '0.05em' }}>Cap. : {ex.cap}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Ma watchlist BRVM */}
+        <div>
+          <motion.div {...fadeUp(0.1)} style={{ marginBottom: 32 }}>
+            <div className="label" style={{ marginBottom: 16 }}>Ma watchlist BRVM — Valeurs suivies</div>
+            <div className="divider-gold" />
+          </motion.div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
+            {BRVM_WATCHLIST.map((v, i) => (
+              <motion.div key={v.name} {...fadeUp(i * 0.08)}
+                style={{ padding: '24px 28px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s' }}
+                whileHover={{ backgroundColor: 'rgba(181,123,238,0.05)' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <span className="serif" style={{ fontSize: 20, fontWeight: 400, color: 'white' }}>{v.name}</span>
+                  <span style={{ fontSize: 10, padding: '4px 10px', border: '1px solid rgba(181,123,238,0.25)', color: 'rgba(181,123,238,0.7)', borderRadius: 2, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{v.sect}</span>
+                </div>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, fontWeight: 300 }}>{v.why}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Mini-analyse */}
+          <motion.div {...fadeUp(0.3)} className="glass-gold" style={{ marginTop: 24, padding: '28px 32px', borderRadius: 4, borderLeft: '2px solid rgba(212,175,106,0.5)' }}>
+            <div className="label-gold" style={{ marginBottom: 12 }}>Ma conviction — BRVM 2025</div>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, fontWeight: 300, maxWidth: 800 }}>
+              "La BRVM reste sous-valorisée par rapport aux marchés émergents mondiaux. Avec la digitalisation des services financiers en Afrique de l'Ouest et la croissance du Mobile Money, les valeurs télécoms (SONATEL, ORANGE CI) et les banques régionales constituent selon moi les meilleurs vecteurs de performance à moyen terme."
+            </p>
+            <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(212,175,106,0.5)', letterSpacing: '0.1em' }}>— Auryves Bedje, Étudiant Finance Digitale · EMSP Abidjan</div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ── "pourquoi moi" ────────────────────────────────────────────────────────────
+function PourquoiMoi() {
+  return (
+    <section className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: 'rgba(181,123,238,0.02)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 80, textAlign: 'center' }}>
+          <div className="label-gold" style={{ marginBottom: 20 }}>Ma valeur ajoutée</div>
+          <div className="divider" style={{ maxWidth: 200, margin: '0 auto' }} />
+          <h2 className="display-lg" style={{ marginTop: 32 }}>Pourquoi moi ?</h2>
+          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, fontWeight: 300 }}>
+            Ce qui me différencie à 19 ans dans l'écosystème fintech africain
+          </p>
+        </motion.div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
+          {DIFFERENTIATORS.map((d, i) => (
+            <motion.div key={d.title} {...fadeUp(i * 0.1)}
+              style={{ padding: '40px 32px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s' }}
+              whileHover={{ backgroundColor: 'rgba(181,123,238,0.06)' }}
+            >
+              <div style={{ fontSize: 36, marginBottom: 20 }}>{d.icon}</div>
+              <h3 className="serif" style={{ fontSize: 20, fontWeight: 400, color: 'white', marginBottom: 16, lineHeight: 1.3 }}>{d.title}</h3>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, fontWeight: 300 }}>{d.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+        {/* CTA stage */}
+        <motion.div {...fadeUp(0.4)} style={{ marginTop: 48, padding: '32px 40px', border: '1px solid rgba(212,175,106,0.2)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, background: 'rgba(212,175,106,0.03)' }}>
+          <div>
+            <div className="label-gold" style={{ marginBottom: 8 }}>Objectif 2025</div>
+            <div className="serif" style={{ fontSize: 24, fontWeight: 300, color: 'white', marginBottom: 6 }}>Stage en Gestion d'Actifs / Analyse Financière</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>CGF Gestion · Sika Finance · BRVM · Bloomfield · Toute structure de la finance africaine</div>
+          </div>
+          <a href="#contact" className="btn-gold" style={{ flexShrink: 0 }}>Me contacter →</a>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+// ── skills ────────────────────────────────────────────────────────────────────
 function Bar({ name, pct, delay }) {
   const ref = useRef(null)
   const [on, setOn] = useState(false)
@@ -471,7 +622,6 @@ function Skills() {
           <div className="divider" />
           <h2 className="display-lg" style={{ marginTop: 32 }}>Compétences</h2>
         </motion.div>
-
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 48 }}>
           {SKILLS.map((s, si) => (
             <motion.div key={s.cat} {...fadeUp(si * 0.1)}>
@@ -483,15 +633,11 @@ function Skills() {
             </motion.div>
           ))}
         </div>
-
-        {/* Soft skills */}
         <motion.div {...fadeUp(0.3)} style={{ marginTop: 64, paddingTop: 48, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="label" style={{ marginBottom: 24 }}>Qualités personnelles</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-            {['Sens de l\'initiative', 'Esprit d\'équipe', 'Adaptabilité', 'Rigueur', 'Motivation', 'Curiosité intellectuelle'].map(q => (
-              <span key={q} className="glass" style={{ padding: '10px 20px', borderRadius: 2, fontSize: 13, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>
-                {q}
-              </span>
+            {["Sens de l'initiative", "Esprit d'équipe", 'Adaptabilité', 'Rigueur', 'Motivation', 'Curiosité intellectuelle'].map(q => (
+              <span key={q} className="glass" style={{ padding: '10px 20px', borderRadius: 2, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{q}</span>
             ))}
           </div>
         </motion.div>
@@ -500,7 +646,7 @@ function Skills() {
   )
 }
 
-// ── CV Section ─────────────────────────────────────────────────────────────────
+// ── CV ────────────────────────────────────────────────────────────────────────
 function CVSection() {
   return (
     <section id="cv" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
@@ -510,20 +656,15 @@ function CVSection() {
           <div className="divider" />
           <h2 className="display-lg" style={{ marginTop: 32 }}>Curriculum Vitae</h2>
         </motion.div>
-
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 48 }}>
-
-          {/* Profil */}
           <motion.div {...fadeUp(0.1)} className="cv-section">
             <div className="label" style={{ marginBottom: 16 }}>Profil</div>
             <p style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>
-              Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je souhaite effectuer un stage en gestion d'actifs et fonctionnement du marché boursier régional (BRVM). Motivé et rigoureux, passionné par les marchés financiers africains et la fintech.
+              Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je souhaite effectuer un stage en gestion d'actifs et analyse de marchés financiers, notamment la BRVM. Motivé, rigoureux, passionné par les marchés boursiers africains et la fintech.
             </p>
           </motion.div>
-
-          {/* Formation */}
           <motion.div {...fadeUp(0.15)} className="cv-section">
-            <div className="label" style={{ marginBottom: 20 }}>Formation</div>
+            <div className="label" style={{ marginBottom: 20 }}>Formation & Certifications</div>
             <div style={{ marginBottom: 20 }}>
               <div className="serif" style={{ fontSize: 17, fontWeight: 400, color: 'rgba(255,255,255,0.85)', marginBottom: 6 }}>Licence 3 Finance Digitale</div>
               <div style={{ fontSize: 13, color: '#D4AF6A', marginBottom: 4 }}>EMSP Abidjan — En cours</div>
@@ -531,11 +672,9 @@ function CVSection() {
             </div>
             <div>
               <div className="serif" style={{ fontSize: 17, fontWeight: 400, color: 'rgba(255,255,255,0.85)', marginBottom: 6 }}>Pack Certification Microsoft Office</div>
-              <div style={{ fontSize: 13, color: '#D4AF6A', marginBottom: 4 }}>Excel · Power BI · Word · PowerPoint · Outlook</div>
+              <div style={{ fontSize: 13, color: '#D4AF6A' }}>Excel · Power BI · Word · PowerPoint · Outlook</div>
             </div>
           </motion.div>
-
-          {/* Langues & Intérêts */}
           <motion.div {...fadeUp(0.2)} className="cv-section">
             <div className="label" style={{ marginBottom: 20 }}>Langues</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 40 }}>
@@ -545,7 +684,7 @@ function CVSection() {
                     <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{l}</span>
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em' }}>{n}</span>
                   </div>
-                  <div className="skill-track" style={{ height: 1 }}>
+                  <div style={{ height: 1, background: 'rgba(255,255,255,0.08)' }}>
                     <div style={{ height: 1, background: 'linear-gradient(90deg, #B57BEE, #D4AF6A)', width: `${p}%` }} />
                   </div>
                 </div>
@@ -554,30 +693,24 @@ function CVSection() {
             <div className="label" style={{ marginBottom: 16 }}>Centres d'intérêt</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {['Marchés financiers', 'BRVM', 'Lecture économique', 'Veille technologique', 'Entrepreneuriat'].map(c => (
-                <span key={c} style={{ fontSize: 11, padding: '6px 12px', border: '1px solid rgba(212,175,106,0.2)', color: 'rgba(212,175,106,0.7)', borderRadius: 2, letterSpacing: '0.08em' }}>
-                  {c}
-                </span>
+                <span key={c} style={{ fontSize: 11, padding: '6px 12px', border: '1px solid rgba(212,175,106,0.2)', color: 'rgba(212,175,106,0.7)', borderRadius: 2 }}>{c}</span>
               ))}
             </div>
           </motion.div>
         </div>
-
-        {/* Download CTA */}
         <motion.div {...fadeUp(0.3)} style={{ marginTop: 64, paddingTop: 48, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
           <div>
             <div className="display-md" style={{ color: 'rgba(255,255,255,0.85)', marginBottom: 8 }}>Télécharger le CV complet</div>
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>Format PDF · Auryves Bedje 2025</div>
           </div>
-          <a href="/CV-Auryves-Bedje.pdf" download className="btn-gold" style={{ flexShrink: 0 }}>
-            ↓ &nbsp;Télécharger PDF
-          </a>
+          <a href="/CV-Auryves-Bedje.pdf" download className="btn-gold">↓ &nbsp;Télécharger PDF</a>
         </motion.div>
       </div>
     </section>
   )
 }
 
-// ── Timeline ───────────────────────────────────────────────────────────────────
+// ── timeline ──────────────────────────────────────────────────────────────────
 function Timeline() {
   return (
     <section id="timeline" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
@@ -587,26 +720,23 @@ function Timeline() {
           <div className="divider" />
           <h2 className="display-lg" style={{ marginTop: 32 }}>Parcours</h2>
         </motion.div>
-
-        <div>
-          {TIMELINE.map((t, i) => (
-            <motion.div key={i} {...fadeUp(i * 0.12)} className="tl-item" style={{ marginBottom: 40 }}>
-              <div className="tl-dot" />
-              <div className="glass" style={{ padding: '28px 32px', borderRadius: 4, marginLeft: 8 }}>
-                <div className="label" style={{ marginBottom: 8 }}>{t.date}</div>
-                <div className="serif" style={{ fontSize: 22, fontWeight: 300, color: 'white', marginBottom: 6 }}>{t.title}</div>
-                <div style={{ fontSize: 13, color: '#D4AF6A', marginBottom: 12, letterSpacing: '0.05em' }}>{t.sub}</div>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, fontWeight: 300 }}>{t.desc}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {TIMELINE.map((t, i) => (
+          <motion.div key={i} {...fadeUp(i * 0.12)} className="tl-item" style={{ marginBottom: 40 }}>
+            <div className="tl-dot" />
+            <div className="glass" style={{ padding: '28px 32px', borderRadius: 4, marginLeft: 8 }}>
+              <div className="label" style={{ marginBottom: 8 }}>{t.date}</div>
+              <div className="serif" style={{ fontSize: 22, fontWeight: 300, color: 'white', marginBottom: 6 }}>{t.title}</div>
+              <div style={{ fontSize: 13, color: '#D4AF6A', marginBottom: 12 }}>{t.sub}</div>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, fontWeight: 300 }}>{t.desc}</p>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </section>
   )
 }
 
-// ── Networking ─────────────────────────────────────────────────────────────────
+// ── networking ────────────────────────────────────────────────────────────────
 function Networking() {
   return (
     <section id="networking" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
@@ -616,13 +746,9 @@ function Networking() {
           <div className="divider" />
           <h2 className="display-lg" style={{ marginTop: 32 }}>Dans les cercles<br />de la finance africaine</h2>
         </motion.div>
-
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 16 }}>
           {PHOTOS.map((p, i) => (
-            <motion.div key={i} {...fadeIn(i * 0.08)}
-              className="photo-card"
-              style={{ aspectRatio: i === 0 || i === 3 ? '4/5' : '3/4', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
+            <motion.div key={i} {...fadeIn(i * 0.08)} className="photo-card" style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)' }}>
               <img src={`/photos/${p.file}`} alt={p.name} />
               <div className="photo-info">
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'white', marginBottom: 4 }}>{p.name}</div>
@@ -632,12 +758,9 @@ function Networking() {
             </motion.div>
           ))}
         </div>
-
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48, display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          {['Bloomfield Intelligence', 'BRVM', 'NSIA Assurances', 'Table Ronde de l\'Intelligence Économique', 'CNPS', 'Sika Finance'].map(o => (
-            <span key={o} className="glass" style={{ padding: '8px 18px', borderRadius: 2, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              {o}
-            </span>
+          {['Bloomfield Intelligence', 'BRVM', 'NSIA Assurances', "Table Ronde de l'Intelligence Économique", 'CNPS', 'Sika Finance'].map(o => (
+            <span key={o} className="glass" style={{ padding: '8px 18px', borderRadius: 2, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{o}</span>
           ))}
         </motion.div>
       </div>
@@ -645,20 +768,18 @@ function Networking() {
   )
 }
 
-// ── Contact ────────────────────────────────────────────────────────────────────
+// ── contact ───────────────────────────────────────────────────────────────────
 function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [sent, setSent] = useState(false)
-
   const submit = e => {
     e.preventDefault()
     const s = encodeURIComponent(`Contact Portfolio — ${form.name}`)
     const b = encodeURIComponent(`Bonjour Auryves,\n\nMessage de : ${form.name}\nEmail : ${form.email}\n\n${form.message}`)
     window.open(`mailto:auryvesb@gmail.com?subject=${s}&body=${b}`)
-    setSent(true)
-    setTimeout(() => setSent(false), 3000)
+    setSent(true); setTimeout(() => setSent(false), 3000)
   }
-
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2, padding: '14px 18px', color: 'white', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none', transition: 'border-color 0.3s' }
   return (
     <section id="contact" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -667,12 +788,10 @@ function Contact() {
           <div className="divider" />
           <h2 className="display-lg" style={{ marginTop: 32 }}>Travaillons Ensemble</h2>
         </motion.div>
-
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 64 }}>
-          {/* Info */}
           <motion.div {...fadeUp(0.1)}>
             <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.4)', fontWeight: 300, marginBottom: 48 }}>
-              Vous avez un projet fintech, une opportunité de stage ou souhaitez simplement échanger ? Je suis disponible.
+              Un projet fintech, une opportunité de stage en gestion d'actifs, ou simplement envie d'échanger sur les marchés africains ? Je suis disponible.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {[
@@ -683,38 +802,32 @@ function Contact() {
               ].map(c => (
                 <div key={c.l} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 20 }}>
                   <div className="label" style={{ marginBottom: 8 }}>{c.l}</div>
-                  {c.h
-                    ? <a href={c.h} target={c.h.startsWith('http') ? '_blank' : undefined} rel="noreferrer"
-                        style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', textDecoration: 'none', transition: 'color .2s' }}
-                        onMouseEnter={e => e.target.style.color = '#B57BEE'}
-                        onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.6)'}
-                      >{c.v}</a>
-                    : <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>{c.v}</span>
-                  }
+                  {c.h ? <a href={c.h} target={c.h.startsWith('http') ? '_blank' : undefined} rel="noreferrer"
+                    style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}
+                    onMouseEnter={e => e.target.style.color = '#B57BEE'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.6)'}
+                  >{c.v}</a> : <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>{c.v}</span>}
                 </div>
               ))}
             </div>
             <div style={{ marginTop: 32 }}>
               <a href="https://wa.me/2250141564116" target="_blank" rel="noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 28px', borderRadius: 2, background: 'linear-gradient(135deg, rgba(37,211,102,0.12), rgba(18,140,78,0.12))', border: '1px solid rgba(37,211,102,0.25)', color: 'rgba(37,211,102,0.8)', textDecoration: 'none', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, transition: 'all .3s' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 28px', borderRadius: 2, background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)', color: 'rgba(37,211,102,0.8)', textDecoration: 'none', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>
                 💬 &nbsp;Message WhatsApp direct
               </a>
             </div>
           </motion.div>
-
-          {/* Form */}
           <motion.div {...fadeUp(0.2)} className="glass" style={{ padding: '48px', borderRadius: 4 }}>
             <div className="label" style={{ marginBottom: 32 }}>Envoyer un message</div>
             <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {[['text', 'name', 'Votre nom', 'John Doe'], ['email', 'email', 'Votre email', 'john@exemple.com']].map(([type, key, label, ph]) => (
                 <div key={key}>
                   <div className="label" style={{ marginBottom: 10 }}>{label}</div>
-                  <input type={type} required placeholder={ph} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} className="input-field" />
+                  <input type={type} required placeholder={ph} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} style={inputStyle} />
                 </div>
               ))}
               <div>
                 <div className="label" style={{ marginBottom: 10 }}>Votre message</div>
-                <textarea rows={5} required placeholder="Bonjour Auryves..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} className="input-field" style={{ resize: 'none' }} />
+                <textarea rows={5} required placeholder="Bonjour Auryves..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} style={{ ...inputStyle, resize: 'none' }} />
               </div>
               <motion.button type="submit" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="btn-prim" style={{ justifyContent: 'center', marginTop: 8 }}>
                 {sent ? '✓ Message envoyé' : 'Envoyer →'}
@@ -727,14 +840,14 @@ function Contact() {
   )
 }
 
-// ── Footer ─────────────────────────────────────────────────────────────────────
+// ── footer ────────────────────────────────────────────────────────────────────
 function Footer() {
   return (
     <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '48px 32px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         <div className="serif grad-mix" style={{ fontSize: 36, fontWeight: 300, letterSpacing: '0.1em' }}>Auryves Bedje</div>
         <div className="divider" style={{ maxWidth: 200 }} />
-        <div style={{ display: 'flex', gap: 32 }}>
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', justifyContent: 'center' }}>
           {[['Email', 'mailto:auryvesb@gmail.com'], ['WhatsApp', 'https://wa.me/2250141564116'], ['LinkedIn', 'https://linkedin.com/in/auryves-bedje-2981bb331']].map(([l, h]) => (
             <a key={l} href={h} target={h.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className="nav-link">{l}</a>
           ))}
@@ -745,11 +858,35 @@ function Footer() {
   )
 }
 
-// ── App ────────────────────────────────────────────────────────────────────────
+// ── back to top ───────────────────────────────────────────────────────────────
+function BackToTop() {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const fn = () => setVisible(window.scrollY > 600)
+    window.addEventListener('scroll', fn, { passive: true })
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.button
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="glass-gold"
+          style={{ position: 'fixed', bottom: 32, right: 32, width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'none', zIndex: 40, fontSize: 16 }}
+          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+        >
+          ↑
+        </motion.button>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// ── app ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const [loaded, setLoaded] = useState(false)
   useEffect(() => { const t = setTimeout(() => setLoaded(true), 2400); return () => clearTimeout(t) }, [])
-
   return (
     <div className="site-bg" style={{ minHeight: '100vh', position: 'relative' }}>
       <Loader done={loaded} />
@@ -758,11 +895,14 @@ export default function App() {
       <AnimatePresence>
         {loaded && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
+            <BRVMTicker />
             <Navbar />
             <main>
               <Hero />
               <About />
               <Projects />
+              <MarchesAfricains />
+              <PourquoiMoi />
               <Skills />
               <CVSection />
               <Timeline />
@@ -770,6 +910,7 @@ export default function App() {
               <Contact />
             </main>
             <Footer />
+            <BackToTop />
           </motion.div>
         )}
       </AnimatePresence>

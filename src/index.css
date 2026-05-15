@@ -378,6 +378,36 @@
   padding-left: 24px;
 }
 
+/* ─── BRVM TICKER ────────────────────────────────────────── */
+.brvm-ticker {
+  position: fixed; top: 0; inset-x: 0; z-index: 60; height: 36px;
+  display: flex; align-items: center;
+  background: rgba(7,7,15,0.95);
+  border-bottom: 1px solid rgba(212,175,106,0.15);
+  overflow: hidden;
+}
+.ticker-label {
+  flex-shrink: 0; padding: 0 16px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+}
+.ticker-scroll-wrap { flex: 1; overflow: hidden; }
+.ticker-scroll {
+  display: flex; align-items: center;
+  animation: tickerMove 40s linear infinite;
+  width: max-content;
+}
+@keyframes tickerMove {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 24px; font-size: 11px; white-space: nowrap;
+}
+.ticker-sep { color: rgba(255,255,255,0.15); margin-left: 8px; }
+
 /* ─── MOBILE ─────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .display-xl { font-size: 3.5rem; }
