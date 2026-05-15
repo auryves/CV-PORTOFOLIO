@@ -902,6 +902,8 @@ function Networking() {
   const scrollRef = useRef(null)
   const [canLeft, setCanLeft] = useState(false)
   const [canRight, setCanRight] = useState(true)
+  const paused = useRef(false)
+  const rafRef = useRef(null)
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current
@@ -915,11 +917,30 @@ function Networking() {
     if (!el) return
     checkScroll()
     el.addEventListener('scroll', checkScroll, { passive: true })
-    return () => el.removeEventListener('scroll', checkScroll)
+
+    // auto-scroll continu à vitesse lente
+    let pos = 0
+    const speed = 0.6
+    const animate = () => {
+      if (!paused.current && el) {
+        pos += speed
+        if (pos >= el.scrollWidth / 2) pos = 0
+        el.scrollLeft = pos
+      }
+      rafRef.current = requestAnimationFrame(animate)
+    }
+    rafRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      el.removeEventListener('scroll', checkScroll)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
   }, [checkScroll])
 
   const scroll = dir => {
+    paused.current = true
     scrollRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
+    setTimeout(() => { paused.current = false }, 3000)
   }
 
   const orgMap = {
@@ -965,8 +986,13 @@ function Networking() {
           </div>
         </motion.div>
 
-        <div ref={scrollRef} style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 8 }}>
-          {PHOTOS.map((p, i) => (
+        <div
+          ref={scrollRef}
+          onMouseEnter={() => { paused.current = true }}
+          onMouseLeave={() => { paused.current = false }}
+          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 8 }}
+        >
+          {[...PHOTOS, ...PHOTOS].map((p, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
