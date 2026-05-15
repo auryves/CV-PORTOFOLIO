@@ -216,15 +216,31 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: all 0.4s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-prim::after {
+  content: '';
+  position: absolute; top: 0; left: -110%;
+  width: 80%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(181,123,238,0.18), transparent);
+  transform: skewX(-20deg);
+  transition: left 0s;
+}
+.btn-prim:hover::after {
+  left: 130%;
+  transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-prim:hover {
   background: linear-gradient(135deg, rgba(181,123,238,0.25), rgba(108,58,237,0.25));
   border-color: rgba(181,123,238,0.6);
-  box-shadow: 0 0 40px rgba(181,123,238,0.2);
+  box-shadow: 0 0 32px rgba(181,123,238,0.18), 0 4px 24px rgba(0,0,0,0.3);
   transform: translateY(-2px);
 }
+.btn-prim:active { transform: translateY(0); }
+
 .btn-gold {
   display: inline-flex; align-items: center; gap: 10px;
   background: linear-gradient(135deg, rgba(212,175,106,0.12), rgba(184,149,58,0.12));
@@ -237,14 +253,52 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: all 0.4s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-gold::after {
+  content: '';
+  position: absolute; top: 0; left: -110%;
+  width: 80%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,106,0.2), transparent);
+  transform: skewX(-20deg);
+  transition: left 0s;
+}
+.btn-gold:hover::after {
+  left: 130%;
+  transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-gold:hover {
   background: linear-gradient(135deg, rgba(212,175,106,0.22), rgba(184,149,58,0.22));
-  box-shadow: 0 0 40px rgba(212,175,106,0.15);
+  border-color: rgba(212,175,106,0.6);
+  box-shadow: 0 0 32px rgba(212,175,106,0.15), 0 4px 24px rgba(0,0,0,0.3);
   transform: translateY(-2px);
 }
+.btn-gold:active { transform: translateY(0); }
+
+/* ─── CAROUSEL BTN ───────────────────────────────────────── */
+.carousel-btn {
+  width: 44px; height: 44px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex; align-items: center; justify-content: center;
+}
+.carousel-btn:hover:not(:disabled) {
+  background: rgba(212,175,106,0.1);
+  border-color: rgba(212,175,106,0.35);
+  color: #D4AF6A;
+  box-shadow: 0 0 20px rgba(212,175,106,0.1);
+}
+
+/* ─── HIDE SCROLLBAR ─────────────────────────────────────── */
+.photo-scroll-hide::-webkit-scrollbar { display: none; }
 
 /* ─── SKILL BAR ──────────────────────────────────────────── */
 .skill-track {

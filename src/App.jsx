@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import './index.css'
 
@@ -16,7 +16,7 @@ const fadeIn = (delay = 0) => ({
   transition: { duration: 0.9, delay },
 })
 
-// ── BRVM ticker data (valeurs réalistes BRVM 2025) ────────────────────────────
+// ── BRVM ticker ───────────────────────────────────────────────────────────────
 const TICKER = [
   { sym: 'BRVM Composite', val: '220.45', chg: '+1.24%', up: true },
   { sym: 'BRVM 10', val: '185.32', chg: '+0.83%', up: true },
@@ -34,19 +34,21 @@ const TICKER = [
   { sym: 'CFAO CI', val: '925', chg: '+1.09%', up: true },
 ]
 
-// ── marchés africains ─────────────────────────────────────────────────────────
+// ── marchés africains + mondiaux de référence ─────────────────────────────────
 const EXCHANGES = [
-  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '45+ titres cotés, 8 pays d\'Afrique de l\'Ouest', cap: '~7 000 Mds FCFA', featured: true },
-  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande capitalisation boursière d\'Afrique', cap: '~18 000 Mds $' },
-  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: '2ème bourse d\'Afrique sub-saharienne', cap: '~1 000 Mds $' },
-  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'Marché en forte croissance, libellé en cedis', cap: '~70 Mds $' },
-  { name: 'NSE', city: 'Nairobi', country: 'Kenya', flag: '🇰🇪', desc: 'Hub financier de l\'Afrique de l\'Est', cap: '~30 Mds $' },
-  { name: 'EGX', city: 'Le Caire', country: 'Égypte', flag: '🇪🇬', desc: 'Plus ancienne bourse du continent', cap: '~50 Mds $' },
-  { name: 'BVMAC', city: 'Libreville', country: 'Zone CEMAC', flag: '🇬🇦', desc: 'Bourse régionale d\'Afrique Centrale', cap: '~500 Mds FCFA' },
-  { name: 'DSE', city: 'Dar es Salaam', country: 'Tanzanie', flag: '🇹🇿', desc: 'Marché émergent en développement rapide', cap: '~15 Mds $' },
+  // ── Afrique ────────────────────────────────
+  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '45+ titres cotés, 8 pays d\'Afrique de l\'Ouest', cap: '~7 000 Mds FCFA', idx: 'BRVM Composite · 220', featured: true },
+  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande capitalisation boursière d\'Afrique', cap: '~18 000 Mds $', idx: 'JSE ALSI · 82 450' },
+  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: '2ème bourse d\'Afrique sub-saharienne', cap: '~1 000 Mds $', idx: 'NGX All-Share · 101 254' },
+  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'Marché en forte croissance, libellé en cedis', cap: '~70 Mds $', idx: 'GSE-CI · 4 920' },
+  // ── Marchés mondiaux de référence ─────────
+  { name: 'NYSE', city: 'New York', country: 'États-Unis', flag: '🇺🇸', desc: 'Plus grande bourse mondiale — S&P 500, Dow Jones, NASDAQ', cap: '~27 000 Mds $', idx: 'S&P 500 · 5 411 pts', global: true },
+  { name: 'LSE', city: 'Londres', country: 'Royaume-Uni', flag: '🇬🇧', desc: 'Hub financier mondial, premier marché européen coté en livre sterling', cap: '~3 900 Mds $', idx: 'FTSE 100 · 8 312 pts', global: true },
+  { name: 'JPX', city: 'Tokyo', country: 'Japon', flag: '🇯🇵', desc: '3ème capitalisation mondiale, locomotive de l\'Asie-Pacifique', cap: '~6 800 Mds $', idx: 'Nikkei 225 · 38 026 pts', global: true },
+  { name: 'Euronext', city: 'Paris', country: 'France', flag: '🇫🇷', desc: 'Première bourse continentale européenne, cœur de la finance de la zone euro', cap: '~2 700 Mds $', idx: 'CAC 40 · 7 852 pts', global: true },
 ]
 
-// ── valeurs BRVM suivies ──────────────────────────────────────────────────────
+// ── watchlist BRVM ────────────────────────────────────────────────────────────
 const BRVM_WATCHLIST = [
   { name: 'SONATEL', sect: 'Télécoms', why: 'Leader télécoms UEMOA, dividendes stables, forte liquidité' },
   { name: 'ECOBANK CI', sect: 'Banque', why: 'Pan-africaine, exposition à 35 pays africains' },
@@ -54,6 +56,56 @@ const BRVM_WATCHLIST = [
   { name: 'ORANGE CI', sect: 'Télécoms', why: 'Mobile Money (Orange Money), croissance fintech intégrée' },
   { name: 'CORIS BANK', sect: 'Banque', why: 'Banque régionale, forte expansion au Burkina et Mali' },
   { name: 'BOA CI', sect: 'Banque', why: 'Bank of Africa, réseau panafricain solide' },
+]
+
+// ── témoignages ───────────────────────────────────────────────────────────────
+const TESTIMONIALS = [
+  {
+    quote: 'Heureux de voir ta détermination dans la finance.',
+    author: 'Daniel Aggré',
+    role: 'Auteur & Expert en Intelligence Économique',
+    context: 'Dédicace personnelle dans la Bloomfield Review — Premier magazine d\'intelligence économique de Côte d\'Ivoire',
+    initial: 'DA',
+  },
+  {
+    quote: 'Les populations voient encore l\'assurance comme une dépense, pas comme une protection.',
+    author: 'Stan Zézé-Bayard',
+    role: 'Directeur Général — Bloomfield Investment Corporation',
+    context: 'Table Ronde Bloomfield Intelligence · Assurance Vie & Fonds de Pension en Côte d\'Ivoire',
+    initial: 'SZ',
+  },
+  {
+    quote: 'La création de richesse doit venir avant la prudence.',
+    author: 'DG · Caisse Nationale de Prévoyance Sociale',
+    role: 'CNPS Côte d\'Ivoire',
+    context: 'Table Ronde Bloomfield Intelligence · Assurance Vie & Fonds de Pension en Côte d\'Ivoire',
+    initial: 'CN',
+  },
+]
+
+// ── publications LinkedIn ─────────────────────────────────────────────────────
+const LINKEDIN_POSTS = [
+  {
+    title: 'Table Ronde Bloomfield — Assurance Vie & Fonds de Pension',
+    excerpt: 'Une phrase de Stan Zézé-Bayard m\'a marqué : "Les populations voient encore l\'assurance comme une dépense, pas comme une protection." L\'éducation économique est essentielle pour construire une économie plus forte.',
+    date: 'Mai 2025',
+    tags: ['Assurance', 'CNPS', 'Finance africaine'],
+    icon: '🏛️',
+  },
+  {
+    title: 'Lancement de la Bloomfield Review',
+    excerpt: 'Présent au lancement du premier magazine d\'intelligence économique. Échanges avec Paul-Harry Aithnard (DG Ecobank CI), José-Félix Dié (DG CGF Gestion), Steven Bédi (DG PUSH CI) et Edith Brou Bleu.',
+    date: 'Avril 2025',
+    tags: ['Intelligence économique', 'Networking', 'Finance CI'],
+    icon: '📰',
+  },
+  {
+    title: 'Salon de l\'Épargne, de l\'Investissement et du Patrimoine',
+    excerpt: '"Épargner n\'est pas une question de montant, mais une question de réflexe." Rencontres avec Paul-Harry Aithnard (Ecobank) et Katier Bamba (DG Wave CI). Il faut oser approcher, oser poser des questions.',
+    date: 'Mars 2025',
+    tags: ['Épargne', 'Wave CI', 'Investissement'],
+    icon: '💰',
+  },
 ]
 
 // ── données ───────────────────────────────────────────────────────────────────
@@ -66,9 +118,24 @@ const PROJECTS = [
 ]
 
 const SKILLS = [
-  { cat: 'Finance & Marchés', items: [{ name: 'Marchés financiers africains / BRVM', pct: 90 }, { name: 'Analyse financière', pct: 85 }, { name: 'Gestion de portefeuille', pct: 80 }, { name: 'OPCVM & produits financiers', pct: 75 }] },
-  { cat: 'Analyse & Outils', items: [{ name: 'Excel (TCD)', pct: 82 }, { name: 'Power BI', pct: 78 }, { name: 'Sage Comptabilité', pct: 70 }, { name: 'Kobotoolbox', pct: 68 }] },
-  { cat: 'Outils Digitaux & IA', items: [{ name: 'Lovable (No-code)', pct: 85 }, { name: 'Claude Code (IA)', pct: 82 }, { name: 'Canva / Notebooklm', pct: 80 }, { name: 'React Native', pct: 70 }] },
+  { cat: 'Finance & Marchés', items: [
+    { name: 'Marchés financiers africains / BRVM', pct: 90 },
+    { name: 'Analyse financière', pct: 85 },
+    { name: 'Gestion de portefeuille', pct: 80 },
+    { name: 'OPCVM & produits financiers', pct: 80 },
+  ]},
+  { cat: 'Analyse & Outils', items: [
+    { name: 'Excel (TCD)', pct: 92 },
+    { name: 'Power BI', pct: 92 },
+    { name: 'Sage Comptabilité', pct: 70 },
+    { name: 'Kobotoolbox', pct: 95 },
+  ]},
+  { cat: 'Outils Digitaux & IA', items: [
+    { name: 'Lovable (No-code)', pct: 85 },
+    { name: 'Claude Code (IA)', pct: 82 },
+    { name: 'Canva / NotebookLM', pct: 94 },
+    { name: 'React Native', pct: 80 },
+  ]},
 ]
 
 const TIMELINE = [
@@ -79,19 +146,62 @@ const TIMELINE = [
 ]
 
 const PHOTOS = [
-  { file: 'AB X DR FELIX EDOH.jpeg', name: 'Dr Felix Edoh', role: 'BRVM', event: 'Conférence BRVM' },
-  { file: 'AB X EDITH BROU BLEU.jpeg', name: 'Edith Brou', role: 'Finance Africaine', event: 'Forum Économique' },
-  { file: 'AB X JOSE DIE.jpeg', name: 'José Dié', role: 'Directeur Général', event: 'Forum Sika Finance' },
-  { file: 'AB X PAUL HARRY AITHNARD.jpeg', name: 'Paul Harry Aithnard', role: 'Leader Financier', event: 'Conférence Économique' },
-  { file: 'AB X STAN ZEZE.jpeg', name: 'Stan Zézé', role: 'Bloomfield Intelligence', event: 'Table Ronde 2025' },
-  { file: 'AB X STEVEN BEDI.jpeg', name: 'Steven Bédi', role: 'Bloomfield Intelligence', event: 'Forum Bloomfield' },
+  {
+    file: 'AB X DR FELIX EDOH.jpeg',
+    name: 'Dr. Félix Edoh',
+    role: 'Directeur Général',
+    org: 'BRVM — Bourse Régionale des Valeurs Mobilières',
+    event: 'Conférence BRVM · Abidjan',
+  },
+  {
+    file: 'AB X EDITH BROU BLEU.jpeg',
+    name: 'Edith Brou Bleu',
+    role: 'Journaliste & Actrice Économique',
+    org: 'Médias économiques CI',
+    event: 'Lancement Bloomfield Review',
+  },
+  {
+    file: 'AB X JOSE DIE.jpeg',
+    name: 'José-Félix Dié',
+    role: 'Directeur Général',
+    org: 'CGF Gestion — Gestion d\'Actifs',
+    event: 'Lancement Bloomfield Review',
+  },
+  {
+    file: 'AB X PAUL HARRY AITHNARD.jpeg',
+    name: 'Paul-Harry Aithnard',
+    role: 'DG Ecobank CI · Dir. Rég. Exécutif UEMOA',
+    org: 'Ecobank — Pan-African Bank',
+    event: 'Salon de l\'Épargne 2025',
+  },
+  {
+    file: 'AB X STAN ZEZE.jpeg',
+    name: 'Stan Zézé-Bayard',
+    role: 'Directeur Général',
+    org: 'Bloomfield Investment Corporation',
+    event: 'Table Ronde Assurance & Fonds de Pension',
+  },
+  {
+    file: 'AB X STEVEN BEDI.jpeg',
+    name: 'Steven Bédi',
+    role: 'Directeur Général',
+    org: 'PUSH Côte d\'Ivoire — Fintech',
+    event: 'Lancement Bloomfield Review',
+  },
+  {
+    file: 'AB X KATIER BAMBA.jpeg',
+    name: 'Katier Bamba',
+    role: 'Directeur Général',
+    org: 'Wave Côte d\'Ivoire — Mobile Money',
+    event: 'Salon de l\'Épargne 2025',
+  },
 ]
 
 const DIFFERENTIATORS = [
   { icon: '📊', title: '19 ans, 3 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Trois applications fintech réelles, dont une en négociation avec un leader du marché." },
-  { icon: '🏛️', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, Sika Finance et les acteurs clés de la finance africaine." },
+  { icon: '🏛️', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
   { icon: '📈', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
-  { icon: '🌍', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je vois l'ensemble des marchés africains : JSE, NGX, GSE, NSE Kenya. L'Afrique financière est mon terrain de jeu." },
+  { icon: '🌍', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je suis NYSE, LSE, JPX, CAC 40 et l'ensemble des marchés africains. L'Afrique financière mondiale est mon terrain de jeu." },
 ]
 
 // ── particles ─────────────────────────────────────────────────────────────────
@@ -201,7 +311,7 @@ function Navbar() {
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
-  const links = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['CV', '#cv'], ['Networking', '#networking'], ['Contact', '#contact']]
+  const links = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['Networking', '#networking'], ['Contact', '#contact']]
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
@@ -263,15 +373,12 @@ function Hero() {
 
   return (
     <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '140px 32px 100px' }}>
-      {/* orbs */}
       <div className="orb" style={{ width: 500, height: 500, top: '5%', left: '-12%', background: '#B57BEE' }} />
       <div className="orb" style={{ width: 350, height: 350, bottom: '10%', right: '-8%', background: '#6C3AED', animationDelay: '3s' }} />
       <div className="orb" style={{ width: 250, height: 250, top: '40%', right: '30%', background: '#D4AF6A', animationDelay: '6s' }} />
 
       <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', display: 'grid', gridTemplateColumns: '1fr auto', gap: 80, alignItems: 'center', position: 'relative', zIndex: 10 }}>
-        {/* LEFT — texte */}
         <motion.div style={{ y, opacity: op }}>
-          {/* Badge stage */}
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32 }}
@@ -282,14 +389,12 @@ function Hero() {
             </span>
           </motion.div>
 
-          {/* Label */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
             className="label" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 32, height: 1, background: 'rgba(212,175,106,0.4)' }} />
             Finance Digitale · EMSP Abidjan · Côte d'Ivoire 🇨🇮
           </motion.div>
 
-          {/* Nom */}
           <div style={{ overflow: 'hidden', marginBottom: 12 }}>
             <motion.h1
               initial={{ y: 120, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
@@ -300,7 +405,6 @@ function Hero() {
             </motion.h1>
           </div>
 
-          {/* Typewriter */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}
             style={{ height: 32, marginBottom: 28 }}>
             <span className="serif" style={{ fontSize: 20, fontWeight: 300, color: 'rgba(255,255,255,0.45)', fontStyle: 'italic' }}>
@@ -308,23 +412,26 @@ function Hero() {
             </span>
           </motion.div>
 
-          {/* Quote */}
           <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.1 }}
             className="serif" style={{ fontSize: 17, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', marginBottom: 48, fontWeight: 300 }}>
             "Construire la finance africaine de demain"
           </motion.p>
 
-          {/* CTAs */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.3 }}
             style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 64 }}>
-            <a href="#projects" className="btn-prim">Voir mes projets</a>
-            <a href="/CV-Auryves-Bedje.pdf" download className="btn-gold">↓ Télécharger mon CV</a>
+            <a href="#projects" className="btn-prim">
+              <span>Voir mes projets</span>
+              <span style={{ transition: 'transform 0.3s' }} className="btn-arrow">→</span>
+            </a>
+            <a href="/CV-Auryves-Bedje.pdf" download className="btn-gold">
+              <span>↓</span>
+              <span>Télécharger mon CV</span>
+            </a>
           </motion.div>
 
-          {/* Stats */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}
             style={{ display: 'flex', gap: 40, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 32 }}>
-            {[['3', 'Apps fintech'], ['19', 'Ans'], ['BRVM', '+ 7 bourses africaines suivies']].map(([v, l]) => (
+            {[['3', 'Apps fintech'], ['19', 'Ans'], ['BRVM', '+ marchés mondiaux']].map(([v, l]) => (
               <div key={l}>
                 <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>{v}</div>
                 <div className="label" style={{ marginTop: 8, maxWidth: 160 }}>{l}</div>
@@ -333,7 +440,6 @@ function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* RIGHT — photo */}
         <motion.div
           initial={{ opacity: 0, x: 60, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -342,19 +448,14 @@ function Hero() {
           className="hidden md:block"
         >
           <div style={{ position: 'relative', width: 320 }}>
-            {/* cadre extérieur doré */}
             <div style={{ position: 'absolute', inset: -16, border: '1px solid rgba(212,175,106,0.18)', borderRadius: 4, pointerEvents: 'none' }} />
-            {/* cadre intérieur lavande */}
             <div style={{ position: 'absolute', inset: -8, border: '1px solid rgba(181,123,238,0.1)', borderRadius: 4, pointerEvents: 'none' }} />
-            {/* photo */}
             <img
               src="/photos/WhatsApp Image 2026-05-15 at 10.24.43.jpeg"
               alt="Auryves Bedje"
               style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', objectPosition: 'top', borderRadius: 4, display: 'block', filter: 'contrast(1.02) brightness(0.96)' }}
             />
-            {/* overlay gradient bas */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(to top, rgba(7,7,15,0.6), transparent)', borderRadius: '0 0 4px 4px' }} />
-            {/* badge flottant */}
             <motion.div
               animate={{ y: [-5, 5, -5] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
               className="glass-gold"
@@ -367,7 +468,6 @@ function Hero() {
         </motion.div>
       </div>
 
-      {/* scroll hint */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.2 }}
         style={{ position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, zIndex: 20 }}>
         <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}
@@ -405,7 +505,7 @@ function About() {
               Bâtisseur de la <span className="grad-lav">finance digitale</span> africaine
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', marginBottom: 36, fontWeight: 300 }}>
-              Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je développe des applications fintech qui transforment les marchés financiers africains, tout en suivant au quotidien les indices de la BRVM et les places boursières du continent.
+              Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je développe des applications fintech qui transforment les marchés financiers africains, tout en suivant au quotidien les indices de la BRVM et les places boursières du continent et du monde.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, marginBottom: 40, border: '1px solid rgba(255,255,255,0.06)' }}>
               {[['📍', 'Localisation', 'Abidjan, Cocody Riviera Palmeraie'], ['🎓', 'Formation', 'Finance Digitale — EMSP'], ['📱', 'Téléphone', '+225 01 41 56 41 16'], ['✉️', 'Email', 'auryvesb@gmail.com']].map(([, l, v]) => (
@@ -469,55 +569,49 @@ function Projects() {
   )
 }
 
-// ── marchés africains ─────────────────────────────────────────────────────────
+// ── marchés africains + mondiaux ──────────────────────────────────────────────
 function MarchesAfricains() {
+  const african = EXCHANGES.filter(e => !e.global)
+  const global = EXCHANGES.filter(e => e.global)
   return (
     <section id="marches" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Ma passion</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Les Marchés Financiers Africains</h2>
+          <h2 className="display-lg" style={{ marginTop: 32 }}>Les Marchés Financiers</h2>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, maxWidth: 600, fontWeight: 300, lineHeight: 1.7 }}>
-            Je suis les marchés africains au quotidien. Au-delà de la BRVM, je m'intéresse à l'ensemble des places boursières du continent et à leur rôle dans le financement des économies africaines.
+            Je suis les marchés africains au quotidien, tout en me comparant aux grandes places mondiales — NYSE, LSE, Nikkei et CAC 40.
           </p>
         </motion.div>
 
         {/* Bourses africaines */}
-        <div style={{ marginBottom: 80 }}>
-          <motion.div {...fadeUp(0.1)} style={{ marginBottom: 32 }}>
-            <div className="label" style={{ marginBottom: 16 }}>Places boursières suivies</div>
+        <div style={{ marginBottom: 64 }}>
+          <motion.div {...fadeUp(0.05)} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div className="label">🌍 Bourses africaines</div>
             <div className="divider-gold" />
           </motion.div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
-            {EXCHANGES.map((ex, i) => (
-              <motion.div key={ex.name} {...fadeUp(i * 0.07)}
-                style={{
-                  padding: '24px',
-                  background: ex.featured ? 'rgba(212,175,106,0.05)' : 'rgba(255,255,255,0.02)',
-                  borderRight: '1px solid rgba(255,255,255,0.06)',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  position: 'relative',
-                  transition: 'background 0.3s',
-                }}
-                whileHover={{ backgroundColor: ex.featured ? 'rgba(212,175,106,0.09)' : 'rgba(181,123,238,0.05)' }}
-              >
-                {ex.featured && (
-                  <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF6A', border: '1px solid rgba(212,175,106,0.4)', padding: '3px 8px', borderRadius: 2 }}>
-                    Primaire
-                  </div>
-                )}
-                <div style={{ fontSize: 28, marginBottom: 10 }}>{ex.flag}</div>
-                <div className="serif" style={{ fontSize: 22, fontWeight: 400, color: ex.featured ? '#D4AF6A' : 'white', marginBottom: 4 }}>{ex.name}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10, letterSpacing: '0.05em' }}>{ex.city} · {ex.country}</div>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: 10, fontWeight: 300 }}>{ex.desc}</p>
-                <div style={{ fontSize: 11, color: 'rgba(212,175,106,0.6)', letterSpacing: '0.05em' }}>Cap. : {ex.cap}</div>
-              </motion.div>
+            {african.map((ex, i) => (
+              <ExchangeCard key={ex.name} ex={ex} i={i} />
             ))}
           </div>
         </div>
 
-        {/* Ma watchlist BRVM */}
+        {/* Marchés mondiaux de référence */}
+        <div style={{ marginBottom: 80 }}>
+          <motion.div {...fadeUp(0.05)} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div className="label">🌐 Marchés mondiaux de référence</div>
+            <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, rgba(181,123,238,0.4), transparent)' }} />
+          </motion.div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(181,123,238,0.08)' }}>
+            {global.map((ex, i) => (
+              <ExchangeCard key={ex.name} ex={ex} i={i + african.length} />
+            ))}
+          </div>
+        </div>
+
+        {/* Watchlist */}
         <div>
           <motion.div {...fadeUp(0.1)} style={{ marginBottom: 32 }}>
             <div className="label" style={{ marginBottom: 16 }}>Ma watchlist BRVM — Valeurs suivies</div>
@@ -538,7 +632,6 @@ function MarchesAfricains() {
             ))}
           </div>
 
-          {/* Mini-analyse */}
           <motion.div {...fadeUp(0.3)} className="glass-gold" style={{ marginTop: 24, padding: '28px 32px', borderRadius: 4, borderLeft: '2px solid rgba(212,175,106,0.5)' }}>
             <div className="label-gold" style={{ marginBottom: 12 }}>Ma conviction — BRVM 2025</div>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, fontWeight: 300, maxWidth: 800 }}>
@@ -549,6 +642,39 @@ function MarchesAfricains() {
         </div>
       </div>
     </section>
+  )
+}
+
+function ExchangeCard({ ex, i }) {
+  return (
+    <motion.div {...fadeUp(i * 0.07)}
+      style={{
+        padding: '24px',
+        background: ex.featured ? 'rgba(212,175,106,0.05)' : ex.global ? 'rgba(181,123,238,0.03)' : 'rgba(255,255,255,0.02)',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        position: 'relative',
+        transition: 'background 0.3s',
+      }}
+      whileHover={{ backgroundColor: ex.featured ? 'rgba(212,175,106,0.09)' : ex.global ? 'rgba(181,123,238,0.08)' : 'rgba(181,123,238,0.05)' }}
+    >
+      {ex.featured && (
+        <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF6A', border: '1px solid rgba(212,175,106,0.4)', padding: '3px 8px', borderRadius: 2 }}>
+          Primaire
+        </div>
+      )}
+      {ex.global && (
+        <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(181,123,238,0.7)', border: '1px solid rgba(181,123,238,0.25)', padding: '3px 8px', borderRadius: 2 }}>
+          Mondial
+        </div>
+      )}
+      <div style={{ fontSize: 28, marginBottom: 10 }}>{ex.flag}</div>
+      <div className="serif" style={{ fontSize: 22, fontWeight: 400, color: ex.featured ? '#D4AF6A' : 'white', marginBottom: 4 }}>{ex.name}</div>
+      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10, letterSpacing: '0.05em' }}>{ex.city} · {ex.country}</div>
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: 10, fontWeight: 300 }}>{ex.desc}</p>
+      <div style={{ fontSize: 11, color: 'rgba(212,175,106,0.6)', letterSpacing: '0.05em', marginBottom: 4 }}>Cap. : {ex.cap}</div>
+      {ex.idx && <div style={{ fontSize: 11, color: ex.global ? 'rgba(181,123,238,0.7)' : 'rgba(212,175,106,0.5)', letterSpacing: '0.04em' }}>↗ {ex.idx}</div>}
+    </motion.div>
   )
 }
 
@@ -577,7 +703,6 @@ function PourquoiMoi() {
             </motion.div>
           ))}
         </div>
-        {/* CTA stage */}
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48, padding: '32px 40px', border: '1px solid rgba(212,175,106,0.2)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, background: 'rgba(212,175,106,0.03)' }}>
           <div>
             <div className="label-gold" style={{ marginBottom: 8 }}>Objectif 2025</div>
@@ -586,6 +711,49 @@ function PourquoiMoi() {
           </div>
           <a href="#contact" className="btn-gold" style={{ flexShrink: 0 }}>Me contacter →</a>
         </motion.div>
+      </div>
+    </section>
+  )
+}
+
+// ── témoignages ───────────────────────────────────────────────────────────────
+function Testimonials() {
+  return (
+    <section id="temoignages" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
+          <div className="label-gold" style={{ marginBottom: 20 }}>Ce qu'ils disent</div>
+          <div className="divider" />
+          <h2 className="display-lg" style={{ marginTop: 32 }}>Témoignages</h2>
+        </motion.div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+          {TESTIMONIALS.map((t, i) => (
+            <motion.div key={i} {...fadeUp(i * 0.12)}
+              className="glass"
+              style={{ padding: '36px', borderRadius: 4, position: 'relative', overflow: 'hidden' }}
+              whileHover={{ borderColor: 'rgba(212,175,106,0.25)' }}
+            >
+              {/* grand guillemet décoratif */}
+              <div style={{ position: 'absolute', top: 16, right: 24, fontSize: 80, fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, color: 'rgba(212,175,106,0.08)', lineHeight: 1, pointerEvents: 'none' }}>"</div>
+
+              <div style={{ fontSize: 24, fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontWeight: 300, marginBottom: 24, lineHeight: 1.5, color: 'rgba(255,255,255,0.75)', position: 'relative', zIndex: 1 }}>
+                "{t.quote}"
+              </div>
+
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+                {/* initiales */}
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, rgba(181,123,238,0.2), rgba(212,175,106,0.2))', border: '1px solid rgba(212,175,106,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#D4AF6A', letterSpacing: '0.05em' }}>{t.initial}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.85)', marginBottom: 3 }}>{t.author}</div>
+                  <div style={{ fontSize: 11, color: '#D4AF6A', letterSpacing: '0.06em', marginBottom: 4 }}>{t.role}</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.05em' }}>{t.context}</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -736,33 +904,149 @@ function Timeline() {
   )
 }
 
-// ── networking ────────────────────────────────────────────────────────────────
+// ── networking (carousel) ─────────────────────────────────────────────────────
 function Networking() {
+  const scrollRef = useRef(null)
+  const [canLeft, setCanLeft] = useState(false)
+  const [canRight, setCanRight] = useState(true)
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanLeft(el.scrollLeft > 4)
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    checkScroll()
+    el.addEventListener('scroll', checkScroll, { passive: true })
+    return () => el.removeEventListener('scroll', checkScroll)
+  }, [checkScroll])
+
+  const scroll = dir => {
+    scrollRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
+  }
+
+  const orgMap = {
+    'Dr. Félix Edoh': 'Directeur Général de la BRVM (Bourse Régionale des Valeurs Mobilières de l\'Afrique de l\'Ouest)',
+    'Edith Brou Bleu': 'Journaliste spécialisée en économie, actrice des médias économiques en Côte d\'Ivoire',
+    'José-Félix Dié': 'Directeur Général de CGF Gestion, société de gestion d\'actifs de premier plan en CI',
+    'Paul-Harry Aithnard': 'Directeur Général d\'Ecobank Côte d\'Ivoire et Directeur Régional Exécutif de la zone UEMOA',
+    'Stan Zézé-Bayard': 'Directeur Général de Bloomfield Investment Corporation, première agence de notation africaine',
+    'Steven Bédi': 'Directeur Général de PUSH Côte d\'Ivoire, acteur majeur de la fintech ivoirienne',
+    'Katier Bamba': 'Directeur Général de Wave Côte d\'Ivoire, leader du Mobile Money en Afrique de l\'Ouest',
+  }
+
   return (
     <section id="networking" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 60 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mes connexions</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Dans les cercles<br />de la finance africaine</h2>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
+            <h2 className="display-lg">Dans les cercles<br />de la finance africaine</h2>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <motion.button
+                onClick={() => scroll(-1)}
+                disabled={!canLeft}
+                whileHover={canLeft ? { scale: 1.05 } : {}}
+                whileTap={canLeft ? { scale: 0.95 } : {}}
+                className="carousel-btn"
+                style={{ opacity: canLeft ? 1 : 0.25 }}
+              >
+                ←
+              </motion.button>
+              <motion.button
+                onClick={() => scroll(1)}
+                disabled={!canRight}
+                whileHover={canRight ? { scale: 1.05 } : {}}
+                whileTap={canRight ? { scale: 0.95 } : {}}
+                className="carousel-btn"
+                style={{ opacity: canRight ? 1 : 0.25 }}
+              >
+                →
+              </motion.button>
+            </div>
+          </div>
         </motion.div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 16 }}>
+
+        <div ref={scrollRef} style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 8 }}>
           {PHOTOS.map((p, i) => (
-            <motion.div key={i} {...fadeIn(i * 0.08)} className="photo-card" style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <img src={`/photos/${p.file}`} alt={p.name} />
-              <div className="photo-info">
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'white', marginBottom: 4 }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: '#B57BEE', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>{p.role}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>📍 {p.event}</div>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.06 }}
+              style={{ flexShrink: 0, width: 280 }}
+            >
+              <div className="photo-card" style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 0 }}>
+                <img src={`/photos/${p.file}`} alt={p.name} />
+                <div className="photo-info">
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 4 }}>{p.name}</div>
+                  <div style={{ fontSize: 11, color: '#D4AF6A', letterSpacing: '0.06em', marginBottom: 6 }}>{p.role}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(181,123,238,0.8)', letterSpacing: '0.04em', marginBottom: 6 }}>{p.org}</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>📍 {p.event}</div>
+                </div>
+              </div>
+              {/* Fiche sous la photo */}
+              <div style={{ marginTop: 12, padding: '14px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 4 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', marginBottom: 4 }}>{p.name}</div>
+                <div style={{ fontSize: 11, color: '#D4AF6A', marginBottom: 6 }}>{p.org}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', lineHeight: 1.5 }}>{orgMap[p.name] || p.role}</div>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {/* Organisations */}
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48, display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          {['Bloomfield Intelligence', 'BRVM', 'NSIA Assurances', "Table Ronde de l'Intelligence Économique", 'CNPS', 'Sika Finance'].map(o => (
+          {['Bloomfield Intelligence', 'BRVM', 'CGF Gestion', 'Ecobank', 'Wave CI', "Table Ronde Intelligence Éco.", 'CNPS', 'PUSH CI'].map(o => (
             <span key={o} className="glass" style={{ padding: '8px 18px', borderRadius: 2, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{o}</span>
           ))}
         </motion.div>
+      </div>
+    </section>
+  )
+}
+
+// ── publications LinkedIn ─────────────────────────────────────────────────────
+function Publications() {
+  return (
+    <section id="publications" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: 'rgba(212,175,106,0.015)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 64 }}>
+          <div className="label-gold" style={{ marginBottom: 20 }}>Présence digitale</div>
+          <div className="divider" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
+            <h2 className="display-lg">Publications LinkedIn</h2>
+            <a href="https://linkedin.com/in/auryves-bedje-2981bb331" target="_blank" rel="noreferrer" className="btn-gold" style={{ padding: '10px 24px', fontSize: 11 }}>
+              Voir le profil →
+            </a>
+          </div>
+        </motion.div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
+          {LINKEDIN_POSTS.map((post, i) => (
+            <motion.div key={i} {...fadeUp(i * 0.1)}
+              style={{ padding: '36px 32px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s', position: 'relative', overflow: 'hidden' }}
+              whileHover={{ backgroundColor: 'rgba(181,123,238,0.04)' }}
+            >
+              <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 28 }}>{post.icon}</div>
+              <div className="label" style={{ marginBottom: 16, color: 'rgba(212,175,106,0.6)' }}>{post.date}</div>
+              <h3 className="serif" style={{ fontSize: 20, fontWeight: 300, color: 'white', marginBottom: 16, lineHeight: 1.4, paddingRight: 40 }}>{post.title}</h3>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, marginBottom: 20, fontStyle: 'italic' }}>
+                "{post.excerpt}"
+              </p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {post.tags.map(tag => (
+                  <span key={tag} style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 10px', border: '1px solid rgba(212,175,106,0.2)', color: 'rgba(212,175,106,0.6)', borderRadius: 2 }}>{tag}</span>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -903,10 +1187,12 @@ export default function App() {
               <Projects />
               <MarchesAfricains />
               <PourquoiMoi />
+              <Testimonials />
               <Skills />
               <CVSection />
               <Timeline />
               <Networking />
+              <Publications />
               <Contact />
             </main>
             <Footer />
