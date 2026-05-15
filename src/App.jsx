@@ -63,8 +63,8 @@ const TESTIMONIALS = [
   {
     quote: 'Heureux de voir ta détermination dans la finance.',
     author: 'Daniel Aggré',
-    role: 'Auteur & Expert en Intelligence Économique',
-    context: 'Dédicace personnelle dans la Bloomfield Review — Premier magazine d\'intelligence économique de Côte d\'Ivoire',
+    role: 'Directeur · Sika Finance',
+    context: 'Dédicace personnelle dans le magazine Sika Finance — Référence de l\'information financière en Côte d\'Ivoire',
     initial: 'DA',
   },
   {
