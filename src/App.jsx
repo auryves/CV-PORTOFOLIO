@@ -9,13 +9,6 @@ const fadeUp = (delay = 0) => ({
   viewport: { once: true },
   transition: { duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] },
 })
-const fadeIn = (delay = 0) => ({
-  initial: { opacity: 0 },
-  whileInView: { opacity: 1 },
-  viewport: { once: true },
-  transition: { duration: 0.9, delay },
-})
-
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
 const TICKER = [
   { sym: 'BRVM Composite', val: '220.45', chg: '+1.24%', up: true },
@@ -172,7 +165,7 @@ const PHOTOS = [
     name: 'Paul-Harry Aithnard',
     role: 'DG Ecobank CI · Dir. Rég. Exécutif UEMOA',
     org: 'Ecobank — Pan-African Bank',
-    event: 'Salon de l\'Épargne 2025',
+    event: 'Lancement Bloomfield Review',
   },
   {
     file: 'AB X STAN ZEZE.jpeg',
