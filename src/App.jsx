@@ -406,7 +406,8 @@ function Cursor() {
   useEffect(() => {
     const d = dot.current, r = ring.current
     if (!d || !r) return
-    // gsap.quickTo: much smoother than rAF lerp — compositor-optimised
+    // Skip cursor on touch devices — no pointer, no point
+    if (window.matchMedia('(hover: none)').matches) return
     const xDot  = gsap.quickTo(d, 'x', { duration: 0.08, ease: 'power3.out' })
     const yDot  = gsap.quickTo(d, 'y', { duration: 0.08, ease: 'power3.out' })
     const xRing = gsap.quickTo(r, 'x', { duration: 0.55, ease: 'power3.out' })
@@ -598,14 +599,15 @@ function Navbar() {
   )
 }
 
-// ── Three.js WebGL network background — lazy loaded, finance node graph ────────
+// ── Three.js WebGL network background — desktop only ─────────────────────────
 function HeroWebGL() {
   const canvas = useRef(null)
   useEffect(() => {
     const el = canvas.current
     if (!el) return
+    // Skip WebGL on mobile — too heavy, causes visible jank
+    if (window.matchMedia('(max-width: 768px)').matches) return
     let raf, renderer
-    // dynamic import — Three.js loads after hero renders, zero blocking
     import('three').then((THREE) => {
       const W = el.offsetWidth, H = el.offsetHeight
       renderer = new THREE.WebGLRenderer({ canvas: el, alpha: true, antialias: true })
@@ -682,6 +684,9 @@ function Hero() {
   const [text, setText] = useState('')
   const [del, setDel] = useState(false)
   const ref = useRef(null)
+  // Faster reveal on mobile — halve all delays
+  const mob = typeof window !== 'undefined' && window.innerWidth < 768
+  const d = (v) => mob ? v * 0.5 : v
   const { scrollYProgress } = useScroll({ target: ref })
   const y = useTransform(scrollYProgress, [0, 1], [0, -60])
   const op = useTransform(scrollYProgress, [0, 0.5], [1, 0])
@@ -708,7 +713,7 @@ function Hero() {
             <img src="/photos/auryves-hero.jpeg" alt="Auryves Bedje — Fintech Builder" loading="eager" />
           </div>
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d(0.9) }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32, flexWrap: 'wrap', maxWidth: '100%' }}
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block', flexShrink: 0 }} />
@@ -717,7 +722,7 @@ function Hero() {
             </span>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(1) }}
             className="label" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 32, height: 1, background: 'rgba(212,175,106,0.4)' }} />
             Finance Digitale · EMSP Abidjan · Côte d'Ivoire 🇨🇮
@@ -726,26 +731,26 @@ function Hero() {
           <div style={{ overflow: 'hidden', marginBottom: 12 }}>
             <motion.h1
               initial={{ y: 120, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: mob ? 0.7 : 1, delay: d(1.1), ease: [0.16, 1, 0.3, 1] }}
               className="display-xl grad-mix" style={{ lineHeight: 0.92 }}
             >
               Auryves<br />Bedje
             </motion.h1>
           </div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(1.8) }}
             style={{ height: 32, marginBottom: 28 }}>
             <span className="serif" style={{ fontSize: 20, fontWeight: 300, color: 'rgba(255,255,255,0.45)', fontStyle: 'italic' }}>
               {text}<span className="tw-cursor">|</span>
             </span>
           </motion.div>
 
-          <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.1 }}
+          <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d(2.1) }}
             className="serif" style={{ fontSize: 17, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', marginBottom: 48, fontWeight: 300 }}>
             "Construire la finance africaine de demain"
           </motion.p>
 
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.3 }}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d(2.3) }}
             style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 64 }}>
             <MagBtn href="#projects" className="btn-prim">
               <span>Voir mes projets</span>
@@ -757,7 +762,7 @@ function Hero() {
             </MagBtn>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(2.6) }}
             style={{ display: 'flex', gap: 'clamp(16px, 5vw, 40px)', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
             {[{ v: 3, l: 'Apps fintech', num: true }, { v: 19, l: 'Ans', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
               <div key={l}>
@@ -1716,7 +1721,11 @@ function BackToTop() {
 // ── app ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const [loaded, setLoaded] = useState(false)
-  useEffect(() => { const t = setTimeout(() => setLoaded(true), 2400); return () => clearTimeout(t) }, [])
+  useEffect(() => {
+    const delay = window.matchMedia('(max-width: 768px)').matches ? 1400 : 2400
+    const t = setTimeout(() => setLoaded(true), delay)
+    return () => clearTimeout(t)
+  }, [])
   return (
     <div className="site-bg" style={{ minHeight: '100vh', position: 'relative' }}>
       <Loader done={loaded} />

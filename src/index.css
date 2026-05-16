@@ -590,6 +590,18 @@
   .section-pad { padding: 64px 16px; }
 }
 
+/* ─── PERFORMANCE MOBILE — désactiver les animations lourdes ── */
+@media (max-width: 768px) {
+  /* grain : animation infinie → statique */
+  body::before { animation: none; }
+  /* orbes : pas de pulsation sur mobile */
+  .orb { animation: none !important; }
+  /* particules : masquées sur mobile */
+  .particle { display: none !important; }
+  /* curseur custom : caché sur mobile */
+  .cursor-dot, .cursor-ring { display: none !important; }
+}
+
 /* ─── HERO RESPONSIVE ────────────────────────────────────── */
 .hero-grid {
   display: grid;
