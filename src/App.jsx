@@ -1400,6 +1400,8 @@ function Networking() {
   }, [checkScroll])
 
   const [tappedIdx, setTappedIdx] = useState(null)
+  const touchStartX = useRef(0)
+  const touchStartY = useRef(0)
 
   const scroll = dir => {
     paused.current = true
@@ -1407,9 +1409,16 @@ function Networking() {
     setTimeout(() => { paused.current = false }, 3000)
   }
 
-  const handlePhotoTap = (i) => {
-    if (!window.matchMedia('(hover: none)').matches) return
-    setTappedIdx(prev => prev === i ? null : i)
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const onTouchEnd = (i, e) => {
+    const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current)
+    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current)
+    // seulement si c'est un vrai tap (pas un swipe)
+    if (dx < 8 && dy < 8) setTappedIdx(prev => prev === i ? null : i)
   }
 
   const orgMap = {
@@ -1473,7 +1482,8 @@ function Networking() {
               <div
                 className={`photo-card${tappedIdx === i ? ' tapped' : ''}`}
                 style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 0 }}
-                onClick={() => handlePhotoTap(i)}
+                onTouchStart={onTouchStart}
+                onTouchEnd={(e) => onTouchEnd(i, e)}
               >
                 <img src={`/photos/${p.file}`} alt={`Auryves Bedje avec ${p.name} — ${p.event}`} loading="lazy" />
                 <div className="photo-info">
