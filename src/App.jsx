@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
+import { gsap } from 'gsap'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -390,30 +391,31 @@ function Particles() {
   )
 }
 
-// ── cursor ────────────────────────────────────────────────────────────────────
+// ── cursor — GSAP quickTo (ultra-smooth, skill-grade) ─────────────────────────
 function Cursor() {
   const dot = useRef(null)
   const ring = useRef(null)
-  const pos = useRef({ x: 0, y: 0 })
-  const rpos = useRef({ x: 0, y: 0 })
   useEffect(() => {
-    const onMove = e => {
-      pos.current = { x: e.clientX, y: e.clientY }
-      if (dot.current) dot.current.style.transform = `translate(${e.clientX - 3}px,${e.clientY - 3}px)`
+    const d = dot.current, r = ring.current
+    if (!d || !r) return
+    // gsap.quickTo: much smoother than rAF lerp — compositor-optimised
+    const xDot  = gsap.quickTo(d, 'x', { duration: 0.08, ease: 'power3.out' })
+    const yDot  = gsap.quickTo(d, 'y', { duration: 0.08, ease: 'power3.out' })
+    const xRing = gsap.quickTo(r, 'x', { duration: 0.55, ease: 'power3.out' })
+    const yRing = gsap.quickTo(r, 'y', { duration: 0.55, ease: 'power3.out' })
+    gsap.set([d, r], { xPercent: -50, yPercent: -50 })
+    const onMove = (e) => {
+      xDot(e.clientX); yDot(e.clientY)
+      xRing(e.clientX); yRing(e.clientY)
     }
+    const onEnter = () => gsap.to(r, { scale: 1.6, borderColor: 'rgba(212,175,106,0.7)', duration: 0.3, ease: 'power2.out' })
+    const onLeave = () => gsap.to(r, { scale: 1, borderColor: 'rgba(181,123,238,0.5)', duration: 0.4, ease: 'power2.out' })
     document.addEventListener('mousemove', onMove, { passive: true })
-    let raf
-    const loop = () => {
-      rpos.current.x += (pos.current.x - rpos.current.x) * 0.1
-      rpos.current.y += (pos.current.y - rpos.current.y) * 0.1
-      if (ring.current) ring.current.style.transform = `translate(${rpos.current.x - 18}px,${rpos.current.y - 18}px)`
-      raf = requestAnimationFrame(loop)
-    }
-    loop()
-    const on = () => ring.current?.classList.add('expand')
-    const off = () => ring.current?.classList.remove('expand')
-    document.querySelectorAll('a,button,[data-hover]').forEach(el => { el.addEventListener('mouseenter', on); el.addEventListener('mouseleave', off) })
-    return () => { document.removeEventListener('mousemove', onMove); cancelAnimationFrame(raf) }
+    document.querySelectorAll('a,button,[data-hover]').forEach(el => {
+      el.addEventListener('mouseenter', onEnter)
+      el.addEventListener('mouseleave', onLeave)
+    })
+    return () => document.removeEventListener('mousemove', onMove)
   }, [])
   return (<><div ref={dot} className="cursor-dot" /><div ref={ring} className="cursor-ring" /></>)
 }
@@ -576,6 +578,84 @@ function Navbar() {
   )
 }
 
+// ── Three.js WebGL network background — lazy loaded, finance node graph ────────
+function HeroWebGL() {
+  const canvas = useRef(null)
+  useEffect(() => {
+    const el = canvas.current
+    if (!el) return
+    let raf, renderer
+    // dynamic import — Three.js loads after hero renders, zero blocking
+    import('three').then((THREE) => {
+      const W = el.offsetWidth, H = el.offsetHeight
+      renderer = new THREE.WebGLRenderer({ canvas: el, alpha: true, antialias: true })
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.setSize(W, H)
+      const scene = new THREE.Scene()
+      const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000)
+      camera.position.z = 5
+
+      const N = 60
+      const positions = new Float32Array(N * 3)
+      const colors = new Float32Array(N * 3)
+      const lavender = new THREE.Color('#B57BEE'), gold = new THREE.Color('#D4AF6A')
+      const nodeData = Array.from({ length: N }, () => ({
+        x: (Math.random() - 0.5) * 14,
+        y: (Math.random() - 0.5) * 8,
+        z: (Math.random() - 0.5) * 4,
+        vx: (Math.random() - 0.5) * 0.004,
+        vy: (Math.random() - 0.5) * 0.004,
+      }))
+      nodeData.forEach((n, i) => {
+        positions[i*3] = n.x; positions[i*3+1] = n.y; positions[i*3+2] = n.z
+        const c = i % 3 === 0 ? gold : lavender
+        colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b
+      })
+      const ptGeo = new THREE.BufferGeometry()
+      ptGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+      ptGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+      scene.add(new THREE.Points(ptGeo, new THREE.PointsMaterial({ size: 0.06, vertexColors: true, transparent: true, opacity: 0.65 })))
+
+      const linePos = []
+      for (let i = 0; i < N; i++)
+        for (let j = i + 1; j < N; j++) {
+          const dx = nodeData[i].x - nodeData[j].x, dy = nodeData[i].y - nodeData[j].y
+          if (Math.sqrt(dx*dx + dy*dy) < 2.8)
+            linePos.push(nodeData[i].x, nodeData[i].y, nodeData[i].z, nodeData[j].x, nodeData[j].y, nodeData[j].z)
+        }
+      const lineGeo = new THREE.BufferGeometry()
+      lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePos, 3))
+      scene.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: '#B57BEE', transparent: true, opacity: 0.09 })))
+
+      const animate = () => {
+        raf = requestAnimationFrame(animate)
+        nodeData.forEach((n, i) => {
+          n.x += n.vx; n.y += n.vy
+          if (Math.abs(n.x) > 7) n.vx *= -1
+          if (Math.abs(n.y) > 4) n.vy *= -1
+          positions[i*3] = n.x; positions[i*3+1] = n.y
+        })
+        ptGeo.attributes.position.needsUpdate = true
+        scene.rotation.y += 0.0004
+        renderer.render(scene, camera)
+      }
+      animate()
+
+      const onResize = () => {
+        const w = el.offsetWidth, h = el.offsetHeight
+        camera.aspect = w / h; camera.updateProjectionMatrix()
+        renderer.setSize(w, h)
+      }
+      window.addEventListener('resize', onResize)
+    })
+    return () => {
+      cancelAnimationFrame(raf)
+      renderer?.dispose()
+    }
+  }, [])
+  return <canvas ref={canvas} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }} />
+}
+
 // ── hero ──────────────────────────────────────────────────────────────────────
 function Hero() {
   const [titleIdx, setTitleIdx] = useState(0)
@@ -596,6 +676,7 @@ function Hero() {
 
   return (
     <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: 'clamp(100px, 15vw, 140px) clamp(16px, 4vw, 32px) 80px' }}>
+      <HeroWebGL />
       <div className="orb" style={{ width: 500, height: 500, top: '5%', left: '-12%', background: '#B57BEE' }} />
       <div className="orb" style={{ width: 350, height: 350, bottom: '10%', right: '-8%', background: '#6C3AED', animationDelay: '3s' }} />
       <div className="orb" style={{ width: 250, height: 250, top: '40%', right: '30%', background: '#D4AF6A', animationDelay: '6s' }} />
