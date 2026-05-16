@@ -378,7 +378,7 @@ const PHOTOS = [
 ]
 
 const DIFFERENTIATORS = [
-  { icon: '📊', title: '19 ans, 3 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Trois applications fintech réelles, dont une en négociation avec un leader du marché." },
+  { icon: '📊', title: '20 ans, 3 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Trois applications fintech réelles, dont une en négociation avec un leader du marché." },
   { icon: '🏛️', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
   { icon: '📈', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
   { icon: '🌍', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je suis NYSE, LSE, JPX, CAC 40 et l'ensemble des marchés africains. L'Afrique financière mondiale est mon terrain de jeu." },
@@ -772,7 +772,7 @@ function Hero() {
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(2.6) }}
             style={{ display: 'flex', gap: 'clamp(16px, 5vw, 40px)', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
-            {[{ v: 3, l: 'Apps fintech', num: true }, { v: 19, l: 'Ans', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
+            {[{ v: 3, l: 'Apps fintech', num: true }, { v: 20, l: 'Ans', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
               <div key={l}>
                 <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>
                   {num ? <Counter to={v} delay={2600} /> : v}
@@ -1031,7 +1031,7 @@ function PourquoiMoi() {
           <div className="divider" style={{ maxWidth: 200, margin: '0 auto' }} />
           <h2 className="display-lg" style={{ marginTop: 32 }}>Pourquoi moi ?</h2>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, fontWeight: 300 }}>
-            Ce qui me différencie à 19 ans dans l'écosystème fintech africain
+            Ce qui me différencie à 20 ans dans l'écosystème fintech africain
           </p>
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
