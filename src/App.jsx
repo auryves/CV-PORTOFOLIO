@@ -869,7 +869,7 @@ function Projects() {
           <h2 className="display-lg" style={{ marginTop: 32 }}>Mes Projets</h2>
         </motion.div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
-          {PROJECTS.map((p, i) => (
+          {PROJECTS.map((p) => (
             <TiltCard key={p.n} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', overflow: 'hidden', transition: 'background 0.3s' }}>
               <div style={{ borderRight: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                 <span className="serif grad-gold" style={{ fontSize: 14, fontWeight: 300, letterSpacing: '0.1em' }}>{p.n}</span>
@@ -1517,7 +1517,7 @@ function Publications() {
 
 // ── contact ───────────────────────────────────────────────────────────────────
 // To activate Formspree: create a free account at formspree.io and replace FORM_ID below
-const FORMSPREE_ID = 'YOUR_FORM_ID'
+const FORMSPREE_ID = 'mwvzevdv'
 
 function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
