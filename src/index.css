@@ -374,11 +374,10 @@
   z-index: 2;
 }
 .photo-card:hover .photo-info { transform: translateY(0); opacity: 1; }
+/* tap-to-reveal sur mobile — classe .tapped ajoutée par JS au toucher */
+.photo-card.tapped::after { opacity: 1; }
+.photo-card.tapped .photo-info { transform: translateY(0); opacity: 1; }
 @media (hover: none) {
-  .photo-info { transform: translateY(0) !important; opacity: 1 !important; }
-  /* activer aussi le dégradé sombre pour que le texte soit lisible */
-  .photo-card::after { opacity: 1 !important; }
-  /* masquer org + event sur mobile — trop chargé sur petite carte */
   .photo-info-org, .photo-info-event { display: none !important; }
 }
 

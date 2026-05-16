@@ -1399,10 +1399,17 @@ function Networking() {
     }
   }, [checkScroll])
 
+  const [tappedIdx, setTappedIdx] = useState(null)
+
   const scroll = dir => {
     paused.current = true
     scrollRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
     setTimeout(() => { paused.current = false }, 3000)
+  }
+
+  const handlePhotoTap = (i) => {
+    if (!window.matchMedia('(hover: none)').matches) return
+    setTappedIdx(prev => prev === i ? null : i)
   }
 
   const orgMap = {
@@ -1463,7 +1470,11 @@ function Networking() {
               transition={{ duration: 0.6, delay: i * 0.06 }}
               style={{ flexShrink: 0, width: 280 }}
             >
-              <div className="photo-card" style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 0 }}>
+              <div
+                className={`photo-card${tappedIdx === i ? ' tapped' : ''}`}
+                style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 0 }}
+                onClick={() => handlePhotoTap(i)}
+              >
                 <img src={`/photos/${p.file}`} alt={`Auryves Bedje avec ${p.name} — ${p.event}`} loading="lazy" />
                 <div className="photo-info">
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 4 }}>{p.name}</div>
