@@ -449,6 +449,12 @@
 .tilt-card:hover {
   box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 40px rgba(181,123,238,0.08);
 }
+@media (max-width: 768px) {
+  .tilt-card {
+    transform-style: flat;
+    will-change: auto;
+  }
+}
 
 /* ─── SECTION NUMBER ─────────────────────────────────────── */
 .section-num {

@@ -5,11 +5,16 @@ import { useForm, ValidationError } from '@formspree/react'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
+const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
 const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 40 },
+  initial: { opacity: 0, y: isMobileDevice ? 16 : 40 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] },
+  viewport: { once: true, margin: isMobileDevice ? '-40px' : '-80px' },
+  transition: {
+    duration: isMobileDevice ? 0.5 : 0.9,
+    delay: isMobileDevice ? delay * 0.4 : delay,
+    ease: [0.16, 1, 0.3, 1],
+  },
 })
 
 // ── scroll progress bar ────────────────────────────────────────────────────────
@@ -688,8 +693,11 @@ function Hero() {
   const mob = typeof window !== 'undefined' && window.innerWidth < 768
   const d = (v) => mob ? v * 0.5 : v
   const { scrollYProgress } = useScroll({ target: ref })
-  const y = useTransform(scrollYProgress, [0, 1], [0, -60])
-  const op = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  const yAnim = useTransform(scrollYProgress, [0, 1], [0, -60])
+  const opAnim = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  // Parallax désactivé sur mobile — recalcule à chaque frame de scroll sinon
+  const y = mob ? 0 : yAnim
+  const op = mob ? 1 : opAnim
 
   useEffect(() => {
     const cur = TITLES[titleIdx]
@@ -1223,6 +1231,8 @@ function Certifications() {
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
+    // Auto-scroll désactivé sur mobile — les utilisateurs swipent naturellement
+    if (window.matchMedia('(max-width: 768px)').matches) return
     let pos = 0
     const speed = 0.5
     const animate = () => {
@@ -1368,7 +1378,8 @@ function Networking() {
     checkScroll()
     el.addEventListener('scroll', checkScroll, { passive: true })
 
-    // auto-scroll continu à vitesse lente
+    // Auto-scroll désactivé sur mobile — swipe natif
+    if (window.matchMedia('(max-width: 768px)').matches) return
     let pos = 0
     const speed = 0.6
     const animate = () => {
