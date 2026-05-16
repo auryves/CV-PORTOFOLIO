@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { gsap } from 'gsap'
+import { useForm, ValidationError } from '@formspree/react'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -1516,37 +1517,10 @@ function Publications() {
 }
 
 // ── contact ───────────────────────────────────────────────────────────────────
-// To activate Formspree: create a free account at formspree.io and replace FORM_ID below
-const FORMSPREE_ID = 'mwvzevdv'
-
 function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' })
-  const [sent, setSent] = useState(false)
-  const [sending, setSending] = useState(false)
-  const submit = async e => {
-    e.preventDefault()
-    setSending(true)
-    try {
-      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(form),
-      })
-      if (res.ok) {
-        setSent(true)
-        setForm({ name: '', email: '', message: '' })
-      } else { throw new Error('formspree') }
-    } catch {
-      const s = encodeURIComponent(`Contact Portfolio — ${form.name}`)
-      const b = encodeURIComponent(`Message de : ${form.name}\nEmail : ${form.email}\n\n${form.message}`)
-      window.open(`mailto:auryvesb@gmail.com?subject=${s}&body=${b}`)
-      setSent(true)
-    } finally {
-      setSending(false)
-      setTimeout(() => setSent(false), 4000)
-    }
-  }
+  const [state, handleSubmit] = useForm('mwvzevdv')
   const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2, padding: '14px 18px', color: 'white', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, outline: 'none', transition: 'border-color 0.3s' }
+  const errStyle = { fontSize: 11, color: '#f87171', marginTop: 6, letterSpacing: '0.04em' }
   return (
     <section id="contact" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -1583,23 +1557,48 @@ function Contact() {
               </a>
             </div>
           </motion.div>
+
           <motion.div {...fadeUp(0.2)} className="glass" style={{ padding: '48px', borderRadius: 4 }}>
             <div className="label" style={{ marginBottom: 32 }}>Envoyer un message</div>
-            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {[['text', 'name', 'Votre nom', 'John Doe'], ['email', 'email', 'Votre email', 'john@exemple.com']].map(([type, key, label, ph]) => (
-                <div key={key}>
-                  <div className="label" style={{ marginBottom: 10 }}>{label}</div>
-                  <input type={type} required placeholder={ph} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} style={inputStyle} />
+
+            {state.succeeded ? (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                style={{ textAlign: 'center', padding: '48px 0' }}
+              >
+                <div style={{ fontSize: 40, marginBottom: 20 }}>✓</div>
+                <div className="serif" style={{ fontSize: 22, fontWeight: 300, color: 'rgba(255,255,255,0.85)', marginBottom: 12 }}>Message envoyé !</div>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', lineHeight: 1.7 }}>Je te réponds dans les plus brefs délais.</p>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div>
+                  <div className="label" style={{ marginBottom: 10 }}>Votre nom</div>
+                  <input type="text" name="name" required placeholder="John Doe" style={inputStyle} />
+                  <ValidationError field="name" errors={state.errors} style={errStyle} />
                 </div>
-              ))}
-              <div>
-                <div className="label" style={{ marginBottom: 10 }}>Votre message</div>
-                <textarea rows={5} required placeholder="Bonjour Auryves..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} style={{ ...inputStyle, resize: 'none' }} />
-              </div>
-              <motion.button type="submit" disabled={sending} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="btn-prim" style={{ justifyContent: 'center', marginTop: 8, opacity: sending ? 0.7 : 1 }}>
-                {sent ? '✓ Message envoyé' : sending ? 'Envoi en cours…' : 'Envoyer →'}
-              </motion.button>
-            </form>
+                <div>
+                  <div className="label" style={{ marginBottom: 10 }}>Votre email</div>
+                  <input type="email" name="email" required placeholder="john@exemple.com" style={inputStyle} />
+                  <ValidationError field="email" errors={state.errors} style={errStyle} />
+                </div>
+                <div>
+                  <div className="label" style={{ marginBottom: 10 }}>Votre message</div>
+                  <textarea name="message" rows={5} required placeholder="Bonjour Auryves..." style={{ ...inputStyle, resize: 'none' }} />
+                  <ValidationError field="message" errors={state.errors} style={errStyle} />
+                </div>
+                <ValidationError errors={state.errors} style={errStyle} />
+                <motion.button
+                  type="submit"
+                  disabled={state.submitting}
+                  whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                  className="btn-prim"
+                  style={{ justifyContent: 'center', marginTop: 8, opacity: state.submitting ? 0.7 : 1 }}
+                >
+                  {state.submitting ? 'Envoi en cours…' : 'Envoyer →'}
+                </motion.button>
+              </form>
+            )}
           </motion.div>
         </div>
       </div>
