@@ -600,8 +600,8 @@
 @media (max-width: 768px) {
   /* grain : animation infinie → statique */
   body::before { animation: none; }
-  /* orbes : pas de pulsation sur mobile */
-  .orb { animation: none !important; }
+  /* orbes : cachés sur mobile — 500px blur(90px) = fond violet entier sur petit écran */
+  .orb { display: none !important; }
   /* particules : masquées sur mobile */
   .particle { display: none !important; }
   /* curseur custom : caché sur mobile */
