@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -9,6 +9,107 @@ const fadeUp = (delay = 0) => ({
   viewport: { once: true },
   transition: { duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] },
 })
+
+// ── scroll progress bar ────────────────────────────────────────────────────────
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll()
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
+  return <motion.div className="scroll-progress" style={{ scaleX }} />
+}
+
+// ── magnetic hook ──────────────────────────────────────────────────────────────
+function useMagnetic(strength = 0.35) {
+  const ref = useRef(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect()
+      const x = e.clientX - (r.left + r.width / 2)
+      const y = e.clientY - (r.top + r.height / 2)
+      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`
+      el.style.transition = 'transform 0.1s ease'
+    }
+    const onLeave = () => {
+      el.style.transform = ''
+      el.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+    }
+    el.addEventListener('mousemove', onMove)
+    el.addEventListener('mouseleave', onLeave)
+    return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave) }
+  }, [strength])
+  return ref
+}
+
+// ── animated counter ──────────────────────────────────────────────────────────
+function Counter({ to, delay = 0, suffix = '' }) {
+  const [val, setVal] = useState(0)
+  const ref = useRef(null)
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return
+      obs.disconnect()
+      setTimeout(() => {
+        let start = null
+        const dur = 1600
+        const step = (ts) => {
+          if (!start) start = ts
+          const p = Math.min((ts - start) / dur, 1)
+          const ease = 1 - Math.pow(1 - p, 4)
+          setVal(Math.round(ease * to))
+          if (p < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }, delay)
+    }, { threshold: 0.3 })
+    if (ref.current) obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [to, delay])
+  return <span ref={ref}>{val}{suffix}</span>
+}
+
+// ── 3D tilt card ──────────────────────────────────────────────────────────────
+function TiltCard({ children, style, className = '' }) {
+  const el = useRef(null)
+  const onMove = (e) => {
+    const r = el.current.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width - 0.5
+    const y = (e.clientY - r.top) / r.height - 0.5
+    el.current.style.transform = `perspective(900px) rotateX(${-y * 7}deg) rotateY(${x * 7}deg) scale(1.015)`
+    el.current.style.transition = 'transform 0.1s ease'
+  }
+  const onLeave = () => {
+    el.current.style.transform = ''
+    el.current.style.transition = 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)'
+  }
+  return (
+    <div ref={el} className={`tilt-card ${className}`} style={style} onMouseMove={onMove} onMouseLeave={onLeave}>
+      {children}
+    </div>
+  )
+}
+
+// ── section number decoration ─────────────────────────────────────────────────
+function SectionNum({ n, top = '0%', right }) {
+  return (
+    <motion.span
+      initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+      transition={{ duration: 1.2 }}
+      className="section-num"
+      style={{ top, right: right ?? '-2%', zIndex: 0 }}
+    >{n}</motion.span>
+  )
+}
+
+// ── magnetic button wrapper ───────────────────────────────────────────────────
+function MagBtn({ href, className, children, download, style, onClick }) {
+  const ref = useMagnetic(0.4)
+  return (
+    <div className="magnetic" ref={ref} style={{ display: 'inline-block' }}>
+      <a href={href} className={className} download={download} style={style} onClick={onClick}>{children}</a>
+    </div>
+  )
+}
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
 // Source: brvm.org · african-markets.com · investing.com — Mai 2026
 const TICKER = [
@@ -545,21 +646,23 @@ function Hero() {
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.3 }}
             style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 64 }}>
-            <a href="#projects" className="btn-prim">
+            <MagBtn href="#projects" className="btn-prim">
               <span>Voir mes projets</span>
               <span style={{ transition: 'transform 0.3s' }} className="btn-arrow">→</span>
-            </a>
-            <a href="/CV-Auryves-Bedje.pdf" download className="btn-gold">
+            </MagBtn>
+            <MagBtn href="/CV-Auryves-Bedje.pdf" download className="btn-gold">
               <span>↓</span>
               <span>Télécharger mon CV</span>
-            </a>
+            </MagBtn>
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}
             style={{ display: 'flex', gap: 'clamp(16px, 5vw, 40px)', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
-            {[['3', 'Apps fintech'], ['19', 'Ans'], ['BRVM', '+ marchés mondiaux']].map(([v, l]) => (
+            {[{ v: 3, l: 'Apps fintech', num: true }, { v: 19, l: 'Ans', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
               <div key={l}>
-                <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>{v}</div>
+                <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>
+                  {num ? <Counter to={v} delay={2600} /> : v}
+                </div>
                 <div className="label" style={{ marginTop: 8, maxWidth: 160 }}>{l}</div>
               </div>
             ))}
@@ -607,7 +710,8 @@ function Hero() {
 // ── about ─────────────────────────────────────────────────────────────────────
 function About() {
   return (
-    <section id="about" className="section-pad">
+    <section id="about" className="section-pad" style={{ position: 'relative', overflow: 'hidden' }}>
+      <SectionNum n="01" top="-8%" right="-1%" />
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Qui suis-je</div>
@@ -655,7 +759,8 @@ function About() {
 // ── projects ──────────────────────────────────────────────────────────────────
 function Projects() {
   return (
-    <section id="projects" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+    <section id="projects" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', position: 'relative', overflow: 'hidden' }}>
+      <SectionNum n="02" top="-5%" right="-1%" />
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Ce que je construis</div>
@@ -664,10 +769,7 @@ function Projects() {
         </motion.div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
           {PROJECTS.map((p, i) => (
-            <motion.div key={p.n} {...fadeUp(i * 0.12)}
-              style={{ display: 'grid', gridTemplateColumns: '80px 1fr', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', overflow: 'hidden' }}
-              whileHover={{ backgroundColor: 'rgba(181,123,238,0.04)' }}
-            >
+            <TiltCard key={p.n} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', overflow: 'hidden', transition: 'background 0.3s' }}>
               <div style={{ borderRight: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                 <span className="serif grad-gold" style={{ fontSize: 14, fontWeight: 300, letterSpacing: '0.1em' }}>{p.n}</span>
               </div>
@@ -687,7 +789,7 @@ function Projects() {
                   {p.tags.map(t => <span key={t} style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', border: '1px solid rgba(181,123,238,0.2)', color: 'rgba(181,123,238,0.6)', borderRadius: 2 }}>{t}</span>)}
                 </div>
               </div>
-            </motion.div>
+            </TiltCard>
           ))}
         </div>
       </div>
@@ -909,7 +1011,8 @@ function Bar({ name, pct, delay }) {
 
 function Skills() {
   return (
-    <section id="skills" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+    <section id="skills" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', position: 'relative', overflow: 'hidden' }}>
+      <SectionNum n="03" top="-5%" right="-1%" />
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mon expertise</div>
@@ -1435,6 +1538,7 @@ export default function App() {
       <Loader done={loaded} />
       <Cursor />
       <Particles />
+      <ScrollProgress />
       <AnimatePresence>
         {loaded && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
