@@ -1267,7 +1267,7 @@ function Certifications() {
           ref={scrollRef}
           onMouseEnter={() => { paused.current = true }}
           onMouseLeave={() => { paused.current = false }}
-          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 4 }}
+          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 4, touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
         >
           {items.map((c, i) => (
             <a
@@ -1468,7 +1468,7 @@ function Networking() {
           ref={scrollRef}
           onMouseEnter={() => { paused.current = true }}
           onMouseLeave={() => { paused.current = false }}
-          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 8 }}
+          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 8, touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
         >
           {[...PHOTOS, ...PHOTOS].map((p, i) => (
             <motion.div
