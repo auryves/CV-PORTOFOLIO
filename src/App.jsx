@@ -10,35 +10,36 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] },
 })
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
+// Source: brvm.org · african-markets.com · investing.com — Mai 2026
 const TICKER = [
-  { sym: 'BRVM Composite', val: '220.45', chg: '+1.24%', up: true },
-  { sym: 'BRVM 10', val: '185.32', chg: '+0.83%', up: true },
-  { sym: 'SONATEL', val: '14 500', chg: '+2.10%', up: true },
-  { sym: 'ECOBANK CI', val: '12.45', chg: '+0.48%', up: true },
-  { sym: 'BOA CI', val: '4 200', chg: '-0.31%', up: false },
-  { sym: 'TOTAL CI', val: '2 780', chg: '+1.82%', up: true },
-  { sym: 'ORANGE CI', val: '11 500', chg: '+0.70%', up: true },
-  { sym: 'NSIA Banque CI', val: '3 980', chg: '-0.50%', up: false },
-  { sym: 'CORIS BANK', val: '7 850', chg: '+1.12%', up: true },
-  { sym: 'SIB', val: '3 400', chg: '+0.82%', up: true },
-  { sym: 'SICOR', val: '5 200', chg: '+0.23%', up: true },
-  { sym: 'PALM CI', val: '6 100', chg: '+0.45%', up: true },
-  { sym: 'SAPH', val: '3 800', chg: '-0.26%', up: false },
-  { sym: 'CFAO CI', val: '925', chg: '+1.09%', up: true },
+  { sym: 'BRVM Composite', val: '403.46', chg: '+16.69% YTD', up: true },
+  { sym: 'BRVM 10', val: '248.52', chg: '+0.93%', up: true },
+  { sym: 'SONATEL', val: '29 000', chg: '+2.10%', up: true },
+  { sym: 'ORANGE CI', val: '14 660', chg: '-3.90%', up: false },
+  { sym: 'BOA CI', val: '8 595', chg: '+2.38%', up: true },
+  { sym: 'CORIS BANK', val: '17 000', chg: '+1.85%', up: true },
+  { sym: 'SIB', val: '7 000', chg: '+0.29%', up: true },
+  { sym: 'ECOBANK CI', val: '13.80', chg: '+0.48%', up: true },
+  { sym: 'TOTAL CI', val: '3 100', chg: '+1.12%', up: true },
+  { sym: 'NSIA Banque CI', val: '4 500', chg: '+0.45%', up: true },
+  { sym: 'PALM CI', val: '6 800', chg: '+0.55%', up: true },
+  { sym: 'SAPH', val: '4 200', chg: '-0.18%', up: false },
+  { sym: 'CFAO CI', val: '1 050', chg: '+1.09%', up: true },
+  { sym: 'S&P 500', val: '7 501', chg: '+0.77%', up: true },
 ]
 
 // ── marchés africains + mondiaux de référence ─────────────────────────────────
 const EXCHANGES = [
-  // ── Afrique ────────────────────────────────
-  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '45+ titres cotés, 8 pays d\'Afrique de l\'Ouest', cap: '~7 000 Mds FCFA', idx: 'BRVM Composite · 220', featured: true },
-  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande capitalisation boursière d\'Afrique', cap: '~18 000 Mds $', idx: 'JSE ALSI · 82 450' },
-  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: '2ème bourse d\'Afrique sub-saharienne', cap: '~1 000 Mds $', idx: 'NGX All-Share · 101 254' },
-  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'Marché en forte croissance, libellé en cedis', cap: '~70 Mds $', idx: 'GSE-CI · 4 920' },
-  // ── Marchés mondiaux de référence ─────────
-  { name: 'NYSE', city: 'New York', country: 'États-Unis', flag: '🇺🇸', desc: 'Plus grande bourse mondiale — S&P 500, Dow Jones, NASDAQ', cap: '~27 000 Mds $', idx: 'S&P 500 · 5 411 pts', global: true },
-  { name: 'LSE', city: 'Londres', country: 'Royaume-Uni', flag: '🇬🇧', desc: 'Hub financier mondial, premier marché européen coté en livre sterling', cap: '~3 900 Mds $', idx: 'FTSE 100 · 8 312 pts', global: true },
-  { name: 'JPX', city: 'Tokyo', country: 'Japon', flag: '🇯🇵', desc: '3ème capitalisation mondiale, locomotive de l\'Asie-Pacifique', cap: '~6 800 Mds $', idx: 'Nikkei 225 · 38 026 pts', global: true },
-  { name: 'Euronext', city: 'Paris', country: 'France', flag: '🇫🇷', desc: 'Première bourse continentale européenne, cœur de la finance de la zone euro', cap: '~2 700 Mds $', idx: 'CAC 40 · 7 852 pts', global: true },
+  // ── Afrique — Source: brvm.org, african-markets.com, Mai 2026 ──
+  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '45+ titres cotés, 8 pays d\'Afrique de l\'Ouest', cap: '~7 000 Mds FCFA', idx: 'BRVM Composite · 403', featured: true },
+  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande bourse africaine — 24,3 trillions ZAR de capitalisation', cap: '~1 350 Mds $', idx: 'JSE ALSI · 89 200' },
+  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: 'ASI franchit 200 000 pts en mars 2026 — record historique', cap: '~117 Mds $', idx: 'NGX ASI · 200 000+' },
+  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'GSE-CI franchit 15 000 pts pour la première fois en 2026', cap: '~23 Mds $', idx: 'GSE-CI · 15 185' },
+  // ── Marchés mondiaux — Source: ETF Trends, investing.com, 11 Mai 2026 ──
+  { name: 'NYSE', city: 'New York', country: 'États-Unis', flag: '🇺🇸', desc: 'Plus grande bourse mondiale — S&P 500, Dow Jones, NASDAQ', cap: '~30 000 Mds $', idx: 'S&P 500 · 7 501 pts', global: true },
+  { name: 'LSE', city: 'Londres', country: 'Royaume-Uni', flag: '🇬🇧', desc: 'Hub financier mondial, premier marché européen coté en livre sterling', cap: '~3 800 Mds $', idx: 'FTSE 100 · 10 183 pts', global: true },
+  { name: 'JPX', city: 'Tokyo', country: 'Japon', flag: '🇯🇵', desc: '3ème capitalisation mondiale — Nikkei à son plus haut historique en 2026', cap: '~6 500 Mds $', idx: 'Nikkei 225 · 61 409 pts', global: true },
+  { name: 'Euronext', city: 'Paris', country: 'France', flag: '🇫🇷', desc: 'Première bourse continentale européenne, cœur de la finance de la zone euro', cap: '~3 300 Mds $', idx: 'CAC 40 · 7 957 pts', global: true },
 ]
 
 // ── watchlist BRVM ────────────────────────────────────────────────────────────
@@ -436,13 +437,17 @@ function Hero() {
   }, [text, del, titleIdx])
 
   return (
-    <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '140px 32px 100px' }}>
+    <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: 'clamp(100px, 15vw, 140px) clamp(16px, 4vw, 32px) 80px' }}>
       <div className="orb" style={{ width: 500, height: 500, top: '5%', left: '-12%', background: '#B57BEE' }} />
       <div className="orb" style={{ width: 350, height: 350, bottom: '10%', right: '-8%', background: '#6C3AED', animationDelay: '3s' }} />
       <div className="orb" style={{ width: 250, height: 250, top: '40%', right: '30%', background: '#D4AF6A', animationDelay: '6s' }} />
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', display: 'grid', gridTemplateColumns: '1fr auto', gap: 80, alignItems: 'center', position: 'relative', zIndex: 10 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }} className="hero-grid">
         <motion.div style={{ y, opacity: op }}>
+          {/* Photo circulaire mobile uniquement */}
+          <div className="hero-photo-mobile">
+            <img src="/photos/WhatsApp Image 2026-05-15 at 10.24.43.jpeg" alt="Auryves Bedje" />
+          </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32 }}
@@ -494,7 +499,7 @@ function Hero() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}
-            style={{ display: 'flex', gap: 40, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 32 }}>
+            style={{ display: 'flex', gap: 'clamp(16px, 5vw, 40px)', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
             {[['3', 'Apps fintech'], ['19', 'Ans'], ['BRVM', '+ marchés mondiaux']].map(([v, l]) => (
               <div key={l}>
                 <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>{v}</div>
@@ -509,7 +514,7 @@ function Hero() {
           animate={{ opacity: 1, x: 0, scale: 1 }}
           transition={{ duration: 1.1, delay: 1.3, ease: [0.16, 1, 0.3, 1] }}
           style={{ position: 'relative', flexShrink: 0 }}
-          className="hidden md:block"
+          className="hero-photo-desktop"
         >
           <div style={{ position: 'relative', width: 320 }}>
             <div style={{ position: 'absolute', inset: -16, border: '1px solid rgba(212,175,106,0.18)', borderRadius: 4, pointerEvents: 'none' }} />

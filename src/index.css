@@ -464,6 +464,68 @@
 
 /* ─── MOBILE ─────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .display-xl { font-size: 3.5rem; }
-  .display-lg { font-size: 2.2rem; }
+  .display-xl { font-size: 3rem; }
+  .display-lg { font-size: 2rem; }
+  .display-md { font-size: 1.5rem; }
+  .section-pad { padding: 64px 16px; }
+}
+
+/* ─── HERO RESPONSIVE ────────────────────────────────────── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 64px;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+@media (max-width: 768px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 0; }
+}
+
+.hero-photo-mobile {
+  display: none;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 28px;
+  border: 2px solid rgba(212,175,106,0.35);
+  flex-shrink: 0;
+  position: relative;
+}
+.hero-photo-mobile img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: top center;
+}
+@media (max-width: 768px) {
+  .hero-photo-mobile { display: block; }
+  .hero-photo-desktop { display: none !important; }
+}
+
+/* ─── PROJECTS MOBILE ────────────────────────────────────── */
+@media (max-width: 640px) {
+  .project-row { grid-template-columns: 1fr !important; }
+  .project-num { display: none !important; }
+}
+
+/* ─── EXCHANGES GRID MOBILE ──────────────────────────────── */
+@media (max-width: 640px) {
+  .exchanges-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* ─── CONTACT GRID MOBILE ────────────────────────────────── */
+@media (max-width: 640px) {
+  .contact-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ─── TICKER MOBILE ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .ticker-label { display: none; }
+  .brvm-ticker { height: 32px; }
+}
+
+/* ─── NAVBAR MOBILE ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .nav-cta-desktop { display: none !important; }
 }
