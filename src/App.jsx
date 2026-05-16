@@ -709,10 +709,10 @@ function Hero() {
           </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32, flexWrap: 'wrap', maxWidth: '100%' }}
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block', flexShrink: 0 }} />
-            <span style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#D4AF6A' }}>
+            <span style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF6A', lineHeight: 1.6 }}>
               Disponible pour un stage · Gestion d'actifs & Finance de marchés
             </span>
           </motion.div>
@@ -819,14 +819,14 @@ function About() {
           <div className="label-gold" style={{ marginBottom: 20 }}>Qui suis-je</div>
           <div className="divider" />
         </motion.div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 80, alignItems: 'center' }}>
+        <div className="about-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 80, alignItems: 'center' }}>
           <motion.div {...fadeUp(0.1)} style={{ position: 'relative' }}>
-            <div style={{ position: 'relative', maxWidth: 340, margin: '0 auto' }}>
+            <div style={{ position: 'relative', maxWidth: 340, margin: '0 auto', overflow: 'visible' }}>
               <div style={{ position: 'absolute', inset: -12, border: '1px solid rgba(212,175,106,0.2)', borderRadius: 4, pointerEvents: 'none' }} />
               <div style={{ position: 'absolute', inset: -6, border: '1px solid rgba(181,123,238,0.1)', borderRadius: 4, pointerEvents: 'none' }} />
               <img src="/photos/auryves-event.jpeg" alt="Auryves Bedje — événement finance Abidjan" loading="lazy" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', borderRadius: 4, display: 'block' }} />
               <motion.div animate={{ y: [-6, 6, -6] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                className="glass-gold" style={{ position: 'absolute', bottom: -20, right: -20, padding: '14px 20px', borderRadius: 4 }}>
+                className="glass-gold about-badge" style={{ position: 'absolute', bottom: -20, right: -20, padding: '14px 20px', borderRadius: 4 }}>
                 <div className="label-gold" style={{ marginBottom: 4 }}>Fintech Builder</div>
                 <div className="serif grad-gold" style={{ fontSize: 22, fontWeight: 300 }}>2025</div>
               </motion.div>
@@ -871,11 +871,11 @@ function Projects() {
         </motion.div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
           {PROJECTS.map((p) => (
-            <TiltCard key={p.n} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', overflow: 'hidden', transition: 'background 0.3s' }}>
-              <div style={{ borderRight: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+            <TiltCard key={p.n} className="project-card" style={{ display: 'grid', gridTemplateColumns: '80px 1fr', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', overflow: 'hidden', transition: 'background 0.3s' }}>
+              <div className="project-num-col" style={{ borderRight: '1px solid rgba(255,255,255,0.06)', padding: '40px 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                 <span className="serif grad-gold" style={{ fontSize: 14, fontWeight: 300, letterSpacing: '0.1em' }}>{p.n}</span>
               </div>
-              <div style={{ padding: '40px' }}>
+              <div className="project-body" style={{ padding: '40px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
                   <div>
                     <div className="label" style={{ marginBottom: 10, color: 'rgba(181,123,238,0.7)' }}>{p.cat}</div>
@@ -1558,7 +1558,7 @@ function Contact() {
             </div>
           </motion.div>
 
-          <motion.div {...fadeUp(0.2)} className="glass" style={{ padding: '48px', borderRadius: 4 }}>
+          <motion.div {...fadeUp(0.2)} className="glass contact-glass" style={{ padding: '48px', borderRadius: 4 }}>
             <div className="label" style={{ marginBottom: 32 }}>Envoyer un message</div>
 
             {state.succeeded ? (
@@ -1670,6 +1670,7 @@ function WhatsAppFloat() {
           whileHover={{ scale: 1.12 }}
           whileTap={{ scale: 0.95 }}
           title="Message WhatsApp"
+          className="float-wa"
           style={{
             position: 'fixed', bottom: 88, right: 32, width: 48, height: 48,
             borderRadius: '50%', background: 'rgba(37,211,102,0.12)',
@@ -1701,7 +1702,7 @@ function BackToTop() {
         <motion.button
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="glass-gold"
+          className="glass-gold float-top"
           style={{ position: 'fixed', bottom: 32, right: 32, width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'none', zIndex: 40, fontSize: 16 }}
           whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
         >

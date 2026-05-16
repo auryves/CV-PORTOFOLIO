@@ -627,6 +627,20 @@
 @media (max-width: 640px) {
   .project-row { grid-template-columns: 1fr !important; }
   .project-num { display: none !important; }
+  .project-card { grid-template-columns: 1fr !important; }
+  .project-num-col { display: none !important; }
+  .project-body { padding: 24px 20px !important; }
+}
+
+/* ─── ABOUT MOBILE ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .about-grid { gap: 48px !important; }
+  .about-badge { bottom: 12px !important; right: 0 !important; }
+}
+
+/* ─── CONTACT GLASS MOBILE ───────────────────────────────── */
+@media (max-width: 640px) {
+  .contact-glass { padding: 28px 20px !important; }
 }
 
 /* ─── EXCHANGES GRID MOBILE ──────────────────────────────── */
@@ -637,6 +651,13 @@
 /* ─── CONTACT GRID MOBILE ────────────────────────────────── */
 @media (max-width: 640px) {
   .contact-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ─── FLOATING BUTTONS MOBILE ───────────────────────────── */
+@media (max-width: 640px) {
+  /* stack whatsapp + back-to-top closer to edge on small screen */
+  .float-wa  { right: 16px !important; bottom: 80px !important; width: 44px !important; height: 44px !important; font-size: 18px !important; }
+  .float-top { right: 16px !important; bottom: 24px !important; width: 40px !important; height: 40px !important; }
 }
 
 /* ─── TICKER MOBILE ──────────────────────────────────────── */
