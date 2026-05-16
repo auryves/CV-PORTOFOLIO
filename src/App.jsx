@@ -9,7 +9,8 @@ const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: isMobileDevice ? 16 : 40 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: isMobileDevice ? '-40px' : '-80px' },
+  exit: { opacity: 0, y: isMobileDevice ? -16 : -40 },
+  viewport: { once: false, margin: isMobileDevice ? '-40px' : '-80px' },
   transition: {
     duration: isMobileDevice ? 0.5 : 0.9,
     delay: isMobileDevice ? delay * 0.4 : delay,
@@ -100,7 +101,7 @@ function TiltCard({ children, style, className = '' }) {
 function SectionNum({ n, top = '0%', right }) {
   return (
     <motion.span
-      initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+      initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: false, margin: '-10%' }}
       transition={{ duration: 1.2 }}
       className="section-num"
       style={{ top, right: right ?? '-2%', zIndex: 0 }}
@@ -1458,7 +1459,7 @@ function Networking() {
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               transition={{ duration: 0.6, delay: i * 0.06 }}
               style={{ flexShrink: 0, width: 280 }}
             >
