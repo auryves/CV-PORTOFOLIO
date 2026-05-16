@@ -376,45 +376,102 @@ function Navbar() {
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
+  // lock body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
   const links = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['Certifs', '#certifications'], ['Networking', '#networking'], ['Contact', '#contact']]
   return (
-    <motion.header
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed inset-x-0 z-50 transition-all duration-500"
-      style={{
-        top: 36,
-        padding: scrolled ? '14px 0' : '24px 0',
-        background: scrolled ? 'rgba(7,7,15,0.92)' : 'linear-gradient(to bottom, rgba(7,7,15,0.85), transparent)',
-        backdropFilter: scrolled ? 'blur(24px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
-      }}
-    >
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href="#hero" className="serif" style={{ fontSize: 20, fontWeight: 300, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textDecoration: 'none' }}>
-          Auryves <span className="grad-gold">Bedje</span>
-        </a>
-        <nav className="hidden md:flex items-center gap-8">
-          {links.map(([l, h]) => <a key={h} href={h} className="nav-link">{l}</a>)}
-        </nav>
-        <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '9px 24px', fontSize: 11 }}>Contact</a>
-        <button onClick={() => setOpen(!open)} className="md:hidden" style={{ background: 'none', border: 'none', padding: 8, cursor: 'none' }}>
-          <div style={{ width: 20, height: 1, background: 'rgba(255,255,255,0.6)', marginBottom: 6, transition: 'all .3s', transform: open ? 'rotate(45deg) translate(0,5px)' : '' }} />
-          <div style={{ width: 20, height: 1, background: 'rgba(255,255,255,0.6)', transition: 'all .3s', transform: open ? 'rotate(-45deg) translate(0,-5px)' : '' }} />
-        </button>
-      </div>
+    <>
+      <motion.header
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed inset-x-0 z-50 transition-all duration-500"
+        style={{
+          top: 'var(--ticker-h)',
+          padding: scrolled ? '10px 0' : '20px 0',
+          background: scrolled || open ? 'rgba(7,7,15,0.97)' : 'linear-gradient(to bottom, rgba(7,7,15,0.85), transparent)',
+          backdropFilter: scrolled || open ? 'blur(24px)' : 'none',
+          borderBottom: scrolled || open ? '1px solid rgba(255,255,255,0.06)' : 'none',
+        }}
+      >
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(16px, 4vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <a href="#hero" className="serif" style={{ fontSize: 20, fontWeight: 300, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textDecoration: 'none' }}>
+            Auryves <span className="grad-gold">Bedje</span>
+          </a>
+          <nav className="hidden md:flex items-center gap-8">
+            {links.map(([l, h]) => <a key={h} href={h} className="nav-link">{l}</a>)}
+          </nav>
+          <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '9px 24px', fontSize: 11 }}>Contact</a>
+          {/* Hamburger — large touch area */}
+          <button
+            onClick={() => setOpen(o => !o)}
+            aria-label="Menu"
+            style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 5, width: 44, height: 44, background: 'none', border: 'none', padding: 0, cursor: 'none', flexShrink: 0 }}
+            className="md:hidden"
+          >
+            <span style={{ display: 'block', width: 22, height: 2, borderRadius: 2, background: 'rgba(255,255,255,0.85)', transition: 'transform .35s ease, opacity .35s ease', transform: open ? 'translateY(7px) rotate(45deg)' : '' }} />
+            <span style={{ display: 'block', width: 22, height: 2, borderRadius: 2, background: 'rgba(255,255,255,0.85)', transition: 'opacity .35s ease', opacity: open ? 0 : 1 }} />
+            <span style={{ display: 'block', width: 22, height: 2, borderRadius: 2, background: 'rgba(255,255,255,0.85)', transition: 'transform .35s ease, opacity .35s ease', transform: open ? 'translateY(-7px) rotate(-45deg)' : '' }} />
+          </button>
+        </div>
+      </motion.header>
+
+      {/* Mobile menu — full overlay, below header */}
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            style={{ background: 'rgba(7,7,15,0.95)', margin: '8px 16px', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {links.map(([l, h]) => <a key={h} href={h} className="nav-link" onClick={() => setOpen(false)}>{l}</a>)}
-            </div>
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="mobile-menu-overlay md:hidden"
+            style={{
+              background: 'rgba(7,7,15,0.98)',
+              backdropFilter: 'blur(24px)',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '32px 24px 40px',
+              overflowY: 'auto',
+            }}
+          >
+            {links.map(([l, h], i) => (
+              <motion.a
+                key={h}
+                href={h}
+                onClick={() => setOpen(false)}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.055, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  display: 'block',
+                  padding: '18px 0',
+                  fontSize: 22,
+                  fontWeight: 300,
+                  color: 'rgba(255,255,255,0.88)',
+                  textDecoration: 'none',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {l}
+              </motion.a>
+            ))}
+            <a
+              href="#contact"
+              onClick={() => setOpen(false)}
+              className="btn-prim"
+              style={{ marginTop: 32, padding: '14px 24px', fontSize: 13, textAlign: 'center' }}
+            >
+              Me contacter
+            </a>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </>
   )
 }
 
