@@ -36,6 +36,9 @@
     cursor: none;
   }
 
+  /* Restore cursor for form fields */
+  input, textarea, select, [contenteditable] { cursor: text !important; }
+
   /* Grain texture overlay — luxury magazine feel */
   body::before {
     content: '';
@@ -371,6 +374,7 @@
   z-index: 2;
 }
 .photo-card:hover .photo-info { transform: translateY(0); opacity: 1; }
+@media (hover: none) { .photo-info { transform: translateY(0) !important; opacity: 1 !important; } }
 
 /* ─── TIMELINE ───────────────────────────────────────────── */
 .tl-item { position: relative; padding-left: 36px; }
@@ -415,8 +419,10 @@
   background: linear-gradient(90deg, #B57BEE, #D4AF6A);
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.nav-link:hover { color: rgba(255,255,255,0.9); }
-.nav-link:hover::after { width: 100%; }
+.nav-link:hover,
+.nav-link.active { color: rgba(255,255,255,0.9); }
+.nav-link:hover::after,
+.nav-link.active::after { width: 100%; }
 
 /* ─── SCROLL PROGRESS ────────────────────────────────────── */
 .scroll-progress {
@@ -458,7 +464,10 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   user-select: none;
+  overflow: hidden;
+  max-width: 100vw;
 }
+@media (max-width: 768px) { .section-num { display: none; } }
 
 /* ─── GLOW BORDER (animated gradient border) ─────────────── */
 @property --border-angle {

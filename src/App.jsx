@@ -276,7 +276,7 @@ const CERTIFICATIONS = [
 ]
 
 // ── données ───────────────────────────────────────────────────────────────────
-const TITLES = ['Fintech Builder', 'Digital Finance Student', 'African FinTech Entrepreneur', 'Analyste Marchés BRVM']
+const TITLES = ['Fintech Builder', 'Étudiant Finance Digitale', 'Entrepreneur Fintech Africain', 'Analyste Marchés BRVM']
 
 const PROJECTS = [
   { n: '01', name: 'My Invest', cat: 'Investissement Participatif', desc: "Plateforme permettant aux particuliers d'investir dans les TPE/PME africaines. Revenue-based financing — remboursement indexé sur les revenus quotidiens des entreprises.", tags: ['React Native', 'Supabase', 'Mobile Money', 'IA'], status: 'En développement', statusColor: '#4ade80' },
@@ -303,13 +303,20 @@ const SKILLS = [
     { name: 'Canva / NotebookLM', pct: 94 },
     { name: 'React Native', pct: 80 },
   ]},
+  { cat: 'Langues', items: [
+    { name: 'Français — natif', pct: 100 },
+    { name: 'Anglais — professionnel', pct: 58 },
+  ]},
 ]
 
 const TIMELINE = [
-  { date: '2024 — Présent', title: 'Licence 3 Finance Digitale', sub: 'EMSP Abidjan', desc: "Spécialisation marchés financiers africains, fintech et gestion d'actifs. Suivi quotidien de la BRVM." },
-  { date: '2024', title: 'Certification Microsoft Office', sub: 'Pack Complet', desc: 'Excel avancé, Power BI, Word, PowerPoint, Outlook.' },
-  { date: '2024 — 2025', title: '3 Applications Fintech', sub: 'En développement', desc: 'MY INVEST, MY INVEST SOCIAL et un projet confidentiel en négociation avancée.' },
-  { date: '2025', title: 'Partenariat Fintech Africain', sub: 'Négociation en cours', desc: "Accord avec un leader de l'information financière africaine pour une app Bloomberg-style." },
+  { date: '2024 — Présent', title: 'Licence 3 Finance Digitale', sub: 'EMSP Abidjan', desc: "Spécialisation marchés financiers africains, fintech et gestion d'actifs. Suivi quotidien de la BRVM et des marchés continentaux." },
+  { date: '2024', title: 'Certification Microsoft Office', sub: 'Pack Complet · Udemy', desc: 'Excel avancé, Power BI, Word, PowerPoint, Outlook — 22,5h de formation, niveau débutant à expert.' },
+  { date: '2024 — 2025', title: '3 Applications Fintech', sub: 'En développement', desc: 'MY INVEST (investissement participatif), MY INVEST SOCIAL (crowdfunding solidaire) et un projet confidentiel en négociation avancée.' },
+  { date: 'Mars 2025', title: "Salon de l'Épargne & de l'Investissement", sub: 'Abidjan', desc: "Rencontres avec Paul-Harry Aithnard (Ecobank CI) et Katier Bamba (DG Wave CI). « Épargner n'est pas une question de montant, mais une question de réflexe. »" },
+  { date: 'Avril 2025', title: 'Lancement de la Bloomfield Review', sub: 'Bloomfield Investment Corporation', desc: "Premier magazine d'intelligence économique ivoirien. Échanges avec José-Félix Dié (CGF Gestion), Steven Bédi (PUSH CI) et Edith Brou Bleu." },
+  { date: 'Mai 2025', title: 'Table Ronde Bloomfield — Assurance & Fonds de Pension', sub: 'Bloomfield Intelligence', desc: "Stan Zézé-Bayard : « Les populations voient encore l'assurance comme une dépense, pas comme une protection. » L'éducation économique est essentielle pour construire une économie plus forte." },
+  { date: '2025', title: 'Partenariat Fintech Africain', sub: 'Négociation en cours', desc: "Accord avec un leader de l'information financière africaine pour développer une application Bloomberg-style dédiée aux marchés africains." },
 ]
 
 const PHOTOS = [
@@ -474,17 +481,29 @@ function BRVMTicker() {
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
+  }, [])
+  useEffect(() => {
+    const ids = ['hero', 'about', 'projects', 'marches', 'skills', 'certifications', 'networking', 'contact']
+    const obs = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id) })
+      },
+      { rootMargin: '-40% 0px -55% 0px', threshold: 0 }
+    )
+    ids.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el) })
+    return () => obs.disconnect()
   }, [])
   // lock body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
-  const links = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['Certifs', '#certifications'], ['Networking', '#networking'], ['Contact', '#contact']]
+  const links = [['À propos', '#about', 'about'], ['Projets', '#projects', 'projects'], ['Marchés', '#marches', 'marches'], ['Compétences', '#skills', 'skills'], ['Certifs', '#certifications', 'certifications'], ['Networking', '#networking', 'networking'], ['Contact', '#contact', 'contact']]
   return (
     <>
       <motion.header
@@ -505,7 +524,7 @@ function Navbar() {
             Auryves <span className="grad-gold">Bedje</span>
           </a>
           <nav className="hidden md:flex items-center gap-8">
-            {links.map(([l, h]) => <a key={h} href={h} className="nav-link">{l}</a>)}
+            {links.map(([l, h, id]) => <a key={h} href={h} className={`nav-link${activeSection === id ? ' active' : ''}`}>{l}</a>)}
           </nav>
           <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '9px 24px', fontSize: 11 }}>Contact</a>
           {/* Hamburger — large touch area */}
@@ -685,7 +704,7 @@ function Hero() {
         <motion.div style={{ y, opacity: op }}>
           {/* Photo circulaire mobile uniquement */}
           <div className="hero-photo-mobile">
-            <img src="/photos/WhatsApp Image 2026-05-15 at 10.24.43.jpeg" alt="Auryves Bedje" />
+            <img src="/photos/auryves-hero.jpeg" alt="Auryves Bedje — Fintech Builder" loading="eager" />
           </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
@@ -761,8 +780,9 @@ function Hero() {
             <div style={{ position: 'absolute', inset: -16, border: '1px solid rgba(212,175,106,0.18)', borderRadius: 4, pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', inset: -8, border: '1px solid rgba(181,123,238,0.1)', borderRadius: 4, pointerEvents: 'none' }} />
             <img
-              src="/photos/WhatsApp Image 2026-05-15 at 10.24.43.jpeg"
-              alt="Auryves Bedje"
+              src="/photos/auryves-hero.jpeg"
+              alt="Auryves Bedje — Fintech Builder, Abidjan"
+              loading="eager"
               style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', objectPosition: 'top', borderRadius: 4, display: 'block', filter: 'contrast(1.02) brightness(0.96)' }}
             />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(to top, rgba(7,7,15,0.6), transparent)', borderRadius: '0 0 4px 4px' }} />
@@ -803,7 +823,7 @@ function About() {
             <div style={{ position: 'relative', maxWidth: 340, margin: '0 auto' }}>
               <div style={{ position: 'absolute', inset: -12, border: '1px solid rgba(212,175,106,0.2)', borderRadius: 4, pointerEvents: 'none' }} />
               <div style={{ position: 'absolute', inset: -6, border: '1px solid rgba(181,123,238,0.1)', borderRadius: 4, pointerEvents: 'none' }} />
-              <img src="/photos/WhatsApp Image 2026-05-15 at 10.25.05.jpeg" alt="Auryves Bedje événement" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', borderRadius: 4, display: 'block' }} />
+              <img src="/photos/auryves-event.jpeg" alt="Auryves Bedje — événement finance Abidjan" loading="lazy" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', borderRadius: 4, display: 'block' }} />
               <motion.div animate={{ y: [-6, 6, -6] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
                 className="glass-gold" style={{ position: 'absolute', bottom: -20, right: -20, padding: '14px 20px', borderRadius: 4 }}>
                 <div className="label-gold" style={{ marginBottom: 4 }}>Fintech Builder</div>
@@ -1426,7 +1446,7 @@ function Networking() {
               style={{ flexShrink: 0, width: 280 }}
             >
               <div className="photo-card" style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 0 }}>
-                <img src={`/photos/${p.file}`} alt={p.name} />
+                <img src={`/photos/${p.file}`} alt={`Auryves Bedje avec ${p.name} — ${p.event}`} loading="lazy" />
                 <div className="photo-info">
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 4 }}>{p.name}</div>
                   <div style={{ fontSize: 11, color: '#D4AF6A', letterSpacing: '0.06em', marginBottom: 6 }}>{p.role}</div>
@@ -1496,17 +1516,37 @@ function Publications() {
 }
 
 // ── contact ───────────────────────────────────────────────────────────────────
+// To activate Formspree: create a free account at formspree.io and replace FORM_ID below
+const FORMSPREE_ID = 'YOUR_FORM_ID'
+
 function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [sent, setSent] = useState(false)
-  const submit = e => {
+  const [sending, setSending] = useState(false)
+  const submit = async e => {
     e.preventDefault()
-    const s = encodeURIComponent(`Contact Portfolio — ${form.name}`)
-    const b = encodeURIComponent(`Bonjour Auryves,\n\nMessage de : ${form.name}\nEmail : ${form.email}\n\n${form.message}`)
-    window.open(`mailto:auryvesb@gmail.com?subject=${s}&body=${b}`)
-    setSent(true); setTimeout(() => setSent(false), 3000)
+    setSending(true)
+    try {
+      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (res.ok) {
+        setSent(true)
+        setForm({ name: '', email: '', message: '' })
+      } else { throw new Error('formspree') }
+    } catch {
+      const s = encodeURIComponent(`Contact Portfolio — ${form.name}`)
+      const b = encodeURIComponent(`Message de : ${form.name}\nEmail : ${form.email}\n\n${form.message}`)
+      window.open(`mailto:auryvesb@gmail.com?subject=${s}&body=${b}`)
+      setSent(true)
+    } finally {
+      setSending(false)
+      setTimeout(() => setSent(false), 4000)
+    }
   }
-  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2, padding: '14px 18px', color: 'white', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none', transition: 'border-color 0.3s' }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2, padding: '14px 18px', color: 'white', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, outline: 'none', transition: 'border-color 0.3s' }
   return (
     <section id="contact" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -1556,8 +1596,8 @@ function Contact() {
                 <div className="label" style={{ marginBottom: 10 }}>Votre message</div>
                 <textarea rows={5} required placeholder="Bonjour Auryves..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} style={{ ...inputStyle, resize: 'none' }} />
               </div>
-              <motion.button type="submit" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="btn-prim" style={{ justifyContent: 'center', marginTop: 8 }}>
-                {sent ? '✓ Message envoyé' : 'Envoyer →'}
+              <motion.button type="submit" disabled={sending} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="btn-prim" style={{ justifyContent: 'center', marginTop: 8, opacity: sending ? 0.7 : 1 }}>
+                {sent ? '✓ Message envoyé' : sending ? 'Envoi en cours…' : 'Envoyer →'}
               </motion.button>
             </form>
           </motion.div>
@@ -1569,19 +1609,82 @@ function Contact() {
 
 // ── footer ────────────────────────────────────────────────────────────────────
 function Footer() {
+  const navLinks = [['À propos', '#about'], ['Projets', '#projects'], ['Marchés', '#marches'], ['Compétences', '#skills'], ['Networking', '#networking'], ['Contact', '#contact']]
   return (
-    <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '48px 32px' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
-        <div className="serif grad-mix" style={{ fontSize: 36, fontWeight: 300, letterSpacing: '0.1em' }}>Auryves Bedje</div>
-        <div className="divider" style={{ maxWidth: 200 }} />
-        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {[['Email', 'mailto:auryvesb@gmail.com'], ['WhatsApp', 'https://wa.me/2250141564116'], ['LinkedIn', 'https://linkedin.com/in/auryves-bedje-2981bb331']].map(([l, h]) => (
-            <a key={l} href={h} target={h.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className="nav-link">{l}</a>
-          ))}
+    <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '64px 32px 40px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 48, marginBottom: 48 }}>
+          <div>
+            <div className="serif grad-mix" style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.1em', marginBottom: 16 }}>Auryves Bedje</div>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', lineHeight: 1.7, fontWeight: 300, maxWidth: 240 }}>
+              Étudiant Finance Digitale · EMSP Abidjan · Fintech Builder · Analyste BRVM
+            </p>
+          </div>
+          <div>
+            <div className="label" style={{ marginBottom: 20 }}>Navigation</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {navLinks.map(([l, h]) => (
+                <a key={l} href={h} className="nav-link" style={{ fontSize: 13 }}>{l}</a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="label" style={{ marginBottom: 20 }}>Contact</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[['✉️ Email', 'mailto:auryvesb@gmail.com'], ['💬 WhatsApp', 'https://wa.me/2250141564116'], ['💼 LinkedIn', 'https://linkedin.com/in/auryves-bedje-2981bb331']].map(([l, h]) => (
+                <a key={l} href={h} target={h.startsWith('http') ? '_blank' : undefined} rel="noreferrer"
+                  style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.3s' }}
+                  onMouseEnter={e => e.target.style.color = '#B57BEE'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}
+                >{l}</a>
+              ))}
+            </div>
+          </div>
         </div>
-        <p className="label" style={{ color: 'rgba(255,255,255,0.2)' }}>© 2026 · Abidjan, Côte d'Ivoire · Construire la finance africaine de demain 🌍</p>
+        <div className="divider" />
+        <div style={{ marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <p className="label" style={{ color: 'rgba(255,255,255,0.2)' }}>© 2026 · Abidjan, Côte d'Ivoire</p>
+          <p className="label" style={{ color: 'rgba(255,255,255,0.15)' }}>Construire la finance africaine de demain 🌍</p>
+        </div>
       </div>
     </footer>
+  )
+}
+
+// ── whatsapp floating button ──────────────────────────────────────────────────
+function WhatsAppFloat() {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const fn = () => setVisible(window.scrollY > 300)
+    window.addEventListener('scroll', fn, { passive: true })
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.a
+          href="https://wa.me/2250141564116"
+          target="_blank"
+          rel="noreferrer"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          whileHover={{ scale: 1.12 }}
+          whileTap={{ scale: 0.95 }}
+          title="Message WhatsApp"
+          style={{
+            position: 'fixed', bottom: 88, right: 32, width: 48, height: 48,
+            borderRadius: '50%', background: 'rgba(37,211,102,0.12)',
+            border: '1px solid rgba(37,211,102,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, zIndex: 41,
+            boxShadow: '0 4px 24px rgba(37,211,102,0.18)',
+            textDecoration: 'none',
+          }}
+        >
+          💬
+        </motion.a>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -1641,6 +1744,7 @@ export default function App() {
               <Contact />
             </main>
             <Footer />
+            <WhatsAppFloat />
             <BackToTop />
           </motion.div>
         )}
