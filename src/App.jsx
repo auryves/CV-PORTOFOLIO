@@ -1468,8 +1468,8 @@ function Networking() {
                 <div className="photo-info">
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 4 }}>{p.name}</div>
                   <div style={{ fontSize: 11, color: '#D4AF6A', letterSpacing: '0.06em', marginBottom: 6 }}>{p.role}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(181,123,238,0.8)', letterSpacing: '0.04em', marginBottom: 6 }}>{p.org}</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>📍 {p.event}</div>
+                  <div className="photo-info-org" style={{ fontSize: 11, color: 'rgba(181,123,238,0.8)', letterSpacing: '0.04em', marginBottom: 6 }}>{p.org}</div>
+                  <div className="photo-info-event" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>📍 {p.event}</div>
                 </div>
               </div>
               {/* Fiche sous la photo */}

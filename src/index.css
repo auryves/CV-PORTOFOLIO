@@ -374,7 +374,13 @@
   z-index: 2;
 }
 .photo-card:hover .photo-info { transform: translateY(0); opacity: 1; }
-@media (hover: none) { .photo-info { transform: translateY(0) !important; opacity: 1 !important; } }
+@media (hover: none) {
+  .photo-info { transform: translateY(0) !important; opacity: 1 !important; }
+  /* activer aussi le dégradé sombre pour que le texte soit lisible */
+  .photo-card::after { opacity: 1 !important; }
+  /* masquer org + event sur mobile — trop chargé sur petite carte */
+  .photo-info-org, .photo-info-event { display: none !important; }
+}
 
 /* ─── TIMELINE ───────────────────────────────────────────── */
 .tl-item { position: relative; padding-left: 36px; }
