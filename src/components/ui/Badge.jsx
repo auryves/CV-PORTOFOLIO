@@ -1,19 +1,17 @@
 export function Badge({ children, variant = 'default', size = 'md', className = '' }) {
   const variants = {
-    default: 'bg-blue-100 text-blue-800',
-    success: 'bg-emerald-100 text-emerald-800',
-    warning: 'bg-amber-100 text-amber-800',
-    danger: 'bg-red-100 text-red-800',
-    purple: 'bg-purple-100 text-purple-800',
-    ghost: 'bg-slate-100 text-slate-600',
+    default: 'bg-blue-100 text-blue-700 border border-blue-200',
+    success: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+    warning: 'bg-amber-100 text-amber-700 border border-amber-200',
+    danger:  'bg-red-100 text-red-700 border border-red-200',
+    ghost:   'bg-slate-100 text-slate-600 border border-slate-200',
   }
   const sizes = {
-    sm: 'text-xs px-2 py-0.5',
+    sm: 'text-[10px] px-1.5 py-0.5',
     md: 'text-xs px-2.5 py-1',
-    lg: 'text-sm px-3 py-1',
   }
   return (
-    <span className={`inline-flex items-center gap-1 font-medium rounded-full ${variants[variant]} ${sizes[size]} ${className}`}>
+    <span className={`inline-flex items-center gap-1 font-semibold rounded-full ${variants[variant]} ${sizes[size]} ${className}`}>
       {children}
     </span>
   )
@@ -25,7 +23,9 @@ export function StatutDevoir({ statut, echeance }) {
   const due = echeance ? new Date(echeance) : null
   const isLate = due && due < today && statut === 'a_faire'
 
-  if (statut === 'fait') return <Badge variant="success">✓ Fait</Badge>
-  if (isLate) return <Badge variant="danger">En retard</Badge>
-  return <Badge variant="warning">À faire</Badge>
+  if (statut === 'fait')
+    return <Badge variant="success"><span>✓</span> Fait</Badge>
+  if (isLate)
+    return <Badge variant="danger"><span>!</span> En retard</Badge>
+  return <Badge variant="warning"><span>◷</span> À faire</Badge>
 }

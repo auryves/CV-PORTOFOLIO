@@ -3,35 +3,46 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      },
       colors: {
-        lavender: '#B57BEE',
-        violet: '#6C3AED',
-        indigo: '#4F46E5',
-        gold: '#F59E0B',
-        dark: '#0A0A1A',
+        brand: {
+          50:  '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
+          800: '#1E3A8A',
+          900: '#0E1B4D',
+        },
+      },
+      boxShadow: {
+        'card': '0 4px 16px rgba(14,27,77,.08), 0 1px 4px rgba(14,27,77,.06)',
+        'card-hover': '0 12px 32px rgba(14,27,77,.14), 0 4px 8px rgba(14,27,77,.08)',
+        'button': '0 4px 12px rgba(37,99,235,.35)',
+        'button-hover': '0 8px 20px rgba(37,99,235,.45)',
+        'inner-glow': 'inset 0 1px 0 rgba(255,255,255,.15)',
+      },
+      borderRadius: {
+        '2xl': '16px',
+        '3xl': '24px',
       },
       animation: {
-        'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 2s ease-in-out infinite alternate',
-        'breathe': 'breathe 4s ease-in-out infinite',
-        'spin-slow': 'spin 8s linear infinite',
+        'fade-up': 'fade-up 0.3s ease-out both',
+        'pulse-slow': 'pulse-slow 8s ease-in-out infinite',
       },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' },
-        },
-        glow: {
-          from: { boxShadow: '0 0 20px #B57BEE40' },
-          to: { boxShadow: '0 0 60px #B57BEE80, 0 0 100px #6C3AED40' },
-        },
-        breathe: {
-          '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
-          '50%': { opacity: '0.8', transform: 'scale(1.05)' },
-        },
+      backgroundImage: {
+        'grad-primary': 'linear-gradient(135deg, #0E1B4D 0%, #1D4ED8 60%, #2563EB 100%)',
+        'grad-card-blue': 'linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%)',
+        'grad-card-green': 'linear-gradient(135deg, #065F46 0%, #10B981 100%)',
+        'grad-card-amber': 'linear-gradient(135deg, #92400E 0%, #F59E0B 100%)',
+        'grad-card-slate': 'linear-gradient(135deg, #1E293B 0%, #475569 100%)',
       },
     },
   },
   plugins: [],
 }
-

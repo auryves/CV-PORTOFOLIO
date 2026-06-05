@@ -2,35 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
 
-  html {
-    scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent;
+  :root {
+    --blue-900: #0E1B4D;
+    --blue-800: #1E3A8A;
+    --blue-700: #1D4ED8;
+    --blue-600: #2563EB;
+    --blue-500: #3B82F6;
+    --blue-400: #60A5FA;
+    --blue-100: #DBEAFE;
+    --blue-50:  #EFF6FF;
+    --surface:  #FFFFFF;
+    --bg:       #F0F4FF;
+    --text:     #0F172A;
+    --muted:    #64748B;
+    --border:   #E2E8F0;
+    --shadow-sm: 0 1px 3px rgba(14,27,77,.06), 0 1px 2px rgba(14,27,77,.04);
+    --shadow:    0 4px 16px rgba(14,27,77,.08), 0 1px 4px rgba(14,27,77,.06);
+    --shadow-lg: 0 12px 32px rgba(14,27,77,.12), 0 4px 8px rgba(14,27,77,.06);
+    --radius:    16px;
+    --radius-sm: 10px;
+    --radius-lg: 24px;
   }
+
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
 
   body {
-    background: #F1F5F9;
-    color: #0F172A;
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  #root {
-    width: 100%;
-    min-height: 100vh;
+  #root { width: 100%; min-height: 100vh; }
+
+  ::selection { background: #BFDBFE; color: #1E3A8A; }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+}
+
+@layer components {
+  /* ── Gradient text ─────────────────────────────── */
+  .text-gradient {
+    background: linear-gradient(135deg, #1D4ED8 0%, #60A5FA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  ::selection {
-    background: #BFDBFE;
-    color: #1E3A8A;
+  /* ── Glass card ────────────────────────────────── */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
   }
 
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #F1F5F9; }
-  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+  /* ── Animated gradient background ─────────────── */
+  .grad-bg {
+    background: linear-gradient(135deg, #0E1B4D 0%, #1D4ED8 50%, #1E40AF 100%);
+  }
+
+  /* ── Shimmer for skeleton loading ──────────────── */
+  .shimmer {
+    background: linear-gradient(90deg, #f0f4ff 25%, #dbeafe 50%, #f0f4ff 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── Floating label input ──────────────────────── */
+  .input-premium {
+    @apply w-full px-4 py-3 text-sm font-medium bg-white border-2 border-slate-200
+    rounded-xl text-slate-900 placeholder-slate-400
+    transition-all duration-200 outline-none
+    focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10;
+  }
+
+  /* ── Pill badge ────────────────────────────────── */
+  .badge-subject {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full;
+  }
+
+  /* ── Card hover lift ───────────────────────────── */
+  .card-lift {
+    @apply transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5;
+  }
+
+  /* ── Nav item ──────────────────────────────────── */
+  .nav-item {
+    @apply flex flex-col items-center justify-center gap-0.5 flex-1
+    py-2 text-[10px] font-semibold tracking-wide transition-all duration-200;
+  }
+
+  /* ── Stat card ─────────────────────────────────── */
+  .stat-card {
+    @apply relative overflow-hidden rounded-2xl p-4 text-white;
+  }
 }
 
 @layer utilities {
@@ -40,11 +118,32 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-
   .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }
 }
+
+/* ── Decorative shapes (login bg) ──────────────────── */
+.shape-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0.35;
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.08) translate(2%, -2%); }
+}
+
+/* ── Page transition ───────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter { animation: fade-up 0.3s ease-out both; }

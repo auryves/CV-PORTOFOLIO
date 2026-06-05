@@ -1,53 +1,37 @@
+const inputBase = `w-full px-4 py-3 text-sm font-medium bg-white border-2 border-slate-200 rounded-xl
+  text-slate-900 placeholder-slate-400 transition-all duration-200 outline-none
+  focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10`
+
 export function Input({ label, error, className = '', ...props }) {
   return (
-    <div className={`flex flex-col gap-1 ${className}`}>
-      {label && (
-        <label className="text-sm font-medium text-slate-700">{label}</label>
-      )}
-      <input
-        className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition
-          ${error ? 'border-red-400 focus:ring-red-400' : 'border-slate-300'}`}
-        {...props}
-      />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+    <div className={`flex flex-col gap-1.5 ${className}`}>
+      {label && <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">{label}</label>}
+      <input className={`${inputBase} ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10' : ''}`} {...props} />
+      {error && <p className="text-xs font-medium text-red-600">{error}</p>}
     </div>
   )
 }
 
 export function Textarea({ label, error, className = '', rows = 4, ...props }) {
   return (
-    <div className={`flex flex-col gap-1 ${className}`}>
-      {label && (
-        <label className="text-sm font-medium text-slate-700">{label}</label>
-      )}
-      <textarea
-        rows={rows}
-        className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 resize-none
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition
-          ${error ? 'border-red-400 focus:ring-red-400' : 'border-slate-300'}`}
-        {...props}
-      />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+    <div className={`flex flex-col gap-1.5 ${className}`}>
+      {label && <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">{label}</label>}
+      <textarea rows={rows}
+        className={`${inputBase} resize-none ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10' : ''}`}
+        {...props} />
+      {error && <p className="text-xs font-medium text-red-600">{error}</p>}
     </div>
   )
 }
 
 export function Select({ label, error, children, className = '', ...props }) {
   return (
-    <div className={`flex flex-col gap-1 ${className}`}>
-      {label && (
-        <label className="text-sm font-medium text-slate-700">{label}</label>
-      )}
-      <select
-        className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition
-          ${error ? 'border-red-400 focus:ring-red-400' : 'border-slate-300'}`}
-        {...props}
-      >
+    <div className={`flex flex-col gap-1.5 ${className}`}>
+      {label && <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">{label}</label>}
+      <select className={`${inputBase} cursor-pointer ${error ? 'border-red-400' : ''}`} {...props}>
         {children}
       </select>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs font-medium text-red-600">{error}</p>}
     </div>
   )
 }

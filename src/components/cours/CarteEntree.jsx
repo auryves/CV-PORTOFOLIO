@@ -1,58 +1,65 @@
 import { useNavigate } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { FileText, ChevronRight, BookOpen, Paperclip } from 'lucide-react'
-import { Card, CardBody } from '../ui/Card'
-import { Badge, StatutDevoir } from '../ui/Badge'
+import { ChevronRight, Paperclip, CheckSquare } from 'lucide-react'
 import { useData } from '../../contexts/DataContext'
+import { StatutDevoir } from '../ui/Badge'
 
 export function CarteEntree({ entree }) {
   const navigate = useNavigate()
   const { getMatiere, getDevoirsEntree } = useData()
   const matiere = getMatiere(entree.matiere_id)
   const devoirs = getDevoirsEntree(entree.id)
-  const dateFormatee = format(parseISO(entree.date), 'EEE d MMM yyyy', { locale: fr })
-  const partiesTraitees = entree.document?.parties?.filter((p) => p.traitee).length || 0
-  const totalParties = entree.document?.parties?.length || 0
+  const dateStr = format(parseISO(entree.date), 'EEE d MMM', { locale: fr })
+  const parties = entree.document?.parties || []
+  const traitees = parties.filter(p => p.traitee).length
 
   return (
-    <Card
-      hoverable
-      onClick={() => navigate(`/cours/${entree.id}`)}
-      className="mb-3"
-    >
-      <CardBody className="py-3">
+    <div onClick={() => navigate(`/cours/${entree.id}`)}
+      className="group bg-white rounded-2xl border border-slate-200 overflow-hidden
+      cursor-pointer transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5 hover:border-blue-200"
+      style={{ boxShadow: '0 2px 8px rgba(14,27,77,.06)' }}>
+      {/* Color top bar */}
+      <div className="h-1 w-full" style={{ background: matiere?.couleur || '#3B82F6' }} />
+
+      <div className="p-4">
         <div className="flex items-start gap-3">
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-            style={{ backgroundColor: `${matiere?.couleur}20` }}
-          >
-            <BookOpen size={18} style={{ color: matiere?.couleur }} />
+          {/* Matière icon */}
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-bold"
+            style={{ background: `${matiere?.couleur}18`, color: matiere?.couleur }}>
+            {matiere?.code?.slice(0, 2) || '??'}
           </div>
+
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: matiere?.couleur }}>
                 {matiere?.nom}
               </span>
-              <span className="text-xs text-slate-400">·</span>
-              <span className="text-xs text-slate-500 capitalize">{dateFormatee}</span>
+              <span className="text-slate-300">·</span>
+              <span className="text-xs text-slate-400 font-medium capitalize">{dateStr}</span>
             </div>
-            <p className="text-sm text-slate-700 line-clamp-2 mb-2">{entree.contenu}</p>
+
+            <p className="text-sm text-slate-700 font-medium line-clamp-2 leading-relaxed mb-2.5">
+              {entree.contenu}
+            </p>
+
             <div className="flex items-center gap-2 flex-wrap">
               {entree.document && (
-                <span className="flex items-center gap-1 text-xs text-slate-500">
-                  <Paperclip size={12} />
-                  {partiesTraitees}/{totalParties} section{totalParties > 1 ? 's' : ''}
+                <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
+                  <CheckSquare size={11} />
+                  {traitees}/{parties.length} sections
                 </span>
               )}
-              {devoirs.map((d) => (
+              {devoirs.map(d => (
                 <StatutDevoir key={d.id} statut={d.statut} echeance={d.echeance} />
               ))}
             </div>
           </div>
-          <ChevronRight size={16} className="text-slate-300 flex-shrink-0 mt-1" />
+
+          <ChevronRight size={16}
+            className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   )
 }
