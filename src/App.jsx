@@ -102,36 +102,45 @@ function SectionNum({ n, top = '0%', right }) {
 
 // Les CTA passent désormais par <GlowButton>, qui embarque déjà le magnétisme.
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
-// Source: brvm.org · african-markets.com · investing.com — Mai 2026
+// Clôture du 4 août 2026 — sources : richbourse.com (indices BRVM), lejecos.com
+// (capitalisation), cnbc.com / investing.com (indices mondiaux),
+// mansamarkets.com (indices africains, 29 juillet 2026).
+//
+// Les cours individuels d'actions ne figurent plus ici : ils n'ont pas pu être
+// vérifiés à une date unique, et un bandeau « EN DIRECT » affichant des prix
+// périmés dessert un profil d'analyste. Les indices, eux, sont datés et sourcés.
 const TICKER = [
-  { sym: 'BRVM Composite', val: '403.46', chg: '+16.69% YTD', up: true },
-  { sym: 'BRVM 10', val: '248.52', chg: '+0.93%', up: true },
-  { sym: 'SONATEL', val: '29 000', chg: '+2.10%', up: true },
-  { sym: 'ORANGE CI', val: '14 660', chg: '-3.90%', up: false },
-  { sym: 'BOA CI', val: '8 595', chg: '+2.38%', up: true },
-  { sym: 'CORIS BANK', val: '17 000', chg: '+1.85%', up: true },
-  { sym: 'SIB', val: '7 000', chg: '+0.29%', up: true },
-  { sym: 'ECOBANK CI', val: '13.80', chg: '+0.48%', up: true },
-  { sym: 'TOTAL CI', val: '3 100', chg: '+1.12%', up: true },
-  { sym: 'NSIA Banque CI', val: '4 500', chg: '+0.45%', up: true },
-  { sym: 'PALM CI', val: '6 800', chg: '+0.55%', up: true },
-  { sym: 'SAPH', val: '4 200', chg: '-0.18%', up: false },
-  { sym: 'CFAO CI', val: '1 050', chg: '+1.09%', up: true },
-  { sym: 'S&P 500', val: '7 501', chg: '+0.77%', up: true },
+  { sym: 'BRVM Composite', val: '485,89', chg: '+0,09%', up: true },
+  { sym: 'BRVM 30', val: '231,33', chg: '-0,05%', up: false },
+  { sym: 'BRVM Prestige', val: '178,52', chg: '+0,93%', up: true },
+  { sym: 'BRVM Conso. Base', val: '285,62', chg: '+1,57%', up: true },
+  { sym: 'BRVM Télécoms', val: '113,65', chg: '+0,63%', up: true },
+  { sym: 'BRVM Industriels', val: '209,79', chg: '-4,11%', up: false },
+  { sym: 'BRVM Énergie', val: '159,44', chg: '-1,54%', up: false },
+  { sym: 'BRVM Conso. Discr.', val: '203,50', chg: '-0,80%', up: false },
+  { sym: 'NGX ASI', val: '246 678', chg: '-0,53%', up: false },
+  { sym: 'JSE All Share', val: '109 904', chg: '-0,19%', up: false },
+  { sym: 'GSE Composite', val: '15 449', chg: '+0,44%', up: true },
+  { sym: 'S&P 500', val: '7 600', chg: '+1,48%', up: true },
+  { sym: 'FTSE 100', val: '10 884', chg: '+0,24%', up: true },
+  { sym: 'Nikkei 225', val: '63 958', chg: '+0,32%', up: true },
+  { sym: 'CAC 40', val: '8 610', chg: '-0,05%', up: false },
 ]
 
 // ── marchés africains + mondiaux de référence ─────────────────────────────────
 const EXCHANGES = [
-  // ── Afrique — Source: brvm.org, african-markets.com, Mai 2026 ──
-  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '45+ titres cotés, 8 pays d\'Afrique de l\'Ouest', cap: '~7 000 Mds FCFA', idx: 'BRVM Composite · 403', featured: true },
-  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande bourse africaine — 24,3 trillions ZAR de capitalisation', cap: '~1 350 Mds $', idx: 'JSE ALSI · 89 200' },
-  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: 'ASI franchit 200 000 pts en mars 2026 — record historique', cap: '~117 Mds $', idx: 'NGX ASI · 200 000+' },
-  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'GSE-CI franchit 15 000 pts pour la première fois en 2026', cap: '~23 Mds $', idx: 'GSE-CI · 15 185' },
-  // ── Marchés mondiaux — Source: ETF Trends, investing.com, 11 Mai 2026 ──
-  { name: 'NYSE', city: 'New York', country: 'États-Unis', flag: '🇺🇸', desc: 'Plus grande bourse mondiale — S&P 500, Dow Jones, NASDAQ', cap: '~30 000 Mds $', idx: 'S&P 500 · 7 501 pts', global: true },
-  { name: 'LSE', city: 'Londres', country: 'Royaume-Uni', flag: '🇬🇧', desc: 'Hub financier mondial, premier marché européen coté en livre sterling', cap: '~3 800 Mds $', idx: 'FTSE 100 · 10 183 pts', global: true },
-  { name: 'JPX', city: 'Tokyo', country: 'Japon', flag: '🇯🇵', desc: '3ème capitalisation mondiale — Nikkei à son plus haut historique en 2026', cap: '~6 500 Mds $', idx: 'Nikkei 225 · 61 409 pts', global: true },
-  { name: 'Euronext', city: 'Paris', country: 'France', flag: '🇫🇷', desc: 'Première bourse continentale européenne, cœur de la finance de la zone euro', cap: '~3 300 Mds $', idx: 'CAC 40 · 7 957 pts', global: true },
+  // ── Afrique — BRVM au 4 août 2026 (richbourse.com), capitalisation au
+  //    3 août 2026 (lejecos.com) ; JSE / NGX / GSE au 29 juillet 2026
+  //    (mansamarkets.com) ──
+  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '47 sociétés cotées, 8 pays d\'Afrique de l\'Ouest', cap: '18 700 Mds FCFA', idx: 'BRVM Composite · 485,89', featured: true },
+  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande bourse africaine par capitalisation', cap: '~1 350 Mds $', idx: 'JSE All Share · 109 904' },
+  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: 'ASI au-dessus de 245 000 pts — sommet historique en 2026', cap: '~117 Mds $', idx: 'NGX ASI · 246 678' },
+  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'GSE-CI installé au-dessus de 15 000 pts en 2026', cap: '~23 Mds $', idx: 'GSE Composite · 15 449' },
+  // ── Marchés mondiaux — clôture du 4 août 2026 ──
+  { name: 'NYSE', city: 'New York', country: 'États-Unis', flag: '🇺🇸', desc: 'Plus grande bourse mondiale — S&P 500 à un record le 4 août 2026', cap: '~30 000 Mds $', idx: 'S&P 500 · 7 600 pts', global: true },
+  { name: 'LSE', city: 'Londres', country: 'Royaume-Uni', flag: '🇬🇧', desc: 'Hub financier mondial, premier marché européen coté en livre sterling', cap: '~3 800 Mds $', idx: 'FTSE 100 · 10 884 pts', global: true },
+  { name: 'JPX', city: 'Tokyo', country: 'Japon', flag: '🇯🇵', desc: '3ᵉ capitalisation mondiale — Nikkei proche de ses plus hauts', cap: '~6 500 Mds $', idx: 'Nikkei 225 · 63 958 pts', global: true },
+  { name: 'Euronext', city: 'Paris', country: 'France', flag: '🇫🇷', desc: 'Première bourse continentale européenne, cœur de la finance de la zone euro', cap: '~3 300 Mds $', idx: 'CAC 40 · 8 610 pts', global: true },
 ]
 
 // ── watchlist BRVM ────────────────────────────────────────────────────────────
@@ -444,7 +453,10 @@ function BRVMTicker() {
       <div className="ticker-label">
         <span style={{ color: '#D4AF6A', fontWeight: 600 }}>BRVM</span>
         <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.2)', display: 'inline-block', margin: '0 8px' }} />
-        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>EN DIRECT</span>
+        {/* « EN DIRECT » était trompeur : ces valeurs sont un relevé figé, pas un
+            flux. Afficher la date de clôture est plus juste — et plus crédible
+            pour un profil d'analyste. */}
+        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>CLÔTURE 04.08.26</span>
       </div>
       <div className="ticker-scroll-wrap">
         <div className="ticker-scroll">
@@ -958,7 +970,7 @@ function MarchesAfricains() {
           </div>
 
           <motion.div {...fadeUp(0.3)} className="glass-gold" style={{ marginTop: 24, padding: '28px 32px', borderRadius: 4, borderLeft: '2px solid rgba(212,175,106,0.5)' }}>
-            <div className="label-gold" style={{ marginBottom: 12 }}>Ma conviction — BRVM 2025</div>
+            <div className="label-gold" style={{ marginBottom: 12 }}>Ma conviction — BRVM 2026</div>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, fontWeight: 300, maxWidth: 800 }}>
               "La BRVM reste sous-valorisée par rapport aux marchés émergents mondiaux. Avec la digitalisation des services financiers en Afrique de l'Ouest et la croissance du Mobile Money, les valeurs télécoms (SONATEL, ORANGE CI) et les banques régionales constituent selon moi les meilleurs vecteurs de performance à moyen terme."
             </p>
