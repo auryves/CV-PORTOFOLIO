@@ -102,33 +102,38 @@ function SectionNum({ n, top = '0%', right }) {
 
 // Les CTA passent désormais par <GlowButton>, qui embarque déjà le magnétisme.
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
-// Données BRVM : sikafinance.com, séance du 5 août 2026. Indices africains et
-// mondiaux conservés à titre de comparaison, avec leur propre date.
-
-//
-// Les cours individuels d'actions ne figurent plus ici : ils n'ont pas pu être
-// vérifiés à une date unique, et un bandeau « EN DIRECT » affichant des prix
-// périmés dessert un profil d'analyste. Les indices, eux, sont datés et sourcés.
+// Cours BRVM : sikafinance.com, séance du mercredi 5 août 2026 à 14h45.
+// Les indices africains et mondiaux sont conservés à titre de comparaison, avec
+// leur propre date de relevé.
 const TICKER = [
-  // Indices — séance du 5 août 2026, source sikafinance.com
+  // ── Indices BRVM
   { sym: 'BRVM Composite', val: '485,63', chg: '-0,05%', up: false },
   { sym: 'BRVM 30', val: '231,25', chg: '-0,03%', up: false },
   { sym: 'BRVM Prestige', val: '179,16', chg: '+0,36%', up: true },
-  { sym: 'Capitalisation', val: '18 700 Mds FCFA', chg: 'actions', up: true },
-  // Valeurs BRVM les plus actives de la séance du 5 août 2026. Les variations
-  // sont vérifiées ; les cours unitaires ne le sont pas et ne sont donc pas
-  // affichés — voir le commentaire ci-dessus.
-  { sym: 'SMB CI', val: '', chg: '+5,13%', up: true },
-  { sym: 'TOTAL SÉNÉGAL', val: '', chg: '+3,71%', up: true },
-  { sym: 'SITAB', val: '', chg: '+3,69%', up: true },
-  { sym: 'SODE CI', val: '', chg: '-7,47%', up: false },
-  { sym: 'SOGB', val: '', chg: '-3,63%', up: false },
-  { sym: 'SIVOA', val: '', chg: '-3,49%', up: false },
-  // Afrique — 29 juillet 2026
+  // ── Grandes capitalisations et valeurs suivies
+  { sym: 'SONATEL', val: '30 200', chg: '-3,82%', up: false },
+  { sym: 'SOCIÉTÉ GÉNÉRALE CI', val: '37 905', chg: '-0,25%', up: false },
+  { sym: 'CORIS BANK BF', val: '28 300', chg: '0,00%', up: true },
+  { sym: 'NSIA BANQUE CI', val: '23 850', chg: '-0,42%', up: false },
+  { sym: 'ORANGE CI', val: '17 175', chg: '+1,03%', up: true },
+  { sym: 'ECOBANK CI', val: '16 000', chg: '-1,23%', up: false },
+  { sym: 'BOA CI', val: '11 600', chg: '0,00%', up: true },
+  { sym: 'SIB CI', val: '9 250', chg: '-0,54%', up: false },
+  { sym: 'PALM CI', val: '8 980', chg: '0,00%', up: true },
+  { sym: 'SAPH CI', val: '7 600', chg: '+0,93%', up: true },
+  { sym: 'TOTALENERGIES CI', val: '2 980', chg: '+2,58%', up: true },
+  // ── Plus forts mouvements de la séance
+  { sym: 'SMB CI', val: '16 500', chg: '+5,10%', up: true },
+  { sym: 'TOTALENERGIES SN', val: '3 630', chg: '+3,71%', up: true },
+  { sym: 'SITAB CI', val: '25 000', chg: '+3,69%', up: true },
+  { sym: 'AFRICA GLOBAL LOGISTICS', val: '2 355', chg: '-7,47%', up: false },
+  { sym: 'SODE CI', val: '11 400', chg: '-4,20%', up: false },
+  { sym: 'SETAO CI', val: '2 690', chg: '-3,93%', up: false },
+  // ── Afrique — 29 juillet 2026
   { sym: 'NGX ASI', val: '246 678', chg: '-0,53%', up: false },
   { sym: 'JSE All Share', val: '109 904', chg: '-0,19%', up: false },
   { sym: 'GSE Composite', val: '15 449', chg: '+0,44%', up: true },
-  // Mondial — clôture du 4 août 2026
+  // ── Mondial — clôture du 4 août 2026
   { sym: 'S&P 500', val: '7 600', chg: '+1,48%', up: true },
   { sym: 'FTSE 100', val: '10 884', chg: '+0,24%', up: true },
   { sym: 'Nikkei 225', val: '63 958', chg: '+0,32%', up: true },
@@ -464,7 +469,7 @@ function BRVMTicker() {
         {/* « EN DIRECT » était trompeur : ces valeurs sont un relevé figé, pas un
             flux. Afficher la date de clôture est plus juste — et plus crédible
             pour un profil d'analyste. */}
-        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>CLÔTURE 05.08.26</span>
+        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>BRVM · 05.08.26 · 14H45</span>
       </div>
       <div className="ticker-scroll-wrap">
         <div className="ticker-scroll">
