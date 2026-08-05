@@ -12,7 +12,7 @@ import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
 import PhotoTip from './components/PhotoTip'
 import OrgMarquee from './components/OrgMarquee'
-import FooterSignature from './components/FooterSignature'
+import StaggerLink from './components/StaggerLink'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -511,7 +511,9 @@ function Navbar() {
             Auryves <span className="grad-gold">Bedje</span>
           </a>
           <nav className="hidden md:flex items-center gap-8">
-            {links.map(([l, h, id]) => <a key={h} href={h} className={`nav-link${activeSection === id ? ' active' : ''}`}>{l}</a>)}
+            {links.map(([l, h, id]) => (
+              <StaggerLink key={h} href={h} active={activeSection === id}>{l}</StaggerLink>
+            ))}
           </nav>
           <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '9px 24px', fontSize: 11 }}>Contact</a>
           {/* Hamburger — large touch area */}
@@ -1599,7 +1601,7 @@ function Footer() {
             <div className="label" style={{ marginBottom: 20 }}>Navigation</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {navLinks.map(([l, h]) => (
-                <a key={l} href={h} className="nav-link" style={{ fontSize: 13 }}>{l}</a>
+                <StaggerLink key={l} href={h} style={{ fontSize: 13 }}>{l}</StaggerLink>
               ))}
             </div>
           </div>
@@ -1620,7 +1622,6 @@ function Footer() {
           <p className="label" style={{ color: 'rgba(255,255,255,0.2)' }}>© 2026 · Abidjan, Côte d'Ivoire</p>
           <p className="label" style={{ color: 'rgba(255,255,255,0.15)' }}>Construire la finance africaine de demain 🌍</p>
         </div>
-        <FooterSignature text="AURYVES BEDJE" />
       </div>
     </footer>
   )

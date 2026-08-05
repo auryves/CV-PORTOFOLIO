@@ -435,45 +435,58 @@
   transition: color 0.3s;
   position: relative;
 }
-/* Soulignement à deux traits — variante `double` de `ligne hover link.txt`.
-   Les deux filets balaient en sens inverse : le premier depuis la droite, le
-   second depuis la gauche. C'est ce croisement qui donne le geste, là où un
-   simple `width: 0 → 100%` ne fait que s'étirer. */
-.nav-link::before,
 .nav-link::after {
   content: '';
   position: absolute;
-  left: 0; height: 1px;
-  width: 100%;
+  bottom: -3px; left: 0;
+  width: 0; height: 1px;
   background: linear-gradient(90deg, #B57BEE, #D4AF6A);
-  pointer-events: none;
-  transform: scale3d(0, 1, 1);
-}
-.nav-link::before {
-  bottom: -3px;
-  transform-origin: 100% 50%;
-  transition: transform 0.34s cubic-bezier(0.7, 0, 0.2, 1);
-}
-.nav-link::after {
-  bottom: -7px;
-  transform-origin: 0% 50%;
-  transition: transform 0.34s cubic-bezier(0.7, 0, 0.2, 1);
-  opacity: 0.45;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .nav-link:hover,
 .nav-link.active { color: rgba(255,255,255,0.9); }
-.nav-link:hover::before,
-.nav-link.active::before {
-  transform: scale3d(1, 1, 1);
-  transform-origin: 0% 50%;
-  transition-timing-function: cubic-bezier(0.4, 1, 0.8, 1);
-}
 .nav-link:hover::after,
-.nav-link.active::after {
-  transform: scale3d(1, 1, 1);
-  transform-origin: 100% 50%;
-  transition-timing-function: cubic-bezier(0.4, 1, 0.8, 1);
+.nav-link.active::after { width: 100%; }
+
+/* ─── LIEN À SUBSTITUTION LETTRE PAR LETTRE ──────────────────────────────────
+   `width: fit-content` est essentiel : dans le pied de page les liens sont en
+   colonne flex, donc chaque <a> s'étirerait sur toute la largeur de la colonne
+   et le calque doré se décalerait par rapport au texte.
+   ─────────────────────────────────────────────────────────────────────────── */
+.stagger-link {
+  position: relative;
+  display: inline-block;
+  width: fit-content;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: bottom;
+  transition: color 0.3s;
 }
+.stagger-link.is-active { color: rgba(255,255,255,0.9); }
+.stagger-row {
+  display: block;
+  white-space: nowrap;
+}
+/* Le calque doré est superposé, pas ajouté à la suite : sans `absolute` le lien
+   ferait deux lignes de haut. */
+.stagger-row--ghost {
+  position: absolute;
+  inset: 0;
+  color: var(--gold);
+}
+.stagger-char {
+  display: inline-block;
+  will-change: transform;
+}
+/* Les espaces se réduiraient à zéro une fois chaque caractère en inline-block. */
+.stagger-char:empty::before,
+.stagger-char > .space { content: '\00a0'; }
 
 /* ─── SCROLL PROGRESS ────────────────────────────────────── */
 .scroll-progress {
@@ -914,40 +927,6 @@ html.lenis, html.lenis body { height: auto; }
   .zoom-parallax-stage { position: relative; height: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
   .zoom-layer { position: relative; display: block; height: auto; width: auto; transform: none !important; }
   .zoom-frame { position: relative !important; top: auto !important; left: auto !important; height: 220px !important; width: 100% !important; }
-}
-
-/* ─── SIGNATURE GÉANTE EN PIED DE PAGE ───────────────────── */
-.footer-signature {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  margin-top: 56px;
-  /* Débord volontaire : la signature va d'un bord à l'autre, sans marge. */
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(2.6rem, 12.5vw, 12rem);
-  font-weight: 300;
-  line-height: 0.86;
-  letter-spacing: -0.02em;
-  user-select: none;
-  overflow: hidden;
-}
-.footer-signature-mask {
-  display: inline-block;
-  overflow: hidden;
-  /* Les jambages descendants (y, j) sont rognés par le masque sans cette marge. */
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
-}
-.footer-signature-mask > span {
-  display: inline-block;
-  background: linear-gradient(150deg, #c89df4 0%, #D4AF6A 55%, #8A6B28 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) {
-  .footer-signature-mask > span { transform: none !important; }
 }
 
 /* ─── BANDEAU ORGANISATIONS + PROJECTEUR ─────────────────── */
