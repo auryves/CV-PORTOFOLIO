@@ -282,10 +282,13 @@ class Media {
 }
 
 class App {
-  constructor(container, { items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoDrift }) {
+  constructor(container, { items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoDrift, onHoverChange }) {
     this.container = container
     this.scrollSpeed = scrollSpeed
     this.autoDrift = autoDrift
+    this.onHoverChange = onHoverChange
+    this.itemCount = items.length
+    this.hoverIndex = -1
     this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0, position: 0 }
     this.onCheckDebounce = debounce(this.onCheck.bind(this), 200)
     this.isDown = false
@@ -388,6 +391,57 @@ class App {
     this.scroll.target = this.scroll.target < 0 ? -item : item
   }
 
+  /**
+   * Quelle carte se trouve sous le curseur ?
+   *
+   * Il n'y a pas d'élément HTML par photo : les plans vivent dans la scène WebGL.
+   * On repasse donc des pixels écran aux unités de la scène — le viewport couvre
+   * `viewport.width × viewport.height` unités centrées sur l'origine — puis on
+   * teste l'appartenance à chaque plan.
+   *
+   * La rotation induite par la courbure est ignorée : la boîte de collision reste
+   * droite. L'écart est de quelques pixels sur les bords, invisible pour décider
+   * quelle infobulle afficher, et ça évite un test polygone par frame.
+   */
+  hitTest(clientX, clientY) {
+    if (!this.medias || !this.viewport) return -1
+    const rect = this.gl.canvas.getBoundingClientRect()
+    if (!rect.width || !rect.height) return -1
+
+    const wx = (((clientX - rect.left) / rect.width) * 2 - 1) * (this.viewport.width / 2)
+    const wy = -((((clientY - rect.top) / rect.height) * 2 - 1)) * (this.viewport.height / 2)
+
+    let best = -1
+    let bestDist = Infinity
+    this.medias.forEach((media, i) => {
+      const halfW = media.plane.scale.x / 2
+      const halfH = media.plane.scale.y / 2
+      const dx = wx - media.plane.position.x
+      const dy = wy - media.plane.position.y
+      if (Math.abs(dx) <= halfW && Math.abs(dy) <= halfH) {
+        const d = dx * dx + dy * dy
+        if (d < bestDist) { bestDist = d; best = i }
+      }
+    })
+    return best
+  }
+
+  onPointerHover(e) {
+    if (!this.onHoverChange) return
+    // Pendant un glissement, l'utilisateur déplace la galerie : afficher une
+    // infobulle qui saute de carte en carte parasiterait le geste.
+    const idx = this.isDown ? -1 : this.hitTest(e.clientX, e.clientY)
+    if (idx === this.hoverIndex) return
+    this.hoverIndex = idx
+    this.onHoverChange(idx === -1 ? null : idx % this.itemCount)
+  }
+
+  onPointerOut() {
+    if (!this.onHoverChange || this.hoverIndex === -1) return
+    this.hoverIndex = -1
+    this.onHoverChange(null)
+  }
+
   onResize() {
     this.screen = {
       width: this.container.clientWidth || 1,
@@ -428,9 +482,14 @@ class App {
     this.boundOnTouchMove = this.onTouchMove
     this.boundOnTouchUp = this.onTouchUp
 
+    this.boundOnPointerHover = this.onPointerHover
+    this.boundOnPointerOut = this.onPointerOut
+
     window.addEventListener('resize', this.boundOnResize)
     // Molette limitée au conteneur : la page continue de défiler normalement.
     this.container.addEventListener('wheel', this.boundOnWheel, { passive: true })
+    this.container.addEventListener('mousemove', this.boundOnPointerHover, { passive: true })
+    this.container.addEventListener('mouseleave', this.boundOnPointerOut)
     this.container.addEventListener('mousedown', this.boundOnTouchDown)
     window.addEventListener('mousemove', this.boundOnTouchMove)
     window.addEventListener('mouseup', this.boundOnTouchUp)
@@ -450,6 +509,8 @@ class App {
     window.cancelAnimationFrame(this.raf)
     window.removeEventListener('resize', this.boundOnResize)
     this.container.removeEventListener('wheel', this.boundOnWheel)
+    this.container.removeEventListener('mousemove', this.boundOnPointerHover)
+    this.container.removeEventListener('mouseleave', this.boundOnPointerOut)
     this.container.removeEventListener('mousedown', this.boundOnTouchDown)
     window.removeEventListener('mousemove', this.boundOnTouchMove)
     window.removeEventListener('mouseup', this.boundOnTouchUp)
@@ -473,10 +534,16 @@ export default function CircularGallery({
   autoDrift = 0.06,
   textColor = '#D4AF6A',
   font = '500 26px "Plus Jakarta Sans", sans-serif',
+  onHoverChange,
   className = '',
   style,
 }) {
   const containerRef = useRef(null)
+  // Le callback est relayé par une ref : le passer en dépendance de l'effet
+  // recréerait toute la scène WebGL (et rechargerait les textures) à chaque
+  // rendu du parent.
+  const hoverRef = useRef(onHoverChange)
+  useEffect(() => { hoverRef.current = onHoverChange }, [onHoverChange])
 
   useEffect(() => {
     const el = containerRef.current
@@ -493,6 +560,7 @@ export default function CircularGallery({
       scrollSpeed,
       scrollEase,
       autoDrift,
+      onHoverChange: (i) => hoverRef.current?.(i),
     })
     return () => app.destroy()
   }, [items, bend, borderRadius, scrollSpeed, scrollEase, autoDrift, textColor, font])

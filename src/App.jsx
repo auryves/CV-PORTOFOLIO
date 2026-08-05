@@ -3,13 +3,14 @@ import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'fra
 import { useForm, ValidationError } from '@formspree/react'
 import { gsap, ScrollTrigger } from './motion'
 import { initSmoothScroll, destroySmoothScroll, scrollToTop } from './smoothScroll'
-import { useParallax, useScrollVelocity, useMediaQuery } from './hooks/useMotionFx'
+import { useParallax, useMediaQuery } from './hooks/useMotionFx'
 import Preloader from './components/Preloader'
 import TextRevealBlock from './components/TextRevealBlock'
 import StickyCerts from './components/StickyCerts'
 import CircularGallery from './components/CircularGallery'
 import ZoomParallax from './components/ZoomParallax'
-import GlowButton from './components/GlowButton'
+import ActionButton from './components/ActionButton'
+import PhotoTip from './components/PhotoTip'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -362,7 +363,12 @@ const GALLERY_ITEMS = PHOTOS.map((p) => ({ image: `/photos/${p.file}`, text: p.n
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
-  caption: `${p.name} · ${p.org}`,
+  // La légende gravée dans l'image se limite au nom (la version complète
+  // débordait sur les visages) ; le reste passe dans l'infobulle au survol.
+  name: p.name,
+  role: p.role,
+  org: p.org,
+  event: p.event,
 }))
 
 const DIFFERENTIATORS = [
@@ -425,17 +431,6 @@ function Cursor() {
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
 function BRVMTicker() {
   const items = [...TICKER, ...TICKER]
-  const scrollRef = useRef(null)
-
-  // Le bandeau accélère avec le scroll — un flux de cotation qui s'emballe quand
-  // on parcourt la page. Le lien entre le geste et le décor rend le scroll vivant
-  // au lieu de simplement faire défiler un décor indifférent.
-  useScrollVelocity(
-    useCallback((v) => {
-      const el = scrollRef.current
-      if (el) el.style.animationDuration = `${40 / (1 + v)}s`
-    }, [])
-  )
 
   return (
     <div className="brvm-ticker">
@@ -445,7 +440,7 @@ function BRVMTicker() {
         <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>EN DIRECT</span>
       </div>
       <div className="ticker-scroll-wrap">
-        <div className="ticker-scroll" ref={scrollRef}>
+        <div className="ticker-scroll">
           {items.map((t, i) => (
             <span key={i} className="ticker-item">
               <span style={{ color: 'rgba(255,255,255,0.55)', marginRight: 6 }}>{t.sym}</span>
@@ -738,12 +733,12 @@ function Hero() {
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d(2.3) }}
             style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 64 }}>
-            <GlowButton href="#projects" variant="violet">
-              Voir mes projets <span aria-hidden="true">→</span>
-            </GlowButton>
-            <GlowButton href="/CV-Auryves-Bedje.pdf" download variant="gold">
-              <span aria-hidden="true">↓</span> Télécharger mon CV
-            </GlowButton>
+            <ActionButton href="#projects" variant="violet" arrow="→">
+              Voir mes projets
+            </ActionButton>
+            <ActionButton href="/CV-Auryves-Bedje.pdf" download variant="gold" arrow="↓">
+              Télécharger mon CV
+            </ActionButton>
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(2.6) }}
@@ -1283,6 +1278,8 @@ function Networking() {
   // charge sept textures et se pilote à la molette, deux choses qui n'ont pas de
   // sens sur un écran tactile de 6 pouces.
   const isDesktop = useMediaQuery('(min-width: 769px)')
+  // Index de la carte WebGL survolée — alimente l'infobulle.
+  const [hoveredPhoto, setHoveredPhoto] = useState(null)
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current
@@ -1352,7 +1349,7 @@ function Networking() {
   return (
     <section id="networking" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <motion.div {...fadeUp()} style={{ marginBottom: 60 }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 36 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mes connexions</div>
           <div className="divider" />
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
@@ -1385,9 +1382,16 @@ function Networking() {
         {isDesktop ? (
           <>
             <div className="circular-gallery-mask">
-              <CircularGallery items={GALLERY_ITEMS} bend={2.6} borderRadius={0.045} textColor="#D4AF6A" />
+              <CircularGallery
+                items={GALLERY_ITEMS}
+                bend={2.6}
+                borderRadius={0.045}
+                textColor="#D4AF6A"
+                onHoverChange={setHoveredPhoto}
+              />
             </div>
-            <p className="gallery-hint">Glissez · molette · les cartes tournent</p>
+            <PhotoTip data={hoveredPhoto === null ? null : PHOTOS[hoveredPhoto]} />
+            <p className="gallery-hint">Survolez une photo · glissez pour faire tourner</p>
           </>
         ) : (
         <div

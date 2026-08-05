@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { gsap, ScrollTrigger, EASE_OUT, reducedMotion, isMobile, isTouch } from '../motion'
+import { gsap, EASE_OUT, reducedMotion, isMobile, isTouch } from '../motion'
 
 /**
  * Parallaxe liée au scroll (scrub).
@@ -69,26 +69,6 @@ export function useMagnetic(strength = 0.35) {
     }
   }, [strength])
   return ref
-}
-
-/**
- * Vitesse de scroll normalisée, transmise à un callback.
- * Sert à faire réagir le bandeau BRVM au scroll — comme un flux de cotation qui
- * s'emballe quand on parcourt la page.
- */
-export function useScrollVelocity(onVelocity, { max = 4 } = {}) {
-  useEffect(() => {
-    if (reducedMotion()) return
-    const st = ScrollTrigger.create({
-      start: 0,
-      end: 'max',
-      onUpdate: (self) => {
-        const v = Math.abs(self.getVelocity()) / 1200
-        onVelocity(gsap.utils.clamp(0, max, v))
-      },
-    })
-    return () => st.kill()
-  }, [onVelocity, max])
 }
 
 /**

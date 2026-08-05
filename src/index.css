@@ -764,142 +764,84 @@ html.lenis, html.lenis body { height: auto; }
   background: linear-gradient(90deg, transparent, rgba(212,175,106,0.4), transparent);
 }
 
-/* ─── BOUTON À HALO RADIAL (dossier animation code, rethémé) ─────────────────
-   `@property` transforme des valeurs de dégradé en propriétés typées, donc
-   interpolables : sans ça un radial-gradient saute d'un état à l'autre au lieu
-   de glisser. Les navigateurs sans @property affichent l'état de repos — dégradé
-   statique, bouton parfaitement utilisable.
+/* ─── BOUTON D'ACTION — le mouvement, pas la couleur ─────────────────────────
+   La teinte d'accent ne varie jamais entre le repos et le survol : seuls le
+   remplissage, le libellé et la flèche bougent. Un bouton qui change de couleur
+   attire l'œil sur la couleur ; celui-ci l'attire sur le geste.
    ─────────────────────────────────────────────────────────────────────────── */
-@property --gb-pos-x   { syntax: '<percentage>'; initial-value: 40%;  inherits: false; }
-@property --gb-pos-y   { syntax: '<percentage>'; initial-value: 140%; inherits: false; }
-@property --gb-spread-x{ syntax: '<percentage>'; initial-value: 130%; inherits: false; }
-@property --gb-spread-y{ syntax: '<percentage>'; initial-value: 170%; inherits: false; }
-@property --gb-c1 { syntax: '<color>'; initial-value: #07070F; inherits: false; }
-@property --gb-c2 { syntax: '<color>'; initial-value: #2A1A55; inherits: false; }
-@property --gb-c3 { syntax: '<color>'; initial-value: #6C3AED; inherits: false; }
-@property --gb-c4 { syntax: '<color>'; initial-value: #B57BEE; inherits: false; }
-@property --gb-c5 { syntax: '<color>'; initial-value: #07070F; inherits: false; }
-@property --gb-s1 { syntax: '<percentage>'; initial-value: 37.35%; inherits: false; }
-@property --gb-s2 { syntax: '<percentage>'; initial-value: 61.36%; inherits: false; }
-@property --gb-s3 { syntax: '<percentage>'; initial-value: 78.42%; inherits: false; }
-@property --gb-s4 { syntax: '<percentage>'; initial-value: 93.52%; inherits: false; }
-@property --gb-s5 { syntax: '<percentage>'; initial-value: 100%; inherits: false; }
-@property --gb-border-angle { syntax: '<angle>'; initial-value: 180deg; inherits: true; }
-@property --gb-bc1 { syntax: '<color>'; initial-value: rgba(212,175,106,0.55); inherits: true; }
-@property --gb-bc2 { syntax: '<color>'; initial-value: rgba(181,123,238,0.2);  inherits: true; }
-
-.glow-btn {
-  --speed: 1.2s;
-  --cut: 1px;
-  --gb-bg: radial-gradient(
-    var(--gb-spread-x) var(--gb-spread-y) at var(--gb-pos-x) var(--gb-pos-y),
-    var(--gb-c1) var(--gb-s1),
-    var(--gb-c2) var(--gb-s2),
-    var(--gb-c3) var(--gb-s3),
-    var(--gb-c4) var(--gb-s4),
-    var(--gb-c5) var(--gb-s5)
-  );
+.act-btn {
+  --accent: #D4AF6A;
   position: relative;
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 50px;
-  padding: 15px 34px;
-  border: none;
-  border-radius: 2px;               /* aligné sur le reste du site, pas 11px */
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 16px 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--accent);
   font-family: inherit;
   font-size: 12px; font-weight: 500;
   letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(255,255,255,0.94);
-  background: var(--gb-bg);
   text-decoration: none;
   cursor: pointer;
   overflow: hidden;
-  text-shadow: 0 0 3px rgba(0,0,0,0.8);
+  isolation: isolate;
+  transition: border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
-  transition:
-    --gb-pos-x .75s, --gb-pos-y .75s, --gb-spread-x .75s, --gb-spread-y .75s,
-    --gb-c1 .75s, --gb-c2 .75s, --gb-c3 .75s, --gb-c4 .75s, --gb-c5 .75s,
-    --gb-s1 .75s, --gb-s2 .75s, --gb-s3 .75s, --gb-s4 .75s, --gb-s5 .75s,
-    --gb-border-angle .75s, --gb-bc1 .75s, --gb-bc2 .75s;
 }
-.glow-btn::before {
-  content: '';
-  position: absolute; inset: 0;
-  padding: 1px; border-radius: inherit;
-  background-image: linear-gradient(var(--gb-border-angle), var(--gb-bc1), var(--gb-bc2));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
-}
-/* Variante or — le dégradé bascule vers le doré au repos. */
-.glow-btn--gold {
-  --gb-c2: #3A2A10;
-  --gb-c3: #8A6B28;
-  --gb-c4: #D4AF6A;
-}
-.glow-btn:hover {
-  --gb-pos-x: 0%;
-  --gb-pos-y: 120%;
-  --gb-spread-x: 110.24%;
-  --gb-spread-y: 110.2%;
-  --gb-s1: 0%;
-  --gb-s2: 10%;
-  --gb-s3: 35.44%;
-  --gb-s4: 71.34%;
-  --gb-s5: 150%;
-  --gb-border-angle: 190deg;
-  --gb-bc1: rgba(240,208,138,0.85);
-  --gb-bc2: rgba(181,123,238,0.4);
-  --glow-line-opacity: 1;
-}
-.glow-btn--gold:hover { --gb-c2: #D4AF6A; --gb-c3: #6C3AED; --gb-c4: #2A1A55; }
-.glow-btn--violet:hover { --gb-c2: #B57BEE; --gb-c3: #D4AF6A; --gb-c4: #2A1A55; }
+.act-btn--violet { --accent: #B57BEE; }
+.act-btn:hover { border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
 
-.glow-btn-label { position: relative; z-index: 1; }
-.glow-btn-bg {
-  position: absolute; inset: var(--cut);
-  background: var(--gb-bg);
-  border-radius: inherit;
-  transition: background 0.25s, opacity 0.25s;
-}
-/* Balayage conique : la « lumière » qui traverse le bouton au survol. */
-.glow-btn-shine {
+/* Remplissage qui monte depuis le bas — même teinte, faible opacité. */
+.act-btn-fill {
   position: absolute; inset: 0;
-  container-type: size;
-  border-radius: inherit;
-  mix-blend-mode: soft-light;
-  opacity: var(--glow-line-opacity, 0);
-  transition: opacity 0.3s;
-  overflow: visible;
-  pointer-events: none;
+  z-index: -1;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.glow-btn-shine span {
+.act-btn:hover .act-btn-fill { transform: scaleY(1); }
+
+/* Masque : les deux libellés sont empilés, un seul est visible à la fois. */
+.act-btn-mask {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.act-btn-label {
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.act-btn-label--in {
   position: absolute; inset: 0;
-  height: 100cqh; aspect-ratio: 1;
-  animation: gb-slide var(--speed) ease-in-out infinite alternate;
-  overflow: visible;
+  transform: translateY(105%);
 }
-.glow-btn-shine span::before {
-  content: '';
-  position: absolute; inset: -100%;
-  background: conic-gradient(from calc(270deg - 45deg), transparent 0, #fff 90deg, transparent 90deg);
-  animation: gb-spin calc(var(--speed) * 2) infinite linear;
+.act-btn:hover .act-btn-label { transform: translateY(-105%); }
+.act-btn:hover .act-btn-label--in { transform: translateY(0); }
+
+.act-btn-line {
+  display: inline-flex; align-items: center; gap: 10px;
+  white-space: nowrap;
 }
-@keyframes gb-spin {
-  0% { rotate: 0deg; }
-  15%, 35% { rotate: 90deg; }
-  65%, 85% { rotate: 270deg; }
-  100% { rotate: 360deg; }
+/* La flèche sort par la droite et revient par la gauche, décalée du libellé. */
+.act-btn-arrow {
+  display: inline-block;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes gb-slide { to { transform: translate(calc(100cqw - 100%), 0); } }
+.act-btn:hover .act-btn-arrow { transform: translateX(5px); }
+
+.act-btn:active { transform: translateY(1px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .glow-btn-shine { display: none; }
+  .act-btn-label, .act-btn-label--in, .act-btn-fill, .act-btn-arrow { transition: none; }
+  .act-btn-label--in { display: none; }
+  .act-btn:hover .act-btn-label { transform: none; }
 }
 
 /* ─── ZOOM PARALLAX — traversée immersive ────────────────── */
-.zoom-parallax { position: relative; height: 300vh; }
+/* 250 vh plutôt que 300 : au-delà, la fin de la traversée se joue sur un écran
+   déjà saturé par le zoom et le scroll supplémentaire ne montre plus rien. */
+.zoom-parallax { position: relative; height: 250vh; }
 .zoom-parallax-stage {
   position: sticky; top: 0;
   height: 100vh;
@@ -910,6 +852,10 @@ html.lenis, html.lenis body { height: auto; }
   display: flex; align-items: center; justify-content: center;
   height: 100%; width: 100%;
   will-change: transform;
+  /* Traversée purement visuelle : rien n'y est cliquable ni survolable. Sans ça,
+     les sept calques empilés en plein écran captureraient les pointeurs et
+     bloqueraient ce qui se trouve dessous. */
+  pointer-events: none;
 }
 .zoom-frame {
   position: relative;
@@ -919,25 +865,67 @@ html.lenis, html.lenis body { height: auto; }
 .zoom-frame img {
   height: 100%; width: 100%;
   object-fit: cover;
+  /* Recadrage biaisé vers le haut : sur des photos de personnes, `cover` centré
+     rogne d'abord les visages, qui se situent dans le tiers supérieur. */
+  object-position: center 22%;
   display: block;
-}
-.zoom-caption {
-  position: absolute; inset: auto 0 0 0;
-  padding: 14px 16px;
-  background: linear-gradient(to top, rgba(7,7,15,0.9), transparent);
-  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: rgba(255,255,255,0.7);
-  text-align: center;
 }
 @media (max-width: 768px) {
   /* Course de scroll raccourcie : la traversée reste lisible sans épuiser le pouce. */
-  .zoom-parallax { height: 220vh; }
+  .zoom-parallax { height: 190vh; }
 }
+/* La galerie enchaîne directement sur la traversée : le padding de section
+   complet créait un trou entre les deux moments photo. */
+#networking.section-pad { padding-top: 56px; }
 @media (prefers-reduced-motion: reduce) {
   .zoom-parallax { height: auto; }
   .zoom-parallax-stage { position: relative; height: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
   .zoom-layer { position: relative; display: block; height: auto; width: auto; transform: none !important; }
   .zoom-frame { position: relative !important; top: auto !important; left: auto !important; height: 220px !important; width: 100% !important; }
+}
+
+/* ─── INFOBULLE AU CURSEUR (dossier animation code) ──────── */
+/* Portalisée dans <body> : à l'intérieur de la scène, elle hériterait du zoom
+   des calques et grossirait jusqu'à ×9 avec la photo. */
+.photo-tip {
+  position: fixed; top: 0; left: 0;
+  z-index: 99990;
+  pointer-events: none;
+  width: max-content; max-width: 280px;
+  padding: 14px 18px;
+  background: rgba(9,9,20,0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(212,175,106,0.28);
+  border-radius: 3px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+}
+.photo-tip-name {
+  font-size: 19px; font-weight: 400; line-height: 1.2;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 6px;
+}
+.photo-tip-role {
+  font-size: 11px; letter-spacing: 0.09em;
+  color: #D4AF6A;
+  margin-bottom: 5px;
+}
+.photo-tip-org {
+  font-size: 11px; line-height: 1.5;
+  color: rgba(181,123,238,0.85);
+  margin-bottom: 6px;
+}
+.photo-tip-event {
+  font-size: 10px; letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.32);
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+/* Sans survol (tactile), l'infobulle n'a pas de déclencheur. Les noms restent
+   accessibles via le carrousel networking, qui affiche une fiche sous chaque
+   photo sur mobile. */
+@media (hover: none) {
+  .photo-tip { display: none; }
 }
 
 /* ─── PILE DE CARTES ÉPINGLÉE — CERTIFICATIONS ───────────── */

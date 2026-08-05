@@ -2,28 +2,32 @@ import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Zoom Parallax — d'après `scrol effeect.txt` (dossier « animation code ».)
+ * Zoom Parallax — d'après `scrol effeect.txt` (dossier « animation code »).
  *
  * Une seule photo occupe l'écran ; au scroll, elle s'écarte et révèle six
  * autres visuels qui étaient cachés « derrière » elle, chacun grossissant à une
- * vitesse différente. La section est haute de 300 vh et son contenu est en
- * sticky : on ne descend pas la page, on traverse l'image.
+ * vitesse différente. La section est haute et son contenu est en sticky : on ne
+ * descend pas la page, on traverse l'image.
  *
- * Écart avec l'original : les décalages passent par des styles inline plutôt
- * que par des variantes Tailwind arbitraires (`[&>div]:!-top-[30vh]`) — moins
- * dépendant de la configuration JIT, et lisible quand il faudra les régler.
+ * Volontairement muet : aucune légende ni infobulle. Ce moment est une
+ * traversée visuelle ; l'identification des personnes se fait juste après, dans
+ * la galerie circulaire.
+ *
+ * Écarts avec l'original : décalages en styles inline plutôt qu'en variantes
+ * Tailwind arbitraires, et proportions rapprochées du portrait — des cadres très
+ * allongés rognaient les visages.
  * ──────────────────────────────────────────────────────────────────────────── */
 
 // Position de chaque visuel par rapport au centre, et vitesse de zoom associée.
 // L'index 0 reste plein centre : c'est l'image d'accueil du plan.
 const LAYOUT = [
-  { scale: 4, top: '0vh', left: '0vw', h: '26vh', w: '26vw' },
-  { scale: 5, top: '-30vh', left: '5vw', h: '30vh', w: '35vw' },
-  { scale: 6, top: '-10vh', left: '-25vw', h: '45vh', w: '20vw' },
-  { scale: 5, top: '0vh', left: '27.5vw', h: '25vh', w: '25vw' },
-  { scale: 6, top: '27.5vh', left: '5vw', h: '25vh', w: '20vw' },
-  { scale: 8, top: '27.5vh', left: '-22.5vw', h: '25vh', w: '30vw' },
-  { scale: 9, top: '22.5vh', left: '25vw', h: '15vh', w: '15vw' },
+  { scale: 4, top: '0vh',    left: '0vw',     h: '30vh', w: '24vw' },
+  { scale: 5, top: '-28vh',  left: '6vw',     h: '34vh', w: '26vw' },
+  { scale: 6, top: '-8vh',   left: '-25vw',   h: '38vh', w: '23vw' },
+  { scale: 5, top: '0vh',    left: '27vw',    h: '30vh', w: '22vw' },
+  { scale: 6, top: '28vh',   left: '6vw',     h: '26vh', w: '20vw' },
+  { scale: 8, top: '28vh',   left: '-23vw',   h: '26vh', w: '22vw' },
+  { scale: 9, top: '24vh',   left: '26vw',    h: '20vh', w: '16vw' },
 ]
 
 function ZoomLayer({ item, index, progress }) {
@@ -37,11 +41,6 @@ function ZoomLayer({ item, index, progress }) {
         style={{ top: cfg.top, left: cfg.left, height: cfg.h, width: cfg.w }}
       >
         <img src={item.src} alt={item.alt} loading={index === 0 ? 'eager' : 'lazy'} />
-        {index === 0 && item.caption && (
-          <div className="zoom-caption">
-            <span>{item.caption}</span>
-          </div>
-        )}
       </div>
     </motion.div>
   )
