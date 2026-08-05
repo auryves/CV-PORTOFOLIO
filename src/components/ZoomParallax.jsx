@@ -42,11 +42,6 @@ function ZoomLayer({ item, index, progress, onEnter, onMove, onLeave }) {
         onMouseLeave={onLeave}
       >
         <img src={item.src} alt={item.alt} loading={index === 0 ? 'eager' : 'lazy'} />
-        {index === 0 && item.name && (
-          <div className="zoom-caption">
-            <span>{item.name}</span>
-          </div>
-        )}
       </div>
     </motion.div>
   )

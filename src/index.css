@@ -874,15 +874,6 @@ html.lenis, html.lenis body { height: auto; }
   object-position: center 22%;
   display: block;
 }
-.zoom-caption {
-  position: absolute; inset: auto 0 0 0;
-  padding: 10px 12px 8px;
-  background: linear-gradient(to top, rgba(7,7,15,0.92), transparent);
-  font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: rgba(255,255,255,0.65);
-  text-align: center;
-  line-height: 1.5;
-}
 @media (max-width: 768px) {
   /* Course de scroll raccourcie : la traversée reste lisible sans épuiser le pouce. */
   .zoom-parallax { height: 190vh; }
@@ -934,8 +925,9 @@ html.lenis, html.lenis body { height: auto; }
   padding-top: 6px;
   border-top: 1px solid rgba(255,255,255,0.07);
 }
-/* Sans survol (tactile), l'infobulle n'a pas de déclencheur : la légende gravée
-   sur le cadre central prend le relais. */
+/* Sans survol (tactile), l'infobulle n'a pas de déclencheur. Les noms restent
+   accessibles via le carrousel networking, qui affiche une fiche sous chaque
+   photo sur mobile. */
 @media (hover: none) {
   .photo-tip { display: none; }
 }
