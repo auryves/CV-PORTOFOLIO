@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
-import { gsap } from 'gsap'
 import { useForm, ValidationError } from '@formspree/react'
+import { gsap, ScrollTrigger } from './motion'
+import { initSmoothScroll, destroySmoothScroll, scrollToTop } from './smoothScroll'
+import { useParallax, useScrollVelocity, useMediaQuery } from './hooks/useMotionFx'
+import Preloader from './components/Preloader'
+import TextRevealBlock from './components/TextRevealBlock'
+import StickyCerts from './components/StickyCerts'
+import CircularGallery from './components/CircularGallery'
+import ZoomParallax from './components/ZoomParallax'
+import GlowButton from './components/GlowButton'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -23,30 +31,6 @@ function ScrollProgress() {
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
   return <motion.div className="scroll-progress" style={{ scaleX }} />
-}
-
-// ── magnetic hook ──────────────────────────────────────────────────────────────
-function useMagnetic(strength = 0.35) {
-  const ref = useRef(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const onMove = (e) => {
-      const r = el.getBoundingClientRect()
-      const x = e.clientX - (r.left + r.width / 2)
-      const y = e.clientY - (r.top + r.height / 2)
-      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`
-      el.style.transition = 'transform 0.1s ease'
-    }
-    const onLeave = () => {
-      el.style.transform = ''
-      el.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
-    }
-    el.addEventListener('mousemove', onMove)
-    el.addEventListener('mouseleave', onLeave)
-    return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave) }
-  }, [strength])
-  return ref
 }
 
 // ── animated counter ──────────────────────────────────────────────────────────
@@ -98,9 +82,13 @@ function TiltCard({ children, style, className = '' }) {
 }
 
 // ── section number decoration ─────────────────────────────────────────────────
+// Le chiffre dérive plus lentement que la section qui le porte : c'est ce
+// décalage qui crée la profondeur, plus efficace ici qu'un simple fondu.
 function SectionNum({ n, top = '0%', right }) {
+  const ref = useParallax(-140)
   return (
     <motion.span
+      ref={ref}
       initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: false, margin: '-10%' }}
       transition={{ duration: 1.2 }}
       className="section-num"
@@ -109,15 +97,7 @@ function SectionNum({ n, top = '0%', right }) {
   )
 }
 
-// ── magnetic button wrapper ───────────────────────────────────────────────────
-function MagBtn({ href, className, children, download, style, onClick }) {
-  const ref = useMagnetic(0.4)
-  return (
-    <div className="magnetic" ref={ref} style={{ display: 'inline-block' }}>
-      <a href={href} className={className} download={download} style={style} onClick={onClick}>{children}</a>
-    </div>
-  )
-}
+// Les CTA passent désormais par <GlowButton>, qui embarque déjà le magnétisme.
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
 // Source: brvm.org · african-markets.com · investing.com — Mai 2026
 const TICKER = [
@@ -288,7 +268,6 @@ const TITLES = ['Fintech Builder', 'Étudiant Finance Digitale', 'Entrepreneur F
 const PROJECTS = [
   { n: '01', name: 'My Invest', cat: 'Investissement Participatif', desc: "Plateforme permettant aux particuliers d'investir dans les TPE/PME africaines. Revenue-based financing — remboursement indexé sur les revenus quotidiens des entreprises.", tags: ['React Native', 'Supabase', 'Mobile Money', 'IA'], status: 'En développement', statusColor: '#4ade80' },
   { n: '02', name: 'My Invest Social', cat: 'Crowdfunding Solidaire', desc: "Plateforme africaine de solidarité digitale pour soutenir financièrement des personnes en urgence médicale ou sociale. Crowdfunding communautaire avec dimension virale.", tags: ['React Native', 'Mobile Money', 'Feed Social', 'IA'], status: 'En développement', statusColor: '#fb923c' },
-  { n: '03', name: 'Projet Confidentiel', cat: 'Fintech · Bloomberg-style', desc: "Application mobile premium pour un leader de l'information financière africaine. Inspirée de Bloomberg et TradingView — données en temps réel pour les marchés africains.", tags: ['React Native', 'BRVM', 'Temps réel', 'Bloomberg'], status: 'Négociation en cours', statusColor: '#B57BEE', secret: true },
 ]
 
 const SKILLS = [
@@ -319,11 +298,10 @@ const SKILLS = [
 const TIMELINE = [
   { date: '2024 — Présent', title: 'Licence 3 Finance Digitale', sub: 'EMSP Abidjan', desc: "Spécialisation marchés financiers africains, fintech et gestion d'actifs. Suivi quotidien de la BRVM et des marchés continentaux." },
   { date: '2024', title: 'Certification Microsoft Office', sub: 'Pack Complet · Udemy', desc: 'Excel avancé, Power BI, Word, PowerPoint, Outlook — 22,5h de formation, niveau débutant à expert.' },
-  { date: '2024 — 2025', title: '3 Applications Fintech', sub: 'En développement', desc: 'MY INVEST (investissement participatif), MY INVEST SOCIAL (crowdfunding solidaire) et un projet confidentiel en négociation avancée.' },
+  { date: '2024 — 2025', title: '2 Applications Fintech', sub: 'En développement', desc: 'MY INVEST (investissement participatif) et MY INVEST SOCIAL (crowdfunding solidaire).' },
   { date: 'Mars 2025', title: "Salon de l'Épargne & de l'Investissement", sub: 'Abidjan', desc: "Rencontres avec Paul-Harry Aithnard (Ecobank CI) et Katier Bamba (DG Wave CI). « Épargner n'est pas une question de montant, mais une question de réflexe. »" },
   { date: 'Avril 2025', title: 'Lancement de la Bloomfield Review', sub: 'Bloomfield Investment Corporation', desc: "Premier magazine d'intelligence économique ivoirien. Échanges avec José-Félix Dié (CGF Gestion), Steven Bédi (PUSH CI) et Edith Brou Bleu." },
   { date: 'Mai 2025', title: 'Table Ronde Bloomfield — Assurance & Fonds de Pension', sub: 'Bloomfield Intelligence', desc: "Stan Zézé-Bayard : « Les populations voient encore l'assurance comme une dépense, pas comme une protection. » L'éducation économique est essentielle pour construire une économie plus forte." },
-  { date: '2025', title: 'Partenariat Fintech Africain', sub: 'Négociation en cours', desc: "Accord avec un leader de l'information financière africaine pour développer une application Bloomberg-style dédiée aux marchés africains." },
 ]
 
 const PHOTOS = [
@@ -378,8 +356,17 @@ const PHOTOS = [
   },
 ]
 
+// Références stables : CircularGallery et ZoomParallax se réinitialisent si le
+// tableau change d'identité à chaque rendu (le WebGL rechargerait ses textures).
+const GALLERY_ITEMS = PHOTOS.map((p) => ({ image: `/photos/${p.file}`, text: p.name }))
+const ZOOM_IMAGES = PHOTOS.map((p) => ({
+  src: `/photos/${p.file}`,
+  alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
+  caption: `${p.name} · ${p.org}`,
+}))
+
 const DIFFERENTIATORS = [
-  { icon: '📊', title: '20 ans, 3 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Trois applications fintech réelles, dont une en négociation avec un leader du marché." },
+  { icon: '📊', title: '20 ans, 2 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Deux applications fintech réelles, concrètes et en développement actif." },
   { icon: '🏛️', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
   { icon: '📈', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
   { icon: '🌍', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je suis NYSE, LSE, JPX, CAC 40 et l'ensemble des marchés africains. L'Afrique financière mondiale est mon terrain de jeu." },
@@ -435,31 +422,21 @@ function Cursor() {
   return (<><div ref={dot} className="cursor-dot" /><div ref={ring} className="cursor-ring" /></>)
 }
 
-// ── loader ────────────────────────────────────────────────────────────────────
-function Loader({ done }) {
-  return (
-    <AnimatePresence>
-      {!done && (
-        <motion.div className="loader" exit={{ opacity: 0 }} transition={{ duration: 1 }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <div className="loader-logo">AB</div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-            <div className="loader-bar" />
-          </motion.div>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-            style={{ fontSize: 11, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>
-            Auryves Bedje
-          </motion.p>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
-
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
 function BRVMTicker() {
   const items = [...TICKER, ...TICKER]
+  const scrollRef = useRef(null)
+
+  // Le bandeau accélère avec le scroll — un flux de cotation qui s'emballe quand
+  // on parcourt la page. Le lien entre le geste et le décor rend le scroll vivant
+  // au lieu de simplement faire défiler un décor indifférent.
+  useScrollVelocity(
+    useCallback((v) => {
+      const el = scrollRef.current
+      if (el) el.style.animationDuration = `${40 / (1 + v)}s`
+    }, [])
+  )
+
   return (
     <div className="brvm-ticker">
       <div className="ticker-label">
@@ -468,7 +445,7 @@ function BRVMTicker() {
         <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>EN DIRECT</span>
       </div>
       <div className="ticker-scroll-wrap">
-        <div className="ticker-scroll">
+        <div className="ticker-scroll" ref={scrollRef}>
           {items.map((t, i) => (
             <span key={i} className="ticker-item">
               <span style={{ color: 'rgba(255,255,255,0.55)', marginRight: 6 }}>{t.sym}</span>
@@ -761,14 +738,12 @@ function Hero() {
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d(2.3) }}
             style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 64 }}>
-            <MagBtn href="#projects" className="btn-prim">
-              <span>Voir mes projets</span>
-              <span style={{ transition: 'transform 0.3s' }} className="btn-arrow">→</span>
-            </MagBtn>
-            <MagBtn href="/CV-Auryves-Bedje.pdf" download className="btn-gold">
-              <span>↓</span>
-              <span>Télécharger mon CV</span>
-            </MagBtn>
+            <GlowButton href="#projects" variant="violet">
+              Voir mes projets <span aria-hidden="true">→</span>
+            </GlowButton>
+            <GlowButton href="/CV-Auryves-Bedje.pdf" download variant="gold">
+              <span aria-hidden="true">↓</span> Télécharger mon CV
+            </GlowButton>
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(2.6) }}
@@ -847,9 +822,9 @@ function About() {
             </div>
           </motion.div>
           <motion.div {...fadeUp(0.2)}>
-            <h2 className="display-lg" style={{ marginBottom: 28 }}>
+            <TextRevealBlock as="h2" className="display-lg" style={{ marginBottom: 28 }}>
               Bâtisseur de la <span className="grad-lav">finance digitale</span> africaine
-            </h2>
+            </TextRevealBlock>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', marginBottom: 36, fontWeight: 300 }}>
               Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je développe des applications fintech qui transforment les marchés financiers africains, tout en suivant au quotidien les indices de la BRVM et les places boursières du continent et du monde.
             </p>
@@ -881,7 +856,7 @@ function Projects() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Ce que je construis</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Mes Projets</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Mes Projets</TextRevealBlock>
         </motion.div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
           {PROJECTS.map((p) => (
@@ -893,14 +868,14 @@ function Projects() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
                   <div>
                     <div className="label" style={{ marginBottom: 10, color: 'rgba(181,123,238,0.7)' }}>{p.cat}</div>
-                    <h3 className="serif" style={{ fontSize: 28, fontWeight: 300, color: 'white' }}>{p.secret ? <span style={{ filter: 'blur(5px)', userSelect: 'none' }}>{p.name}</span> : p.name}</h3>
+                    <h3 className="serif" style={{ fontSize: 28, fontWeight: 300, color: 'white' }}>{p.name}</h3>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: p.statusColor, boxShadow: `0 0 8px ${p.statusColor}` }} />
                     <span style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>{p.status}</span>
                   </div>
                 </div>
-                <p style={{ fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.45)', marginBottom: 24, fontWeight: 300, maxWidth: 600, filter: p.secret ? 'blur(3px)' : 'none' }}>{p.desc}</p>
+                <p style={{ fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.45)', marginBottom: 24, fontWeight: 300, maxWidth: 600 }}>{p.desc}</p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {p.tags.map(t => <span key={t} style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 14px', border: '1px solid rgba(181,123,238,0.2)', color: 'rgba(181,123,238,0.6)', borderRadius: 2 }}>{t}</span>)}
                 </div>
@@ -923,7 +898,7 @@ function MarchesAfricains() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Ma passion</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Les Marchés Financiers</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Les Marchés Financiers</TextRevealBlock>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, maxWidth: 600, fontWeight: 300, lineHeight: 1.7 }}>
             Je suis les marchés africains au quotidien, tout en me comparant aux grandes places mondiales — NYSE, LSE, Nikkei et CAC 40.
           </p>
@@ -1030,7 +1005,7 @@ function PourquoiMoi() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80, textAlign: 'center' }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Ma valeur ajoutée</div>
           <div className="divider" style={{ maxWidth: 200, margin: '0 auto' }} />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Pourquoi moi ?</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }} center>Pourquoi moi ?</TextRevealBlock>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, fontWeight: 300 }}>
             Ce qui me différencie à 20 ans dans l'écosystème fintech africain
           </p>
@@ -1068,7 +1043,7 @@ function Testimonials() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Ce qu'ils disent</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Témoignages</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Témoignages</TextRevealBlock>
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
           {TESTIMONIALS.map((t, i) => (
@@ -1133,7 +1108,7 @@ function Skills() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mon expertise</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Compétences</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Compétences</TextRevealBlock>
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 48 }}>
           {SKILLS.map((s, si) => (
@@ -1167,7 +1142,7 @@ function CVSection() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mon dossier</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Curriculum Vitae</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Curriculum Vitae</TextRevealBlock>
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 48 }}>
           <motion.div {...fadeUp(0.1)} className="cv-section">
@@ -1223,110 +1198,38 @@ function CVSection() {
   )
 }
 
-// ── certifications ────────────────────────────────────────────────────────────
+// ── certifications — pile de cartes épinglée ─────────────────────────────────
 function Certifications() {
-  const scrollRef = useRef(null)
-  const paused = useRef(false)
-  const rafRef = useRef(null)
-
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    // Auto-scroll désactivé sur mobile — les utilisateurs swipent naturellement
-    if (window.matchMedia('(max-width: 768px)').matches) return
-    let pos = 0
-    const speed = 0.5
-    const animate = () => {
-      if (!paused.current && el) {
-        pos += speed
-        if (pos >= el.scrollWidth / 2) pos = 0
-        el.scrollLeft = pos
-      }
-      rafRef.current = requestAnimationFrame(animate)
-    }
-    rafRef.current = requestAnimationFrame(animate)
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
-  }, [])
-
-  const items = [...CERTIFICATIONS, ...CERTIFICATIONS]
-
   return (
-    <section id="certifications" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <motion.div {...fadeUp()} style={{ marginBottom: 60 }}>
-          <div className="label-gold" style={{ marginBottom: 20 }}>Mes accréditations</div>
-          <div className="divider" />
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
-            <h2 className="display-lg">Certifications</h2>
-            <div className="label" style={{ color: 'rgba(255,255,255,0.25)' }}>{CERTIFICATIONS.length} certificats · Cliquer pour télécharger</div>
-          </div>
-        </motion.div>
-
-        {/* Carousel auto-scroll */}
-        <div
-          ref={scrollRef}
-          onMouseEnter={() => { paused.current = true }}
-          onMouseLeave={() => { paused.current = false }}
-          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 4, touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
-        >
-          {items.map((c, i) => (
-            <a
-              key={i}
-              href={c.file}
-              target="_blank"
-              rel="noreferrer"
-              style={{ flexShrink: 0, width: 260, textDecoration: 'none', display: 'block' }}
-            >
-              <motion.div
-                whileHover={{ translateY: -4, borderColor: c.color.replace(')', ', 0.5)').replace('rgb', 'rgba') }}
-                style={{
-                  padding: '28px 24px',
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  borderRadius: 4,
-                  height: '100%',
-                  transition: 'border-color 0.3s, transform 0.3s',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* barre colorée en haut */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: c.color, opacity: 0.6 }} />
-
-                <div style={{ fontSize: 28, marginBottom: 16 }}>{c.icon}</div>
-
-                <div style={{ fontSize: 14, fontFamily: 'Cormorant Garamond, serif', fontWeight: 400, color: 'rgba(255,255,255,0.85)', marginBottom: 8, lineHeight: 1.4 }}>
-                  {c.title}
-                </div>
-
-                <div style={{ fontSize: 11, color: c.color, letterSpacing: '0.06em', marginBottom: 6, opacity: 0.9 }}>
-                  {c.issuer}
-                </div>
-
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
-                  {c.date}
-                </div>
-
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 10px', border: `1px solid ${c.color}40`, color: c.color, borderRadius: 2, opacity: 0.8 }}>
-                  {c.badge}
-                </div>
-
-                {/* icône téléchargement */}
-                <div style={{ position: 'absolute', top: 16, right: 16, fontSize: 12, color: 'rgba(255,255,255,0.15)' }}>↗</div>
-              </motion.div>
-            </a>
-          ))}
-        </div>
-
-        {/* Compteur */}
-        <motion.div {...fadeUp(0.3)} style={{ marginTop: 32, display: 'flex', gap: 32, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
-          {[['9', 'Certificats obtenus'], ['3', 'Plateformes (Udemy · Coursera · JA)'], ['2026', 'Dernière certification']].map(([v, l]) => (
-            <div key={l}>
-              <div className="serif grad-gold" style={{ fontSize: 28, fontWeight: 300, lineHeight: 1 }}>{v}</div>
-              <div className="label" style={{ marginTop: 6 }}>{l}</div>
+    <section id="certifications" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+      <div className="section-pad" style={{ paddingBottom: 0 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <motion.div {...fadeUp()}>
+            <div className="label-gold" style={{ marginBottom: 20 }}>Mes accréditations</div>
+            <div className="divider" />
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
+              <TextRevealBlock as="h2" className="display-lg">Certifications</TextRevealBlock>
+              <div className="label" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                {CERTIFICATIONS.length} certificats · Défilez pour les parcourir
+              </div>
             </div>
-          ))}
-        </motion.div>
+          </motion.div>
+        </div>
+      </div>
+
+      <StickyCerts items={CERTIFICATIONS} />
+
+      <div className="section-pad" style={{ paddingTop: 0 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <motion.div {...fadeUp(0.3)} style={{ display: 'flex', gap: 32, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+            {[[String(CERTIFICATIONS.length), 'Certificats obtenus'], ['3', 'Plateformes (Udemy · Coursera · JA)'], ['2026', 'Dernière certification']].map(([v, l]) => (
+              <div key={l}>
+                <div className="serif grad-gold" style={{ fontSize: 28, fontWeight: 300, lineHeight: 1 }}>{v}</div>
+                <div className="label" style={{ marginTop: 6 }}>{l}</div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   )
@@ -1340,7 +1243,7 @@ function Timeline() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mon histoire</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Parcours</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Parcours</TextRevealBlock>
         </motion.div>
         {TIMELINE.map((t, i) => (
           <motion.div key={i} {...fadeUp(i * 0.12)} className="tl-item" style={{ marginBottom: 40 }}>
@@ -1358,13 +1261,28 @@ function Timeline() {
   )
 }
 
-// ── networking (carousel) ─────────────────────────────────────────────────────
+// ── traversée immersive des rencontres ───────────────────────────────────────
+// Une photo occupe l'écran, puis s'écarte pour révéler les six autres : le
+// réseau se déploie au lieu de défiler. Sert de transition vers la galerie.
+function NetworkingImmersion() {
+  return (
+    <section aria-label="Rencontres — traversée visuelle" style={{ position: 'relative' }}>
+      <ZoomParallax images={ZOOM_IMAGES} />
+    </section>
+  )
+}
+
+// ── networking (galerie) ──────────────────────────────────────────────────────
 function Networking() {
   const scrollRef = useRef(null)
   const [canLeft, setCanLeft] = useState(false)
   const [canRight, setCanRight] = useState(true)
   const paused = useRef(false)
   const rafRef = useRef(null)
+  // WebGL sur desktop, carrousel tactile natif sur mobile : la galerie circulaire
+  // charge sept textures et se pilote à la molette, deux choses qui n'ont pas de
+  // sens sur un écran tactile de 6 pouces.
+  const isDesktop = useMediaQuery('(min-width: 769px)')
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current
@@ -1438,8 +1356,8 @@ function Networking() {
           <div className="label-gold" style={{ marginBottom: 20 }}>Mes connexions</div>
           <div className="divider" />
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
-            <h2 className="display-lg">Dans les cercles<br />de la finance africaine</h2>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <TextRevealBlock as="h2" className="display-lg">Dans les cercles<br />de la finance africaine</TextRevealBlock>
+            <div style={{ display: isDesktop ? 'none' : 'flex', gap: 12 }}>
               <motion.button
                 onClick={() => scroll(-1)}
                 disabled={!canLeft}
@@ -1464,6 +1382,14 @@ function Networking() {
           </div>
         </motion.div>
 
+        {isDesktop ? (
+          <>
+            <div className="circular-gallery-mask">
+              <CircularGallery items={GALLERY_ITEMS} bend={2.6} borderRadius={0.045} textColor="#D4AF6A" />
+            </div>
+            <p className="gallery-hint">Glissez · molette · les cartes tournent</p>
+          </>
+        ) : (
         <div
           ref={scrollRef}
           onMouseEnter={() => { paused.current = true }}
@@ -1502,6 +1428,7 @@ function Networking() {
             </motion.div>
           ))}
         </div>
+        )}
 
         {/* Organisations */}
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48, display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
@@ -1523,7 +1450,7 @@ function Publications() {
           <div className="label-gold" style={{ marginBottom: 20 }}>Présence digitale</div>
           <div className="divider" />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
-            <h2 className="display-lg">Publications LinkedIn</h2>
+            <TextRevealBlock as="h2" className="display-lg">Publications LinkedIn</TextRevealBlock>
             <a href="https://linkedin.com/in/auryves-bedje-2981bb331" target="_blank" rel="noreferrer" className="btn-gold" style={{ padding: '10px 24px', fontSize: 11 }}>
               Voir le profil →
             </a>
@@ -1565,7 +1492,7 @@ function Contact() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Parlons ensemble</div>
           <div className="divider" />
-          <h2 className="display-lg" style={{ marginTop: 32 }}>Travaillons Ensemble</h2>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Travaillons Ensemble</TextRevealBlock>
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 64 }}>
           <motion.div {...fadeUp(0.1)}>
@@ -1739,7 +1666,7 @@ function BackToTop() {
       {visible && (
         <motion.button
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={scrollToTop}
           className="glass-gold float-top"
           style={{ position: 'fixed', bottom: 32, right: 32, width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'none', zIndex: 40, fontSize: 16 }}
           whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
@@ -1754,14 +1681,25 @@ function BackToTop() {
 // ── app ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const [loaded, setLoaded] = useState(false)
+
   useEffect(() => {
-    const delay = window.matchMedia('(max-width: 768px)').matches ? 1400 : 2400
-    const t = setTimeout(() => setLoaded(true), delay)
-    return () => clearTimeout(t)
+    initSmoothScroll()
+    return () => destroySmoothScroll()
   }, [])
+
+  // Les sections épinglées mesurent la page au montage. Comme le contenu
+  // n'apparaît qu'après le préchargeur — et derrière un fondu d'opacité qui,
+  // tant qu'il n'est pas terminé, empêche `position: fixed` de se référer au
+  // viewport — il faut remesurer une fois le fondu fini.
+  useEffect(() => {
+    if (!loaded) return
+    const t = setTimeout(() => ScrollTrigger.refresh(), 1100)
+    return () => clearTimeout(t)
+  }, [loaded])
+
   return (
     <div className="site-bg" style={{ minHeight: '100vh', position: 'relative' }}>
-      <Loader done={loaded} />
+      <Preloader onReady={() => setLoaded(true)} />
       <Cursor />
       <Particles />
       <ScrollProgress />
@@ -1781,6 +1719,7 @@ export default function App() {
               <CVSection />
               <Certifications />
               <Timeline />
+              <NetworkingImmersion />
               <Networking />
               <Publications />
               <Contact />
