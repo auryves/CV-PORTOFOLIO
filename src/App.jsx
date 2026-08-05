@@ -102,25 +102,33 @@ function SectionNum({ n, top = '0%', right }) {
 
 // Les CTA passent désormais par <GlowButton>, qui embarque déjà le magnétisme.
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
-// Clôture du 4 août 2026 — sources : richbourse.com (indices BRVM), lejecos.com
-// (capitalisation), cnbc.com / investing.com (indices mondiaux),
-// mansamarkets.com (indices africains, 29 juillet 2026).
+// Données BRVM : sikafinance.com, séance du 5 août 2026. Indices africains et
+// mondiaux conservés à titre de comparaison, avec leur propre date.
+
 //
 // Les cours individuels d'actions ne figurent plus ici : ils n'ont pas pu être
 // vérifiés à une date unique, et un bandeau « EN DIRECT » affichant des prix
 // périmés dessert un profil d'analyste. Les indices, eux, sont datés et sourcés.
 const TICKER = [
-  { sym: 'BRVM Composite', val: '485,89', chg: '+0,09%', up: true },
-  { sym: 'BRVM 30', val: '231,33', chg: '-0,05%', up: false },
-  { sym: 'BRVM Prestige', val: '178,52', chg: '+0,93%', up: true },
-  { sym: 'BRVM Conso. Base', val: '285,62', chg: '+1,57%', up: true },
-  { sym: 'BRVM Télécoms', val: '113,65', chg: '+0,63%', up: true },
-  { sym: 'BRVM Industriels', val: '209,79', chg: '-4,11%', up: false },
-  { sym: 'BRVM Énergie', val: '159,44', chg: '-1,54%', up: false },
-  { sym: 'BRVM Conso. Discr.', val: '203,50', chg: '-0,80%', up: false },
+  // Indices — séance du 5 août 2026, source sikafinance.com
+  { sym: 'BRVM Composite', val: '485,63', chg: '-0,05%', up: false },
+  { sym: 'BRVM 30', val: '231,25', chg: '-0,03%', up: false },
+  { sym: 'BRVM Prestige', val: '179,16', chg: '+0,36%', up: true },
+  { sym: 'Capitalisation', val: '18 700 Mds FCFA', chg: 'actions', up: true },
+  // Valeurs BRVM les plus actives de la séance du 5 août 2026. Les variations
+  // sont vérifiées ; les cours unitaires ne le sont pas et ne sont donc pas
+  // affichés — voir le commentaire ci-dessus.
+  { sym: 'SMB CI', val: '', chg: '+5,13%', up: true },
+  { sym: 'TOTAL SÉNÉGAL', val: '', chg: '+3,71%', up: true },
+  { sym: 'SITAB', val: '', chg: '+3,69%', up: true },
+  { sym: 'SODE CI', val: '', chg: '-7,47%', up: false },
+  { sym: 'SOGB', val: '', chg: '-3,63%', up: false },
+  { sym: 'SIVOA', val: '', chg: '-3,49%', up: false },
+  // Afrique — 29 juillet 2026
   { sym: 'NGX ASI', val: '246 678', chg: '-0,53%', up: false },
   { sym: 'JSE All Share', val: '109 904', chg: '-0,19%', up: false },
   { sym: 'GSE Composite', val: '15 449', chg: '+0,44%', up: true },
+  // Mondial — clôture du 4 août 2026
   { sym: 'S&P 500', val: '7 600', chg: '+1,48%', up: true },
   { sym: 'FTSE 100', val: '10 884', chg: '+0,24%', up: true },
   { sym: 'Nikkei 225', val: '63 958', chg: '+0,32%', up: true },
@@ -388,7 +396,7 @@ const ORGANISATIONS = [
 ]
 
 const DIFFERENTIATORS = [
-  { icon: '📊', title: '20 ans, 2 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Deux applications fintech réelles, concrètes et en développement actif." },
+  { icon: '📊', title: 'Je construis, je ne théorise pas', desc: "Deux applications fintech réelles, concrètes et en développement actif — pas des maquettes ni des concepts." },
   { icon: '🏛️', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
   { icon: '📈', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
   { icon: '🌍', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je suis NYSE, LSE, JPX, CAC 40 et l'ensemble des marchés africains. L'Afrique financière mondiale est mon terrain de jeu." },
@@ -456,7 +464,7 @@ function BRVMTicker() {
         {/* « EN DIRECT » était trompeur : ces valeurs sont un relevé figé, pas un
             flux. Afficher la date de clôture est plus juste — et plus crédible
             pour un profil d'analyste. */}
-        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>CLÔTURE 04.08.26</span>
+        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>CLÔTURE 05.08.26</span>
       </div>
       <div className="ticker-scroll-wrap">
         <div className="ticker-scroll">
@@ -766,7 +774,7 @@ function Hero() {
             style={{ display: 'flex', gap: 'clamp(16px, 5vw, 40px)', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
             {/* Dérivé de PROJECTS : le compteur était resté à 3 après le retrait
                 du projet confidentiel, et se contredisait avec la section Projets. */}
-            {[{ v: PROJECTS.length, l: 'Apps fintech', num: true }, { v: 20, l: 'Ans', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
+            {[{ v: PROJECTS.length, l: 'Apps fintech', num: true }, { v: CERTIFICATIONS.length, l: 'Certifications', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
               <div key={l}>
                 <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>
                   {num ? <Counter to={v} delay={2600} /> : v}
@@ -1025,7 +1033,7 @@ function PourquoiMoi() {
           <div className="divider" style={{ maxWidth: 200, margin: '0 auto' }} />
           <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }} center>Pourquoi moi ?</TextRevealBlock>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, fontWeight: 300 }}>
-            Ce qui me différencie à 20 ans dans l'écosystème fintech africain
+            Ce qui me différencie dans l'écosystème fintech africain
           </p>
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
