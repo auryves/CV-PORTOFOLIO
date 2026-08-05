@@ -119,11 +119,14 @@
 
 /* ─── LOADING ─────────────────────────────────────────────── */
 .loader {
-  position: fixed; inset: 0; z-index: 9999;
+  position: fixed; inset: 0; z-index: 100002;
   background: var(--dark);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 32px;
+  /* État de départ explicite : GSAP ne sait pas interpoler depuis `none`,
+     le rideau resterait figé. */
+  clip-path: inset(0% 0% 0% 0%);
 }
 .loader-logo {
   font-family: 'Cormorant Garamond', serif;
@@ -136,20 +139,31 @@
   background-clip: text;
 }
 .loader-bar {
-  width: 200px; height: 1px;
+  width: min(260px, 60vw); height: 1px;
   background: rgba(255,255,255,0.08);
   position: relative; overflow: hidden;
 }
-.loader-bar::after {
-  content: '';
-  position: absolute; top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, #B57BEE, #D4AF6A, transparent);
-  animation: sweep 1.8s ease-in-out infinite;
+/* Remplissage piloté par la progression réelle du chargement (voir Preloader.jsx) */
+.loader-bar-fill {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, #B57BEE, #D4AF6A);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
 }
-@keyframes sweep {
-  0%   { left: -100%; }
-  100% { left: 100%; }
+.loader-meta {
+  display: flex; align-items: baseline; justify-content: space-between;
+  width: min(260px, 60vw);
+  margin-top: -18px;
+}
+.loader-name {
+  font-size: 10px; letter-spacing: 0.3em;
+  text-transform: uppercase; color: rgba(255,255,255,0.22);
+}
+.loader-count {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px; letter-spacing: 0.18em;
+  color: rgba(212,175,106,0.75);
 }
 
 /* ─── GLASS ───────────────────────────────────────────────── */
@@ -701,4 +715,343 @@
   inset: 0;
   top: calc(var(--ticker-h) + var(--navbar-h));
   z-index: 49;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLL IMMERSIF — Lenis
+   Le smooth natif du navigateur entre en conflit avec l'interpolation Lenis :
+   les deux se disputent la position de scroll et produisent un effet de rebond.
+   ═══════════════════════════════════════════════════════════════════════════ */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* ─── TEXT REVEAL BLOCK (21st.dev @soralabs) ─────────────── */
+.text-reveal-block-line { position: relative; }
+.text-reveal-block-wipe { border-radius: 1px; }
+/* Le titre ne doit jamais rester invisible si le JS ne s'exécute pas. */
+.no-js .text-reveal-block-line > * { opacity: 1 !important; }
+
+/* ─── GALERIE CIRCULAIRE WEBGL ───────────────────────────── */
+.circular-gallery {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: grab;
+  position: relative;
+}
+.circular-gallery:active { cursor: grabbing; }
+.circular-gallery canvas { display: block; }
+/* Fondu latéral : les cartes entrent et sortent du champ au lieu d'être coupées net. */
+.circular-gallery-mask {
+  position: relative;
+  height: clamp(420px, 52vw, 620px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.gallery-hint {
+  display: flex; align-items: center; gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+  font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+}
+.gallery-hint::before,
+.gallery-hint::after {
+  content: '';
+  width: 36px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,106,0.4), transparent);
+}
+
+/* ─── BOUTON À HALO RADIAL (dossier animation code, rethémé) ─────────────────
+   `@property` transforme des valeurs de dégradé en propriétés typées, donc
+   interpolables : sans ça un radial-gradient saute d'un état à l'autre au lieu
+   de glisser. Les navigateurs sans @property affichent l'état de repos — dégradé
+   statique, bouton parfaitement utilisable.
+   ─────────────────────────────────────────────────────────────────────────── */
+@property --gb-pos-x   { syntax: '<percentage>'; initial-value: 40%;  inherits: false; }
+@property --gb-pos-y   { syntax: '<percentage>'; initial-value: 140%; inherits: false; }
+@property --gb-spread-x{ syntax: '<percentage>'; initial-value: 130%; inherits: false; }
+@property --gb-spread-y{ syntax: '<percentage>'; initial-value: 170%; inherits: false; }
+@property --gb-c1 { syntax: '<color>'; initial-value: #07070F; inherits: false; }
+@property --gb-c2 { syntax: '<color>'; initial-value: #2A1A55; inherits: false; }
+@property --gb-c3 { syntax: '<color>'; initial-value: #6C3AED; inherits: false; }
+@property --gb-c4 { syntax: '<color>'; initial-value: #B57BEE; inherits: false; }
+@property --gb-c5 { syntax: '<color>'; initial-value: #07070F; inherits: false; }
+@property --gb-s1 { syntax: '<percentage>'; initial-value: 37.35%; inherits: false; }
+@property --gb-s2 { syntax: '<percentage>'; initial-value: 61.36%; inherits: false; }
+@property --gb-s3 { syntax: '<percentage>'; initial-value: 78.42%; inherits: false; }
+@property --gb-s4 { syntax: '<percentage>'; initial-value: 93.52%; inherits: false; }
+@property --gb-s5 { syntax: '<percentage>'; initial-value: 100%; inherits: false; }
+@property --gb-border-angle { syntax: '<angle>'; initial-value: 180deg; inherits: true; }
+@property --gb-bc1 { syntax: '<color>'; initial-value: rgba(212,175,106,0.55); inherits: true; }
+@property --gb-bc2 { syntax: '<color>'; initial-value: rgba(181,123,238,0.2);  inherits: true; }
+
+.glow-btn {
+  --speed: 1.2s;
+  --cut: 1px;
+  --gb-bg: radial-gradient(
+    var(--gb-spread-x) var(--gb-spread-y) at var(--gb-pos-x) var(--gb-pos-y),
+    var(--gb-c1) var(--gb-s1),
+    var(--gb-c2) var(--gb-s2),
+    var(--gb-c3) var(--gb-s3),
+    var(--gb-c4) var(--gb-s4),
+    var(--gb-c5) var(--gb-s5)
+  );
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 50px;
+  padding: 15px 34px;
+  border: none;
+  border-radius: 2px;               /* aligné sur le reste du site, pas 11px */
+  font-family: inherit;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.94);
+  background: var(--gb-bg);
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  text-shadow: 0 0 3px rgba(0,0,0,0.8);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    --gb-pos-x .75s, --gb-pos-y .75s, --gb-spread-x .75s, --gb-spread-y .75s,
+    --gb-c1 .75s, --gb-c2 .75s, --gb-c3 .75s, --gb-c4 .75s, --gb-c5 .75s,
+    --gb-s1 .75s, --gb-s2 .75s, --gb-s3 .75s, --gb-s4 .75s, --gb-s5 .75s,
+    --gb-border-angle .75s, --gb-bc1 .75s, --gb-bc2 .75s;
+}
+.glow-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  padding: 1px; border-radius: inherit;
+  background-image: linear-gradient(var(--gb-border-angle), var(--gb-bc1), var(--gb-bc2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+/* Variante or — le dégradé bascule vers le doré au repos. */
+.glow-btn--gold {
+  --gb-c2: #3A2A10;
+  --gb-c3: #8A6B28;
+  --gb-c4: #D4AF6A;
+}
+.glow-btn:hover {
+  --gb-pos-x: 0%;
+  --gb-pos-y: 120%;
+  --gb-spread-x: 110.24%;
+  --gb-spread-y: 110.2%;
+  --gb-s1: 0%;
+  --gb-s2: 10%;
+  --gb-s3: 35.44%;
+  --gb-s4: 71.34%;
+  --gb-s5: 150%;
+  --gb-border-angle: 190deg;
+  --gb-bc1: rgba(240,208,138,0.85);
+  --gb-bc2: rgba(181,123,238,0.4);
+  --glow-line-opacity: 1;
+}
+.glow-btn--gold:hover { --gb-c2: #D4AF6A; --gb-c3: #6C3AED; --gb-c4: #2A1A55; }
+.glow-btn--violet:hover { --gb-c2: #B57BEE; --gb-c3: #D4AF6A; --gb-c4: #2A1A55; }
+
+.glow-btn-label { position: relative; z-index: 1; }
+.glow-btn-bg {
+  position: absolute; inset: var(--cut);
+  background: var(--gb-bg);
+  border-radius: inherit;
+  transition: background 0.25s, opacity 0.25s;
+}
+/* Balayage conique : la « lumière » qui traverse le bouton au survol. */
+.glow-btn-shine {
+  position: absolute; inset: 0;
+  container-type: size;
+  border-radius: inherit;
+  mix-blend-mode: soft-light;
+  opacity: var(--glow-line-opacity, 0);
+  transition: opacity 0.3s;
+  overflow: visible;
+  pointer-events: none;
+}
+.glow-btn-shine span {
+  position: absolute; inset: 0;
+  height: 100cqh; aspect-ratio: 1;
+  animation: gb-slide var(--speed) ease-in-out infinite alternate;
+  overflow: visible;
+}
+.glow-btn-shine span::before {
+  content: '';
+  position: absolute; inset: -100%;
+  background: conic-gradient(from calc(270deg - 45deg), transparent 0, #fff 90deg, transparent 90deg);
+  animation: gb-spin calc(var(--speed) * 2) infinite linear;
+}
+@keyframes gb-spin {
+  0% { rotate: 0deg; }
+  15%, 35% { rotate: 90deg; }
+  65%, 85% { rotate: 270deg; }
+  100% { rotate: 360deg; }
+}
+@keyframes gb-slide { to { transform: translate(calc(100cqw - 100%), 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-btn-shine { display: none; }
+}
+
+/* ─── ZOOM PARALLAX — traversée immersive ────────────────── */
+.zoom-parallax { position: relative; height: 300vh; }
+.zoom-parallax-stage {
+  position: sticky; top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+.zoom-layer {
+  position: absolute; top: 0;
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; width: 100%;
+  will-change: transform;
+}
+.zoom-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.zoom-frame img {
+  height: 100%; width: 100%;
+  object-fit: cover;
+  display: block;
+}
+.zoom-caption {
+  position: absolute; inset: auto 0 0 0;
+  padding: 14px 16px;
+  background: linear-gradient(to top, rgba(7,7,15,0.9), transparent);
+  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+}
+@media (max-width: 768px) {
+  /* Course de scroll raccourcie : la traversée reste lisible sans épuiser le pouce. */
+  .zoom-parallax { height: 220vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zoom-parallax { height: auto; }
+  .zoom-parallax-stage { position: relative; height: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+  .zoom-layer { position: relative; display: block; height: auto; width: auto; transform: none !important; }
+  .zoom-frame { position: relative !important; top: auto !important; left: auto !important; height: 220px !important; width: 100% !important; }
+}
+
+/* ─── PILE DE CARTES ÉPINGLÉE — CERTIFICATIONS ───────────── */
+.sticky-cards {
+  height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  padding: 0 clamp(16px, 4vw, 32px);
+}
+.sticky-cards-frame {
+  position: relative;
+  width: 100%; max-width: 640px;
+  height: min(470px, 64vh);
+}
+.cert-plate {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: clamp(24px, 4vw, 40px);
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(20,20,42,0.98), rgba(9,9,20,0.99));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.02) inset;
+  overflow: hidden;
+  will-change: transform;
+  transform-origin: center top;
+  backface-visibility: hidden;
+}
+.cert-plate-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent);
+  opacity: 0.8;
+}
+.cert-plate-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: auto;
+}
+.cert-plate-icon { font-size: clamp(30px, 5vw, 40px); line-height: 1; }
+.cert-plate-index {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px; letter-spacing: 0.18em;
+  color: var(--accent);
+}
+.cert-plate-index i { font-style: normal; color: rgba(255,255,255,0.2); }
+.cert-plate-title {
+  font-size: clamp(24px, 4.2vw, 38px);
+  font-weight: 300; line-height: 1.15;
+  color: rgba(255,255,255,0.94);
+  margin: 28px 0 12px;
+}
+.cert-plate-issuer {
+  font-size: 13px; line-height: 1.6;
+  color: var(--accent);
+  opacity: 0.85;
+  margin-bottom: 28px;
+}
+.cert-plate-foot {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.cert-plate-meta { display: flex; flex-direction: column; gap: 8px; }
+.cert-plate-date {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+.cert-plate-badge {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  padding: 5px 11px; border-radius: 2px;
+  width: max-content;
+}
+.cert-plate-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  transition: color 0.3s, border-color 0.3s;
+}
+.cert-plate-link:hover { color: var(--accent); border-color: var(--accent); }
+.cert-plate-link span { transition: transform 0.3s; }
+.cert-plate-link:hover span { transform: translate(3px, -3px); }
+
+/* Repli sans empilement : grille simple si l'utilisateur limite les animations. */
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.cert-grid .cert-plate { position: relative; inset: auto; height: 100%; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITÉ — respect de prefers-reduced-motion
+   Les effets décoratifs sont coupés ; rien n'est masqué au point de rendre le
+   contenu illisible si une animation n'a pas pu se jouer.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  body::before { animation: none; }
+  .particle, .orb, .cursor-dot, .cursor-ring { display: none !important; }
+  .ticker-scroll { animation: none !important; }
+  .text-reveal-block-wipe { display: none !important; }
+  .text-reveal-block-line > * { opacity: 1 !important; }
+  .split-line { transform: none !important; opacity: 1 !important; }
+  .sticky-cards { height: auto; padding: 0; overflow: visible; }
+  .sticky-cards-frame { height: auto; max-width: none; }
 }
