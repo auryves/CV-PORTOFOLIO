@@ -9,7 +9,7 @@ import TextRevealBlock from './components/TextRevealBlock'
 import StickyCerts from './components/StickyCerts'
 import CircularGallery from './components/CircularGallery'
 import ZoomParallax from './components/ZoomParallax'
-import GlowButton from './components/GlowButton'
+import ActionButton from './components/ActionButton'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -732,12 +732,12 @@ function Hero() {
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d(2.3) }}
             style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 64 }}>
-            <GlowButton href="#projects" variant="violet">
-              Voir mes projets <span aria-hidden="true">→</span>
-            </GlowButton>
-            <GlowButton href="/CV-Auryves-Bedje.pdf" download variant="gold">
-              <span aria-hidden="true">↓</span> Télécharger mon CV
-            </GlowButton>
+            <ActionButton href="#projects" variant="violet" arrow="→">
+              Voir mes projets
+            </ActionButton>
+            <ActionButton href="/CV-Auryves-Bedje.pdf" download variant="gold" arrow="↓">
+              Télécharger mon CV
+            </ActionButton>
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(2.6) }}
