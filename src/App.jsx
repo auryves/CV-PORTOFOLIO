@@ -743,7 +743,9 @@ function Hero() {
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(2.6) }}
             style={{ display: 'flex', gap: 'clamp(16px, 5vw, 40px)', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
-            {[{ v: 3, l: 'Apps fintech', num: true }, { v: 20, l: 'Ans', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
+            {/* Dérivé de PROJECTS : le compteur était resté à 3 après le retrait
+                du projet confidentiel, et se contredisait avec la section Projets. */}
+            {[{ v: PROJECTS.length, l: 'Apps fintech', num: true }, { v: 20, l: 'Ans', num: true }, { v: 'BRVM', l: '+ marchés mondiaux', num: false }].map(({ v, l, num }) => (
               <div key={l}>
                 <div className="serif grad-gold" style={{ fontSize: 32, fontWeight: 300, lineHeight: 1 }}>
                   {num ? <Counter to={v} delay={2600} /> : v}

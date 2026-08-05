@@ -24,7 +24,12 @@
 
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
+    /* `clip` et non `hidden` : sur un seul axe, `hidden` force l'autre axe à
+       `auto`, ce qui transforme l'élément en conteneur de défilement. Les
+       `position: sticky` descendants s'accrochent alors à ce conteneur — qui ne
+       défile jamais — au lieu du viewport, et se contentent de défiler hors
+       écran. `clip` bloque le débordement horizontal sans cet effet de bord. */
+    overflow-x: clip;
   }
 
   body {
@@ -32,7 +37,7 @@
     color: white;
     font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    overflow-x: clip;
     cursor: none;
   }
 
@@ -939,6 +944,10 @@ html.lenis, html.lenis body { height: auto; }
   position: relative;
   width: 100%; max-width: 640px;
   height: min(470px, 64vh);
+  /* Les cartes en attente sont décalées de 110 % de LEUR hauteur, pas de celle
+     de la scène : sans découpe, elles dépassaient sous le cadre et la carte
+     suivante était visible avant son tour. */
+  overflow: hidden;
 }
 .cert-plate {
   position: absolute; inset: 0;
