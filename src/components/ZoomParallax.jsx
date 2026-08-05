@@ -16,14 +16,19 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 
 // Position de chaque visuel par rapport au centre, et vitesse de zoom associée.
 // L'index 0 reste plein centre : c'est l'image d'accueil du plan.
+//
+// Les proportions sont volontairement proches du portrait : ce sont des photos
+// de personnes, et un cadre très large impose un recadrage vertical si sévère
+// que les visages sortent du champ. Les cadres d'origine (35vw × 30vh) coupaient
+// les têtes sur la rangée du haut.
 const LAYOUT = [
-  { scale: 4, top: '0vh', left: '0vw', h: '26vh', w: '26vw' },
-  { scale: 5, top: '-30vh', left: '5vw', h: '30vh', w: '35vw' },
-  { scale: 6, top: '-10vh', left: '-25vw', h: '45vh', w: '20vw' },
-  { scale: 5, top: '0vh', left: '27.5vw', h: '25vh', w: '25vw' },
-  { scale: 6, top: '27.5vh', left: '5vw', h: '25vh', w: '20vw' },
-  { scale: 8, top: '27.5vh', left: '-22.5vw', h: '25vh', w: '30vw' },
-  { scale: 9, top: '22.5vh', left: '25vw', h: '15vh', w: '15vw' },
+  { scale: 4, top: '0vh',    left: '0vw',     h: '30vh', w: '24vw' },
+  { scale: 5, top: '-28vh',  left: '6vw',     h: '34vh', w: '26vw' },
+  { scale: 6, top: '-8vh',   left: '-25vw',   h: '38vh', w: '23vw' },
+  { scale: 5, top: '0vh',    left: '27vw',    h: '30vh', w: '22vw' },
+  { scale: 6, top: '28vh',   left: '6vw',     h: '26vh', w: '20vw' },
+  { scale: 8, top: '28vh',   left: '-23vw',   h: '26vh', w: '22vw' },
+  { scale: 9, top: '24vh',   left: '26vw',    h: '20vh', w: '16vw' },
 ]
 
 function ZoomLayer({ item, index, progress }) {
@@ -37,9 +42,9 @@ function ZoomLayer({ item, index, progress }) {
         style={{ top: cfg.top, left: cfg.left, height: cfg.h, width: cfg.w }}
       >
         <img src={item.src} alt={item.alt} loading={index === 0 ? 'eager' : 'lazy'} />
-        {index === 0 && item.caption && (
+        {index === 0 && item.name && (
           <div className="zoom-caption">
-            <span>{item.caption}</span>
+            <span>{item.name}</span>
           </div>
         )}
       </div>

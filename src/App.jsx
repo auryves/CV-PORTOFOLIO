@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'fra
 import { useForm, ValidationError } from '@formspree/react'
 import { gsap, ScrollTrigger } from './motion'
 import { initSmoothScroll, destroySmoothScroll, scrollToTop } from './smoothScroll'
-import { useParallax, useScrollVelocity, useMediaQuery } from './hooks/useMotionFx'
+import { useParallax, useMediaQuery } from './hooks/useMotionFx'
 import Preloader from './components/Preloader'
 import TextRevealBlock from './components/TextRevealBlock'
 import StickyCerts from './components/StickyCerts'
@@ -362,7 +362,9 @@ const GALLERY_ITEMS = PHOTOS.map((p) => ({ image: `/photos/${p.file}`, text: p.n
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
-  caption: `${p.name} · ${p.org}`,
+  // Nom seul : la légende complète débordait sur deux lignes et recouvrait les
+  // visages du cadre central.
+  name: p.name,
 }))
 
 const DIFFERENTIATORS = [
@@ -425,17 +427,6 @@ function Cursor() {
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
 function BRVMTicker() {
   const items = [...TICKER, ...TICKER]
-  const scrollRef = useRef(null)
-
-  // Le bandeau accélère avec le scroll — un flux de cotation qui s'emballe quand
-  // on parcourt la page. Le lien entre le geste et le décor rend le scroll vivant
-  // au lieu de simplement faire défiler un décor indifférent.
-  useScrollVelocity(
-    useCallback((v) => {
-      const el = scrollRef.current
-      if (el) el.style.animationDuration = `${40 / (1 + v)}s`
-    }, [])
-  )
 
   return (
     <div className="brvm-ticker">
@@ -445,7 +436,7 @@ function BRVMTicker() {
         <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>EN DIRECT</span>
       </div>
       <div className="ticker-scroll-wrap">
-        <div className="ticker-scroll" ref={scrollRef}>
+        <div className="ticker-scroll">
           {items.map((t, i) => (
             <span key={i} className="ticker-item">
               <span style={{ color: 'rgba(255,255,255,0.55)', marginRight: 6 }}>{t.sym}</span>
@@ -1352,7 +1343,7 @@ function Networking() {
   return (
     <section id="networking" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <motion.div {...fadeUp()} style={{ marginBottom: 60 }}>
+        <motion.div {...fadeUp()} style={{ marginBottom: 36 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mes connexions</div>
           <div className="divider" />
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>

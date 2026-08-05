@@ -899,7 +899,9 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ─── ZOOM PARALLAX — traversée immersive ────────────────── */
-.zoom-parallax { position: relative; height: 300vh; }
+/* 250 vh plutôt que 300 : au-delà, la fin de la traversée se joue sur un écran
+   déjà saturé par le zoom et le scroll supplémentaire ne montre plus rien. */
+.zoom-parallax { position: relative; height: 250vh; }
 .zoom-parallax-stage {
   position: sticky; top: 0;
   height: 100vh;
@@ -919,20 +921,27 @@ html.lenis, html.lenis body { height: auto; }
 .zoom-frame img {
   height: 100%; width: 100%;
   object-fit: cover;
+  /* Recadrage biaisé vers le haut : sur des photos de personnes, `cover` centré
+     rogne d'abord les visages, qui se situent dans le tiers supérieur. */
+  object-position: center 22%;
   display: block;
 }
 .zoom-caption {
   position: absolute; inset: auto 0 0 0;
-  padding: 14px 16px;
-  background: linear-gradient(to top, rgba(7,7,15,0.9), transparent);
-  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: rgba(255,255,255,0.7);
+  padding: 10px 12px 8px;
+  background: linear-gradient(to top, rgba(7,7,15,0.92), transparent);
+  font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
   text-align: center;
+  line-height: 1.5;
 }
 @media (max-width: 768px) {
   /* Course de scroll raccourcie : la traversée reste lisible sans épuiser le pouce. */
-  .zoom-parallax { height: 220vh; }
+  .zoom-parallax { height: 190vh; }
 }
+/* La galerie enchaîne directement sur la traversée : le padding de section
+   complet créait un trou entre les deux moments photo. */
+#networking.section-pad { padding-top: 56px; }
 @media (prefers-reduced-motion: reduce) {
   .zoom-parallax { height: auto; }
   .zoom-parallax-stage { position: relative; height: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
