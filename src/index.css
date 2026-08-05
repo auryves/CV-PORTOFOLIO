@@ -852,19 +852,15 @@ html.lenis, html.lenis body { height: auto; }
   display: flex; align-items: center; justify-content: center;
   height: 100%; width: 100%;
   will-change: transform;
-  /* Les sept calques se superposent en plein écran : sans ça, le dernier capte
-     tous les survols et une seule photo répondrait jamais au curseur. */
+  /* Traversée purement visuelle : rien n'y est cliquable ni survolable. Sans ça,
+     les sept calques empilés en plein écran captureraient les pointeurs et
+     bloqueraient ce qui se trouve dessous. */
   pointer-events: none;
 }
 .zoom-frame {
   position: relative;
   overflow: hidden;
   border-radius: 3px;
-  pointer-events: auto;
-  transition: box-shadow 0.35s ease;
-}
-.zoom-frame:hover {
-  box-shadow: 0 0 0 1px rgba(212,175,106,0.55), 0 18px 50px rgba(0,0,0,0.5);
 }
 .zoom-frame img {
   height: 100%; width: 100%;

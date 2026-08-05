@@ -10,6 +10,7 @@ import StickyCerts from './components/StickyCerts'
 import CircularGallery from './components/CircularGallery'
 import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
+import PhotoTip from './components/PhotoTip'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -1277,6 +1278,8 @@ function Networking() {
   // charge sept textures et se pilote à la molette, deux choses qui n'ont pas de
   // sens sur un écran tactile de 6 pouces.
   const isDesktop = useMediaQuery('(min-width: 769px)')
+  // Index de la carte WebGL survolée — alimente l'infobulle.
+  const [hoveredPhoto, setHoveredPhoto] = useState(null)
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current
@@ -1379,9 +1382,16 @@ function Networking() {
         {isDesktop ? (
           <>
             <div className="circular-gallery-mask">
-              <CircularGallery items={GALLERY_ITEMS} bend={2.6} borderRadius={0.045} textColor="#D4AF6A" />
+              <CircularGallery
+                items={GALLERY_ITEMS}
+                bend={2.6}
+                borderRadius={0.045}
+                textColor="#D4AF6A"
+                onHoverChange={setHoveredPhoto}
+              />
             </div>
-            <p className="gallery-hint">Glissez · molette · les cartes tournent</p>
+            <PhotoTip data={hoveredPhoto === null ? null : PHOTOS[hoveredPhoto]} />
+            <p className="gallery-hint">Survolez une photo · glissez pour faire tourner</p>
           </>
         ) : (
         <div
