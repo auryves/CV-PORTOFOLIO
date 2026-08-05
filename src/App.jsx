@@ -11,6 +11,8 @@ import CircularGallery from './components/CircularGallery'
 import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
 import PhotoTip from './components/PhotoTip'
+import OrgMarquee from './components/OrgMarquee'
+import FooterSignature from './components/FooterSignature'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -370,6 +372,11 @@ const ZOOM_IMAGES = PHOTOS.map((p) => ({
   org: p.org,
   event: p.event,
 }))
+
+const ORGANISATIONS = [
+  'Bloomfield Intelligence', 'BRVM', 'CGF Gestion', 'Ecobank', 'Wave CI',
+  'Table Ronde Intelligence Éco.', 'CNPS', 'PUSH CI',
+]
 
 const DIFFERENTIATORS = [
   { icon: '📊', title: '20 ans, 2 apps en cours', desc: "Rare à cet âge : je ne théorise pas, je construis. Deux applications fintech réelles, concrètes et en développement actif." },
@@ -1436,11 +1443,9 @@ function Networking() {
         </div>
         )}
 
-        {/* Organisations */}
-        <motion.div {...fadeUp(0.4)} style={{ marginTop: 48, display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          {['Bloomfield Intelligence', 'BRVM', 'CGF Gestion', 'Ecobank', 'Wave CI', "Table Ronde Intelligence Éco.", 'CNPS', 'PUSH CI'].map(o => (
-            <span key={o} className="glass" style={{ padding: '8px 18px', borderRadius: 2, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{o}</span>
-          ))}
+        {/* Organisations — bandeau défilant éclairé au curseur */}
+        <motion.div {...fadeUp(0.4)} style={{ marginTop: 48 }}>
+          <OrgMarquee items={ORGANISATIONS} />
         </motion.div>
       </div>
     </section>
@@ -1615,6 +1620,7 @@ function Footer() {
           <p className="label" style={{ color: 'rgba(255,255,255,0.2)' }}>© 2026 · Abidjan, Côte d'Ivoire</p>
           <p className="label" style={{ color: 'rgba(255,255,255,0.15)' }}>Construire la finance africaine de demain 🌍</p>
         </div>
+        <FooterSignature text="AURYVES BEDJE" />
       </div>
     </footer>
   )
