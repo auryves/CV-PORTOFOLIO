@@ -362,9 +362,12 @@ const GALLERY_ITEMS = PHOTOS.map((p) => ({ image: `/photos/${p.file}`, text: p.n
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
-  // Nom seul : la légende complète débordait sur deux lignes et recouvrait les
-  // visages du cadre central.
+  // La légende gravée dans l'image se limite au nom (la version complète
+  // débordait sur les visages) ; le reste passe dans l'infobulle au survol.
   name: p.name,
+  role: p.role,
+  org: p.org,
+  event: p.event,
 }))
 
 const DIFFERENTIATORS = [

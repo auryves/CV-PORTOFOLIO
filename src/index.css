@@ -912,11 +912,19 @@ html.lenis, html.lenis body { height: auto; }
   display: flex; align-items: center; justify-content: center;
   height: 100%; width: 100%;
   will-change: transform;
+  /* Les sept calques se superposent en plein écran : sans ça, le dernier capte
+     tous les survols et une seule photo répondrait jamais au curseur. */
+  pointer-events: none;
 }
 .zoom-frame {
   position: relative;
   overflow: hidden;
   border-radius: 3px;
+  pointer-events: auto;
+  transition: box-shadow 0.35s ease;
+}
+.zoom-frame:hover {
+  box-shadow: 0 0 0 1px rgba(212,175,106,0.55), 0 18px 50px rgba(0,0,0,0.5);
 }
 .zoom-frame img {
   height: 100%; width: 100%;
@@ -947,6 +955,49 @@ html.lenis, html.lenis body { height: auto; }
   .zoom-parallax-stage { position: relative; height: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
   .zoom-layer { position: relative; display: block; height: auto; width: auto; transform: none !important; }
   .zoom-frame { position: relative !important; top: auto !important; left: auto !important; height: 220px !important; width: 100% !important; }
+}
+
+/* ─── INFOBULLE AU CURSEUR (dossier animation code) ──────── */
+/* Portalisée dans <body> : à l'intérieur de la scène, elle hériterait du zoom
+   des calques et grossirait jusqu'à ×9 avec la photo. */
+.photo-tip {
+  position: fixed; top: 0; left: 0;
+  z-index: 99990;
+  pointer-events: none;
+  width: max-content; max-width: 280px;
+  padding: 14px 18px;
+  background: rgba(9,9,20,0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(212,175,106,0.28);
+  border-radius: 3px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+}
+.photo-tip-name {
+  font-size: 19px; font-weight: 400; line-height: 1.2;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 6px;
+}
+.photo-tip-role {
+  font-size: 11px; letter-spacing: 0.09em;
+  color: #D4AF6A;
+  margin-bottom: 5px;
+}
+.photo-tip-org {
+  font-size: 11px; line-height: 1.5;
+  color: rgba(181,123,238,0.85);
+  margin-bottom: 6px;
+}
+.photo-tip-event {
+  font-size: 10px; letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.32);
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+/* Sans survol (tactile), l'infobulle n'a pas de déclencheur : la légende gravée
+   sur le cadre central prend le relais. */
+@media (hover: none) {
+  .photo-tip { display: none; }
 }
 
 /* ─── PILE DE CARTES ÉPINGLÉE — CERTIFICATIONS ───────────── */
