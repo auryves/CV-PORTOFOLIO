@@ -12,6 +12,7 @@ import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
 import PhotoTip from './components/PhotoTip'
 import OrgMarquee from './components/OrgMarquee'
+import MobileDock from './components/MobileDock'
 import StaggerLink from './components/StaggerLink'
 import './index.css'
 
@@ -1765,6 +1766,7 @@ export default function App() {
             <Footer />
             <WhatsAppFloat />
             <BackToTop />
+            <MobileDock />
           </motion.div>
         )}
       </AnimatePresence>
