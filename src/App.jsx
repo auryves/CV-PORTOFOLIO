@@ -1297,6 +1297,11 @@ function Timeline() {
 // Une photo occupe l'écran, puis s'écarte pour révéler les six autres : le
 // réseau se déploie au lieu de défiler. Sert de transition vers la galerie.
 function NetworkingImmersion() {
+  const isDesktop = useMediaQuery('(min-width: 769px)')
+  // Retirée sur mobile : la traversée coûtait près de deux écrans de scroll pour
+  // aboutir aux mêmes visages que la galerie juste en dessous — et sans survol,
+  // donc sans moyen de les identifier. La galerie qui défile seule suffit.
+  if (!isDesktop) return null
   return (
     <section aria-label="Rencontres — traversée visuelle" style={{ position: 'relative' }}>
       <ZoomParallax images={ZOOM_IMAGES} />
@@ -1331,13 +1336,17 @@ function Networking() {
     checkScroll()
     el.addEventListener('scroll', checkScroll, { passive: true })
 
-    // Auto-scroll désactivé sur mobile — swipe natif
-    if (window.matchMedia('(max-width: 768px)').matches) return
-    let pos = 0
-    const speed = 0.6
+    // Défilement automatique sur tous les formats. Sur mobile il remplace la
+    // traversée zoom retirée : la galerie avance seule au lieu d'attendre un
+    // geste, et le swipe reste possible à tout moment.
+    const mob = window.matchMedia('(max-width: 768px)').matches
+    let pos = el.scrollLeft
+    const speed = mob ? 0.35 : 0.6
     const animate = () => {
       if (!paused.current && el) {
         pos += speed
+        // La liste est doublée dans le rendu : revenir à mi-parcours reprend au
+        // même visuel, la boucle est invisible.
         if (pos >= el.scrollWidth / 2) pos = 0
         el.scrollLeft = pos
       }
@@ -1345,8 +1354,28 @@ function Networking() {
     }
     rafRef.current = requestAnimationFrame(animate)
 
+    // Le doigt reprend la main : on suspend pendant le geste, puis on reprend à
+    // la position atteinte pour éviter le saut en arrière.
+    let resumeTimer
+    const holdStart = () => {
+      clearTimeout(resumeTimer)
+      paused.current = true
+    }
+    const holdEnd = () => {
+      clearTimeout(resumeTimer)
+      resumeTimer = setTimeout(() => {
+        pos = el.scrollLeft
+        paused.current = false
+      }, 2500)
+    }
+    el.addEventListener('touchstart', holdStart, { passive: true })
+    el.addEventListener('touchend', holdEnd, { passive: true })
+
     return () => {
       el.removeEventListener('scroll', checkScroll)
+      el.removeEventListener('touchstart', holdStart)
+      el.removeEventListener('touchend', holdEnd)
+      clearTimeout(resumeTimer)
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [checkScroll])

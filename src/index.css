@@ -747,6 +747,10 @@
   .ticker-label { display: none; }
   .brvm-ticker { height: 32px; }
   :root { --ticker-h: 32px; }
+  /* Sur mobile le libellé disparaît, donc la bande dispose de toute la largeur :
+     on accélère pour qu'un tour complet des vingt-huit lignes reste raisonnable
+     au lieu de mettre 40 s. */
+  .ticker-scroll { animation-duration: 24s; }
 }
 
 /* ─── NAVBAR MOBILE ──────────────────────────────────────── */
@@ -1208,7 +1212,17 @@ html.lenis, html.lenis body { height: auto; }
   }
   body::before { animation: none; }
   .particle, .orb, .cursor-dot, .cursor-ring { display: none !important; }
+  /* Le bandeau porte du contenu — les cours — et non un décor. L'arrêter sans
+     contrepartie enfermait le lecteur sur les deux premières valeurs, les treize
+     autres devenant inatteignables. On coupe le mouvement automatique, mais on
+     rend la bande déplaçable au doigt pour que tout reste accessible. */
   .ticker-scroll { animation: none !important; }
+  .ticker-scroll-wrap {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ticker-scroll-wrap::-webkit-scrollbar { display: none; }
   .text-reveal-block-wipe { display: none !important; }
   .text-reveal-block-line > * { opacity: 1 !important; }
   .split-line { transform: none !important; opacity: 1 !important; }
