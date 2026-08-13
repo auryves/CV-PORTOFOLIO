@@ -615,80 +615,121 @@ function Navbar() {
   )
 }
 
-// ── Three.js WebGL network background — desktop only ─────────────────────────
+// ── fond du hero — réseau de particules en Canvas 2D ─────────────────────────
+// Remplace une scène Three.js qui pesait 500 Ko compilés — 45 % du JavaScript du
+// site — pour un décor. React ne démarrait pas avant d'avoir analysé ce poids,
+// et le préchargeur ne pouvait donc pas se retirer plus tôt : le fond décoratif
+// retardait l'affichage de tout le reste.
+//
+// Le Canvas 2D rend le même réseau de points reliés, réagit au curseur, et ne
+// coûte aucune dépendance.
 function HeroWebGL() {
   const canvas = useRef(null)
   useEffect(() => {
     const el = canvas.current
     if (!el) return
-    // Skip WebGL on mobile — too heavy, causes visible jank
+    // Ni sur mobile ni quand l'utilisateur limite les animations : c'est un décor.
     if (window.matchMedia('(max-width: 768px)').matches) return
-    let raf, renderer
-    import('three').then((THREE) => {
-      const W = el.offsetWidth, H = el.offsetHeight
-      renderer = new THREE.WebGLRenderer({ canvas: el, alpha: true, antialias: true })
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-      renderer.setSize(W, H)
-      const scene = new THREE.Scene()
-      const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000)
-      camera.position.z = 5
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-      const N = 60
-      const positions = new Float32Array(N * 3)
-      const colors = new Float32Array(N * 3)
-      const lavender = new THREE.Color('#B57BEE'), gold = new THREE.Color('#D4AF6A')
-      const nodeData = Array.from({ length: N }, () => ({
-        x: (Math.random() - 0.5) * 14,
-        y: (Math.random() - 0.5) * 8,
-        z: (Math.random() - 0.5) * 4,
-        vx: (Math.random() - 0.5) * 0.004,
-        vy: (Math.random() - 0.5) * 0.004,
-      }))
-      nodeData.forEach((n, i) => {
-        positions[i*3] = n.x; positions[i*3+1] = n.y; positions[i*3+2] = n.z
-        const c = i % 3 === 0 ? gold : lavender
-        colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b
-      })
-      const ptGeo = new THREE.BufferGeometry()
-      ptGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-      ptGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
-      scene.add(new THREE.Points(ptGeo, new THREE.PointsMaterial({ size: 0.06, vertexColors: true, transparent: true, opacity: 0.65 })))
+    const ctx = el.getContext('2d')
+    let raf
+    let points = []
+    const mouse = { x: null, y: null, r: 190 }
 
-      const linePos = []
-      for (let i = 0; i < N; i++)
-        for (let j = i + 1; j < N; j++) {
-          const dx = nodeData[i].x - nodeData[j].x, dy = nodeData[i].y - nodeData[j].y
-          if (Math.sqrt(dx*dx + dy*dy) < 2.8)
-            linePos.push(nodeData[i].x, nodeData[i].y, nodeData[i].z, nodeData[j].x, nodeData[j].y, nodeData[j].z)
-        }
-      const lineGeo = new THREE.BufferGeometry()
-      lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePos, 3))
-      scene.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: '#B57BEE', transparent: true, opacity: 0.09 })))
-
-      const animate = () => {
-        raf = requestAnimationFrame(animate)
-        nodeData.forEach((n, i) => {
-          n.x += n.vx; n.y += n.vy
-          if (Math.abs(n.x) > 7) n.vx *= -1
-          if (Math.abs(n.y) > 4) n.vy *= -1
-          positions[i*3] = n.x; positions[i*3+1] = n.y
+    const build = () => {
+      points = []
+      const n = Math.min(110, Math.round((el.width * el.height) / 11000))
+      for (let i = 0; i < n; i++) {
+        const size = Math.random() * 1.6 + 0.7
+        points.push({
+          x: Math.random() * el.width,
+          y: Math.random() * el.height,
+          vx: Math.random() * 0.34 - 0.17,
+          vy: Math.random() * 0.34 - 0.17,
+          size,
         })
-        ptGeo.attributes.position.needsUpdate = true
-        scene.rotation.y += 0.0004
-        renderer.render(scene, camera)
       }
-      animate()
+    }
 
-      const onResize = () => {
-        const w = el.offsetWidth, h = el.offsetHeight
-        camera.aspect = w / h; camera.updateProjectionMatrix()
-        renderer.setSize(w, h)
+    const resize = () => {
+      el.width = el.offsetWidth
+      el.height = el.offsetHeight
+      build()
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, el.width, el.height)
+
+      for (const p of points) {
+        if (p.x > el.width || p.x < 0) p.vx = -p.vx
+        if (p.y > el.height || p.y < 0) p.vy = -p.vy
+        // Le curseur repousse les points qu'il approche — le fond répond au geste
+        // au lieu de dériver indifféremment.
+        if (mouse.x !== null) {
+          const dx = mouse.x - p.x
+          const dy = mouse.y - p.y
+          const d = Math.hypot(dx, dy)
+          if (d < mouse.r && d > 0) {
+            const f = (mouse.r - d) / mouse.r
+            p.x -= (dx / d) * f * 3.2
+            p.y -= (dy / d) * f * 3.2
+          }
+        }
+        p.x += p.vx
+        p.y += p.vy
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(181,123,238,0.55)'
+        ctx.fill()
       }
-      window.addEventListener('resize', onResize)
+
+      // Les liens ne sont tracés qu'en deçà d'un seuil, et la comparaison se fait
+      // sur le carré de la distance : pas de racine carrée dans la boucle interne.
+      const maxSq = 128 * 128
+      for (let a = 0; a < points.length; a++) {
+        for (let b = a + 1; b < points.length; b++) {
+          const dx = points[a].x - points[b].x
+          const dy = points[a].y - points[b].y
+          const sq = dx * dx + dy * dy
+          if (sq > maxSq) continue
+          ctx.strokeStyle = `rgba(181,123,238,${0.16 * (1 - sq / maxSq)})`
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(points[a].x, points[a].y)
+          ctx.lineTo(points[b].x, points[b].y)
+          ctx.stroke()
+        }
+      }
+      raf = requestAnimationFrame(draw)
+    }
+
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect()
+      mouse.x = e.clientX - r.left
+      mouse.y = e.clientY - r.top
+    }
+    const onLeave = () => { mouse.x = null; mouse.y = null }
+
+    resize()
+    draw()
+    window.addEventListener('resize', resize)
+    window.addEventListener('mousemove', onMove, { passive: true })
+    window.addEventListener('mouseout', onLeave)
+
+    // La boucle est suspendue dès que le hero quitte l'écran.
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { if (!raf) draw() }
+      else { cancelAnimationFrame(raf); raf = null }
     })
+    io.observe(el)
+
     return () => {
       cancelAnimationFrame(raf)
-      renderer?.dispose()
+      io.disconnect()
+      window.removeEventListener('resize', resize)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseout', onLeave)
     }
   }, [])
   return <canvas ref={canvas} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }} />
