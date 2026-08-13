@@ -733,11 +733,11 @@ function Hero() {
           </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d(0.9) }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32, flexWrap: 'wrap', maxWidth: '100%' }}
+            style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 10, border: '1px solid rgba(212,175,106,0.35)', borderRadius: 2, padding: '8px 18px', marginBottom: 32, maxWidth: '100%' }}
           >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block', flexShrink: 0, marginTop: 7 }} />
             <span style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF6A', lineHeight: 1.6 }}>
-              En poste · Equity Research Intern chez Sika Finance
+              En poste · Equity Research · Sika Finance
             </span>
           </motion.div>
 
