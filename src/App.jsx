@@ -173,7 +173,9 @@ const TESTIMONIALS = [
     quote: 'Heureux de voir ta détermination dans la finance.',
     author: 'Daniel Aggré',
     role: 'Directeur · Sika Finance',
-    context: 'Dédicace personnelle dans le magazine Sika Finance — Référence de l\'information financière en Côte d\'Ivoire',
+    // Énoncé comme un fait, sans prêter d'intention à son auteur : la dédicace
+    // précède l'embauche, la présenter comme une recommandation serait inexact.
+    context: 'Dédicace dans le magazine Sika Finance — où je suis aujourd\'hui Equity Research Intern',
     initial: 'DA',
   },
 ]
