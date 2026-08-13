@@ -467,35 +467,6 @@ function Particles() {
   )
 }
 
-// ── cursor — GSAP quickTo (ultra-smooth, skill-grade) ─────────────────────────
-function Cursor() {
-  const dot = useRef(null)
-  const ring = useRef(null)
-  useEffect(() => {
-    const d = dot.current, r = ring.current
-    if (!d || !r) return
-    // Skip cursor on touch devices — no pointer, no point
-    if (window.matchMedia('(hover: none)').matches) return
-    const xDot  = gsap.quickTo(d, 'x', { duration: 0.05, ease: 'power3.out' })
-    const yDot  = gsap.quickTo(d, 'y', { duration: 0.05, ease: 'power3.out' })
-    const xRing = gsap.quickTo(r, 'x', { duration: 0.32, ease: 'power3.out' })
-    const yRing = gsap.quickTo(r, 'y', { duration: 0.32, ease: 'power3.out' })
-    gsap.set([d, r], { xPercent: -50, yPercent: -50 })
-    const onMove = (e) => {
-      xDot(e.clientX); yDot(e.clientY)
-      xRing(e.clientX); yRing(e.clientY)
-    }
-    const onEnter = () => gsap.to(r, { scale: 1.6, borderColor: 'rgba(212,175,106,0.7)', duration: 0.3, ease: 'power2.out' })
-    const onLeave = () => gsap.to(r, { scale: 1, borderColor: 'rgba(181,123,238,0.5)', duration: 0.4, ease: 'power2.out' })
-    document.addEventListener('mousemove', onMove, { passive: true })
-    document.querySelectorAll('a,button,[data-hover]').forEach(el => {
-      el.addEventListener('mouseenter', onEnter)
-      el.addEventListener('mouseleave', onLeave)
-    })
-    return () => document.removeEventListener('mousemove', onMove)
-  }, [])
-  return (<><div ref={dot} className="cursor-dot" /><div ref={ring} className="cursor-ring" /></>)
-}
 
 // ── BRVM ticker ───────────────────────────────────────────────────────────────
 function BRVMTicker() {
@@ -585,7 +556,7 @@ function Navbar() {
           <button
             onClick={() => setOpen(o => !o)}
             aria-label="Menu"
-            style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 5, width: 44, height: 44, background: 'none', border: 'none', padding: 0, cursor: 'none', flexShrink: 0 }}
+            style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 5, width: 44, height: 44, background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}
             className="md:hidden"
           >
             <span style={{ display: 'block', width: 22, height: 2, borderRadius: 2, background: 'rgba(255,255,255,0.85)', transition: 'transform .35s ease, opacity .35s ease', transform: open ? 'translateY(7px) rotate(45deg)' : '' }} />
@@ -1823,7 +1794,7 @@ function BackToTop() {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
           onClick={scrollToTop}
           className="glass-gold float-top"
-          style={{ position: 'fixed', bottom: 32, right: 32, width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'none', zIndex: 40, fontSize: 16 }}
+          style={{ position: 'fixed', bottom: 32, right: 32, width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', zIndex: 40, fontSize: 16 }}
           whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
         >
           ↑
@@ -1855,7 +1826,6 @@ export default function App() {
   return (
     <div className="site-bg" style={{ minHeight: '100vh', position: 'relative' }}>
       <Preloader onReady={() => setLoaded(true)} />
-      <Cursor />
       <Particles />
       <ScrollProgress />
       <AnimatePresence>

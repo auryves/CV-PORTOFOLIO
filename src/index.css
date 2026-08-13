@@ -38,7 +38,6 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: clip;
-    cursor: none;
   }
 
   /* Restore cursor for form fields */
@@ -81,39 +80,13 @@
   ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #B57BEE, #6C3AED); border-radius: 2px; }
 }
 
-/* ─── CURSOR ─────────────────────────────────────────────── */
-.cursor {
-  position: fixed;
-  pointer-events: none;
-  z-index: 99999;
-  mix-blend-mode: difference;
-}
-.cursor-dot {
-  width: 6px; height: 6px;
-  background: #fff;
-  border-radius: 50%;
-  position: fixed; top: 0; left: 0;
-  pointer-events: none;
-  z-index: 99999;
-}
-.cursor-ring {
-  width: 36px; height: 36px;
-  border: 1px solid rgba(181,123,238,0.5);
-  border-radius: 50%;
-  position: fixed; top: 0; left: 0;
-  pointer-events: none;
-  z-index: 99998;
-  /* `transform` est volontairement EXCLU de la transition : GSAP pilote déjà la
-     position de l'anneau à chaque mouvement via `quickTo`. Une transition CSS
-     par-dessus s'additionnait à chaque mise à jour et faisait traîner le curseur
-     d'un quart de seconde derrière la souris. `width`/`height` sont écartés
-     aussi — c'étaient des propriétés de layout recalculées à chaque frame. */
-  transition: border-color .25s, background .25s;
-}
-.cursor-ring.expand {
-  border-color: rgba(181,123,238,0.8);
-  background: rgba(181,123,238,0.06);
-}
+/* ─── CURSEUR ────────────────────────────────────────────────────────────────
+   Le curseur personnalisé est retiré. Il masquait le curseur système pour le
+   remplacer par deux éléments pilotés en JavaScript — or le curseur natif est
+   composité par le système à la fréquence de l'écran, indépendamment de la
+   page. Un curseur JS dépend du thread principal : il ne peut structurellement
+   pas être aussi fluide, et se traînait derrière la souris.
+   ─────────────────────────────────────────────────────────────────────────── */
 
 /* ─── PARTICLES ──────────────────────────────────────────── */
 .particle {
