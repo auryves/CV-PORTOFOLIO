@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Skills d'agent — installées globalement dans ~/.claude/skills,
+# pas besoin de les versionner avec le portfolio.
+.agents/
+.claude/
+skills-lock.json
