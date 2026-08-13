@@ -989,7 +989,7 @@ function MarchesAfricains() {
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, fontWeight: 300, maxWidth: 800 }}>
               "La BRVM reste sous-valorisée par rapport aux marchés émergents mondiaux. Avec la digitalisation des services financiers en Afrique de l'Ouest et la croissance du Mobile Money, les valeurs télécoms (SONATEL, ORANGE CI) et les banques régionales constituent selon moi les meilleurs vecteurs de performance à moyen terme."
             </p>
-            <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(212,175,106,0.5)', letterSpacing: '0.1em' }}>— Auryves Bedje, Étudiant Finance Digitale · EMSP Abidjan</div>
+            <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(212,175,106,0.5)', letterSpacing: '0.1em' }}>— Auryves Bedje, Equity Research Intern · Sika Finance</div>
           </motion.div>
         </div>
       </div>
