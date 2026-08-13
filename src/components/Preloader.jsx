@@ -45,7 +45,7 @@ export default function Preloader({ onReady }) {
       exited = true
       const tl = gsap.timeline()
       tl.to(state, { v: 100, duration: 0.45, ease: 'power2.out', onUpdate: paint })
-        .to([countRef.current, barRef.current], { opacity: 0, duration: 0.35, ease: 'power2.in' }, '-=0.1')
+        .to([countRef.current, barRef.current], { opacity: 0, duration: 0.35, ease: 'power2.out' }, '-=0.1')
         .to(logoRef.current, { scale: 1.18, opacity: 0, duration: 0.7, ease: 'expo.inOut' }, '<')
         .call(() => readyRef.current?.())
         .to(
