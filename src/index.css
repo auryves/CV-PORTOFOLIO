@@ -633,7 +633,7 @@
   /* particules : masquées sur mobile */
   .particle { display: none !important; }
   /* curseur custom : caché sur mobile */
-  .cursor-dot, .cursor-ring { display: none !important; }
+
 }
 
 /* ─── HERO RESPONSIVE ────────────────────────────────────── */
@@ -1175,7 +1175,7 @@ html.lenis, html.lenis body { height: auto; }
     scroll-behavior: auto !important;
   }
   body::before { animation: none; }
-  .particle, .orb, .cursor-dot, .cursor-ring { display: none !important; }
+  .particle, .orb { display: none !important; }
   /* Le bandeau porte du contenu — les cours — et non un décor. L'arrêter sans
      contrepartie enfermait le lecteur sur les deux premières valeurs, les treize
      autres devenant inatteignables. On coupe le mouvement automatique, mais on
