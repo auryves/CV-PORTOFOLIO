@@ -53,7 +53,10 @@
     pointer-events: none;
     z-index: 100001;
     opacity: 0.028;
-    animation: grain 0.65s steps(1) infinite;
+    /* Animation retirée. Un calque fixe de 200 %×200 % repositionné toutes les
+       0,65 s repeignait en continu pour un effet que personne ne remarque —
+       c'était la plus chère des quatre animations infinies du site, et la moins
+       visible. La texture, elle, reste. */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   @keyframes grain {
@@ -1242,4 +1245,43 @@ html.lenis, html.lenis body { height: auto; }
   .tilt-card:hover { box-shadow: none; }
   .cert-plate-link:hover span { transform: none; }
   .carousel-btn:hover:not(:disabled) { box-shadow: none; }
+}
+
+
+/* ─── COCHE DE CONFIRMATION — formulaire envoyé ──────────────────────────────
+   Tracée plutôt qu'affichée. `stroke-dashoffset` part de la longueur du tracé
+   et descend à zéro : le trait se dessine. Palier « rare », donc un budget plus
+   généreux que les 300 ms de l'UI courante est justifié ici.
+   ─────────────────────────────────────────────────────────────────────────── */
+.ok-check { display: block; margin: 0 auto 20px; overflow: visible; }
+.ok-check-ring,
+.ok-check-mark {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ok-check-ring {
+  stroke: rgba(74,222,128,0.35);
+  stroke-width: 1.5;
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: ok-draw 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+.ok-check-mark {
+  stroke: #4ade80;
+  stroke-width: 2.5;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: ok-draw 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
+}
+@keyframes ok-draw { to { stroke-dashoffset: 0; } }
+
+/* Retour de pression sur le lien PDF : il ouvre un fichier externe, donc une
+   latence pendant laquelle rien ne confirmait le clic — l'utilisateur retape. */
+.cert-plate-link:active { transform: scale(0.97); }
+.cert-plate-link { transition: color 0.3s, border-color 0.3s, transform 0.14s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ok-check-ring, .ok-check-mark { animation: none; stroke-dashoffset: 0; }
+  .cert-plate-link:active { transform: none; }
 }

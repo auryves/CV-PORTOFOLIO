@@ -1599,7 +1599,14 @@ function Contact() {
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 style={{ textAlign: 'center', padding: '48px 0' }}
               >
-                <div style={{ fontSize: 40, marginBottom: 20 }}>✓</div>
+                {/* La coche se trace au lieu d'apparaître. C'est le seul endroit
+                    du site qui mérite ce budget : quelqu'un vient d'envoyer une
+                    candidature, moment rare et chargé — le palier où une
+                    animation généreuse a sa place. */}
+                <svg className="ok-check" viewBox="0 0 52 52" width="56" height="56" aria-hidden="true">
+                  <circle className="ok-check-ring" cx="26" cy="26" r="24" />
+                  <path className="ok-check-mark" d="M14 27.5 L22.5 36 L38 18" />
+                </svg>
                 <div className="serif" style={{ fontSize: 22, fontWeight: 300, color: 'rgba(255,255,255,0.85)', marginBottom: 12 }}>Message envoyé !</div>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', lineHeight: 1.7 }}>Je te réponds dans les plus brefs délais.</p>
               </motion.div>
