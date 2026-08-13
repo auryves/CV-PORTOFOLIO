@@ -103,12 +103,14 @@
   position: fixed; top: 0; left: 0;
   pointer-events: none;
   z-index: 99998;
-  /* `width`/`height` déclenchaient un recalcul de layout à chaque frame sur
-     l'élément le plus souvent repositionné de la page. `scale` reste sur le GPU. */
-  transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1), border-color .25s, background .25s;
+  /* `transform` est volontairement EXCLU de la transition : GSAP pilote déjà la
+     position de l'anneau à chaque mouvement via `quickTo`. Une transition CSS
+     par-dessus s'additionnait à chaque mise à jour et faisait traîner le curseur
+     d'un quart de seconde derrière la souris. `width`/`height` sont écartés
+     aussi — c'étaient des propriétés de layout recalculées à chaque frame. */
+  transition: border-color .25s, background .25s;
 }
 .cursor-ring.expand {
-  transform: scale(1.55);
   border-color: rgba(181,123,238,0.8);
   background: rgba(181,123,238,0.06);
 }

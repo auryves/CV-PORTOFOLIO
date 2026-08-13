@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { useForm, ValidationError } from '@formspree/react'
-import { gsap, ScrollTrigger } from './motion'
+import { gsap, ScrollTrigger, reducedMotion, isTouch } from './motion'
 import { initSmoothScroll, destroySmoothScroll, scrollToTop } from './smoothScroll'
 import { useParallax, useMediaQuery } from './hooks/useMotionFx'
 import Preloader from './components/Preloader'
@@ -65,21 +65,57 @@ function Counter({ to, delay = 0, suffix = '' }) {
 }
 
 // ── 3D tilt card ──────────────────────────────────────────────────────────────
+/**
+ * La version précédente saccadait au survol. Deux causes, à chaque `mousemove` :
+ *   1. `getBoundingClientRect()` force le navigateur à recalculer la mise en
+ *      page — pendant que la carte est elle-même en cours de transformation ;
+ *   2. `style.transition` était réécrit à chaque frame, second recalcul pour une
+ *      valeur qui ne change jamais.
+ *
+ * Les dimensions sont désormais lues une seule fois, à l'entrée du curseur (la
+ * carte ne change pas de taille pendant qu'on la survole), et la rotation passe
+ * par `gsap.quickTo`, qui réutilise un même tween au lieu d'en créer un par
+ * mouvement.
+ */
 function TiltCard({ children, style, className = '' }) {
   const el = useRef(null)
+  const rect = useRef(null)
+  const rotX = useRef(null)
+  const rotY = useRef(null)
+
+  useEffect(() => {
+    const node = el.current
+    if (!node || reducedMotion() || isTouch()) return
+    gsap.set(node, { transformPerspective: 900 })
+    rotX.current = gsap.quickTo(node, 'rotationX', { duration: 0.4, ease: 'power3.out' })
+    rotY.current = gsap.quickTo(node, 'rotationY', { duration: 0.4, ease: 'power3.out' })
+    return () => gsap.killTweensOf(node)
+  }, [])
+
+  const onEnter = () => { rect.current = el.current?.getBoundingClientRect() }
+
   const onMove = (e) => {
-    const r = el.current.getBoundingClientRect()
-    const x = (e.clientX - r.left) / r.width - 0.5
-    const y = (e.clientY - r.top) / r.height - 0.5
-    el.current.style.transform = `perspective(900px) rotateX(${-y * 7}deg) rotateY(${x * 7}deg) scale(1.015)`
-    el.current.style.transition = 'transform 0.1s ease'
+    const r = rect.current
+    if (!r || !rotX.current) return
+    rotX.current(-((e.clientY - r.top) / r.height - 0.5) * 7)
+    rotY.current(((e.clientX - r.left) / r.width - 0.5) * 7)
   }
+
   const onLeave = () => {
-    el.current.style.transform = ''
-    el.current.style.transition = 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)'
+    if (!rotX.current) return
+    rotX.current(0)
+    rotY.current(0)
   }
+
   return (
-    <div ref={el} className={`tilt-card ${className}`} style={style} onMouseMove={onMove} onMouseLeave={onLeave}>
+    <div
+      ref={el}
+      className={`tilt-card ${className}`}
+      style={style}
+      onMouseEnter={onEnter}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
       {children}
     </div>
   )
@@ -440,10 +476,10 @@ function Cursor() {
     if (!d || !r) return
     // Skip cursor on touch devices — no pointer, no point
     if (window.matchMedia('(hover: none)').matches) return
-    const xDot  = gsap.quickTo(d, 'x', { duration: 0.08, ease: 'power3.out' })
-    const yDot  = gsap.quickTo(d, 'y', { duration: 0.08, ease: 'power3.out' })
-    const xRing = gsap.quickTo(r, 'x', { duration: 0.55, ease: 'power3.out' })
-    const yRing = gsap.quickTo(r, 'y', { duration: 0.55, ease: 'power3.out' })
+    const xDot  = gsap.quickTo(d, 'x', { duration: 0.05, ease: 'power3.out' })
+    const yDot  = gsap.quickTo(d, 'y', { duration: 0.05, ease: 'power3.out' })
+    const xRing = gsap.quickTo(r, 'x', { duration: 0.32, ease: 'power3.out' })
+    const yRing = gsap.quickTo(r, 'y', { duration: 0.32, ease: 'power3.out' })
     gsap.set([d, r], { xPercent: -50, yPercent: -50 })
     const onMove = (e) => {
       xDot(e.clientX); yDot(e.clientY)
