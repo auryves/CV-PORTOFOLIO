@@ -289,7 +289,7 @@ const CERTIFICATIONS = [
 ]
 
 // ── données ───────────────────────────────────────────────────────────────────
-const TITLES = ['Fintech Builder', 'Étudiant Finance Digitale', 'Entrepreneur Fintech Africain', 'Analyste Marchés BRVM']
+const TITLES = ['Equity Research Analyst', 'Analyste Marchés BRVM', 'Fintech Builder', 'Entrepreneur Fintech Africain']
 
 const PROJECTS = [
   { n: '01', name: 'My Invest', cat: 'Investissement Participatif', desc: "Plateforme permettant aux particuliers d'investir dans les TPE/PME africaines. Revenue-based financing — remboursement indexé sur les revenus quotidiens des entreprises.", tags: ['React Native', 'Supabase', 'Mobile Money', 'IA'], status: 'En développement', statusColor: '#4ade80' },
@@ -322,6 +322,7 @@ const SKILLS = [
 ]
 
 const TIMELINE = [
+  { date: 'Juin 2026 — Présent', title: 'Equity Research Intern', sub: 'Sika Finance · Abidjan', desc: "Couverture de valeurs cotées à la BRVM et rédaction de notes de recherche. Analyse fondamentale appliquée aux émetteurs de la zone UEMOA, au sein de la référence ivoirienne de l'information financière." },
   { date: '2024 — Présent', title: 'Licence 3 Finance Digitale', sub: 'EMSP Abidjan', desc: "Spécialisation marchés financiers africains, fintech et gestion d'actifs. Suivi quotidien de la BRVM et des marchés continentaux." },
   { date: '2024', title: 'Certification Microsoft Office', sub: 'Pack Complet · Udemy', desc: 'Excel avancé, Power BI, Word, PowerPoint, Outlook — 22,5h de formation, niveau débutant à expert.' },
   { date: '2024 — 2025', title: '2 Applications Fintech', sub: 'En développement', desc: 'MY INVEST (investissement participatif) et MY INVEST SOCIAL (crowdfunding solidaire).' },
@@ -734,7 +735,7 @@ function Hero() {
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block', flexShrink: 0 }} />
             <span style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF6A', lineHeight: 1.6 }}>
-              Disponible pour un stage · Gestion d'actifs & Finance de marchés
+              En poste · Equity Research Intern chez Sika Finance
             </span>
           </motion.div>
 
@@ -1056,9 +1057,9 @@ function PourquoiMoi() {
         </div>
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48, padding: '32px 40px', border: '1px solid rgba(212,175,106,0.2)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, background: 'rgba(212,175,106,0.03)' }}>
           <div>
-            <div className="label-gold" style={{ marginBottom: 8 }}>Objectif 2025</div>
-            <div className="serif" style={{ fontSize: 24, fontWeight: 300, color: 'white', marginBottom: 6 }}>Stage en Gestion d'Actifs / Analyse Financière</div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>CGF Gestion · Sika Finance · BRVM · Bloomfield · Toute structure de la finance africaine</div>
+            <div className="label-gold" style={{ marginBottom: 8 }}>Prochaine étape</div>
+            <div className="serif" style={{ fontSize: 24, fontWeight: 300, color: 'white', marginBottom: 6 }}>Master en Finance de Marché / Gestion d'Actifs</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Après ma soutenance. Ouvert aux échanges avec des programmes et des professionnels du secteur.</div>
           </div>
           <a href="#contact" className="btn-gold" style={{ flexShrink: 0 }}>Me contacter →</a>
         </motion.div>
@@ -1180,7 +1181,7 @@ function CVSection() {
           <motion.div {...fadeUp(0.1)} className="cv-section">
             <div className="label" style={{ marginBottom: 16 }}>Profil</div>
             <p style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>
-              Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je souhaite effectuer un stage en gestion d'actifs et analyse de marchés financiers, notamment la BRVM. Motivé, rigoureux, passionné par les marchés boursiers africains et la fintech.
+              Equity Research Intern chez Sika Finance depuis juin 2026 : couverture de valeurs et rédaction de notes de recherche sur la BRVM. Licence 3 de Finance Digitale à l'EMSP Abidjan, soutenance à venir. Je prépare une candidature en Master de finance de marché.
             </p>
           </motion.div>
           <motion.div {...fadeUp(0.15)} className="cv-section">
