@@ -405,7 +405,11 @@ class App {
    */
   hitTest(clientX, clientY) {
     if (!this.medias || !this.viewport) return -1
-    const rect = this.gl.canvas.getBoundingClientRect()
+    // Le rectangle du canvas est mis en cache : le relire à chaque mouvement
+    // forçait un recalcul de mise en page pendant que la scène WebGL rendait,
+    // ce qui saccadait dès que le curseur entrait dans la galerie. Il est
+    // invalidé au redimensionnement et au scroll, les deux seuls cas où il change.
+    const rect = this.rect || (this.rect = this.gl.canvas.getBoundingClientRect())
     if (!rect.width || !rect.height) return -1
 
     const wx = (((clientX - rect.left) / rect.width) * 2 - 1) * (this.viewport.width / 2)
@@ -427,22 +431,32 @@ class App {
   }
 
   onPointerHover(e) {
-    if (!this.onHoverChange) return
+    // On ne fait que mémoriser la position. Le test d'appartenance, lui, est
+    // effectué une seule fois par frame dans `update()` : un mousemove peut
+    // arriver plusieurs fois entre deux frames, et parcourir les quatorze plans
+    // à chaque événement ne sert à rien puisque rien n'est redessiné entre-temps.
+    this.pointer = { x: e.clientX, y: e.clientY }
+  }
+
+  resolveHover() {
+    if (!this.onHoverChange || !this.pointer) return
     // Pendant un glissement, l'utilisateur déplace la galerie : afficher une
     // infobulle qui saute de carte en carte parasiterait le geste.
-    const idx = this.isDown ? -1 : this.hitTest(e.clientX, e.clientY)
+    const idx = this.isDown ? -1 : this.hitTest(this.pointer.x, this.pointer.y)
     if (idx === this.hoverIndex) return
     this.hoverIndex = idx
     this.onHoverChange(idx === -1 ? null : idx % this.itemCount)
   }
 
   onPointerOut() {
+    this.pointer = null
     if (!this.onHoverChange || this.hoverIndex === -1) return
     this.hoverIndex = -1
     this.onHoverChange(null)
   }
 
   onResize() {
+    this.rect = null
     this.screen = {
       width: this.container.clientWidth || 1,
       height: this.container.clientHeight || 1,
@@ -468,6 +482,7 @@ class App {
       if (this.idle > 60) this.scroll.target += this.autoDrift
     }
 
+    this.resolveHover()
     this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease)
     const direction = this.scroll.current > this.scroll.last ? 'right' : 'left'
     if (this.medias) this.medias.forEach((media) => media.update(this.scroll, direction))
