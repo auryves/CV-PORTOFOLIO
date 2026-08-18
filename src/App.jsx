@@ -10,7 +10,6 @@ import StickyCerts from './components/StickyCerts'
 import CircularGallery from './components/CircularGallery'
 import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
-import PhotoTip from './components/PhotoTip'
 import Icon from './components/Icon'
 import OrgMarquee from './components/OrgMarquee'
 import MobileDock from './components/MobileDock'
@@ -1372,8 +1371,9 @@ function Networking() {
   // charge sept textures et se pilote à la molette, deux choses qui n'ont pas de
   // sens sur un écran tactile de 6 pouces.
   const isDesktop = useMediaQuery('(min-width: 769px)')
-  // Index de la carte WebGL survolée — alimente l'infobulle.
-  const [hoveredPhoto, setHoveredPhoto] = useState(null)
+  // L'infobulle au survol a été retirée : chaque changement d'état relançait un
+  // rendu React de toute la section, galerie WebGL comprise. Les noms sont déjà
+  // gravés en doré sous chaque photo par le shader — l'information ne se perd pas.
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current
@@ -1505,11 +1505,9 @@ function Networking() {
                 bend={2.6}
                 borderRadius={0.045}
                 textColor="#D4AF6A"
-                onHoverChange={setHoveredPhoto}
               />
             </div>
-            <PhotoTip data={hoveredPhoto === null ? null : PHOTOS[hoveredPhoto]} />
-            <p className="gallery-hint">Survolez une photo · glissez pour faire tourner</p>
+            <p className="gallery-hint">Glissez ou utilisez la molette pour faire tourner</p>
           </>
         ) : (
         <div
