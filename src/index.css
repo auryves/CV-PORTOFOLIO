@@ -1274,3 +1274,21 @@ html.lenis, html.lenis body { height: auto; }
   width: max-content;
   margin-bottom: 14px;
 }
+
+/* Infobulle de la galerie WebGL — positionnée dans le conteneur, pilotée en DOM
+   direct depuis la boucle de rendu (voir CircularGallery.jsx). L'ancienne
+   version passait par un état React et relançait un rendu de toute la section à
+   chaque changement de survol. */
+.photo-tip--gl {
+  position: absolute;
+  top: 0; left: 0;
+  opacity: 0;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  z-index: 20;
+}
+.photo-tip--gl.is-on { opacity: 1; }
+.photo-tip--gl .photo-tip-org:empty,
+.photo-tip--gl .photo-tip-role:empty { display: none; }
+@media (hover: none) { .photo-tip--gl { display: none; } }

@@ -282,10 +282,15 @@ class Media {
 }
 
 class App {
-  constructor(container, { items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoDrift }) {
+  constructor(container, { items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoDrift, tips }) {
     this.container = container
     this.scrollSpeed = scrollSpeed
     this.autoDrift = autoDrift
+    this.tips = tips || []
+    this.itemCount = items.length
+    this.hoverIndex = -1
+    this.pointer = null
+    this.rect = null
     this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0, position: 0 }
     this.onCheckDebounce = debounce(this.onCheck.bind(this), 200)
     this.isDown = false
@@ -301,6 +306,7 @@ class App {
     this.onResize()
     this.createGeometry()
     this.createMedias(items, bend, textColor, borderRadius, font)
+    this.createTip()
     this.update()
     this.addEventListeners()
   }
@@ -389,7 +395,107 @@ class App {
   }
 
 
+  /* ──────────────────────────────────────────────────────────────────────────
+   * Infobulle pilotée en DOM direct, jamais par React.
+   *
+   * La version précédente remontait l'index survolé à un `useState` : chaque
+   * changement relançait un rendu de toute la section networking, galerie
+   * comprise, et la faisait saccader. Ici le nœud est créé une fois puis mis à
+   * jour par `textContent` et `transform` — aucun rendu React n'est déclenché.
+   * ────────────────────────────────────────────────────────────────────────── */
+  createTip() {
+    const el = document.createElement('div')
+    el.className = 'photo-tip photo-tip--gl'
+    el.innerHTML = '<div class="photo-tip-name serif"></div><div class="photo-tip-role"></div><div class="photo-tip-org"></div>'
+    this.container.appendChild(el)
+    this.tip = el
+    this.tipName = el.querySelector('.photo-tip-name')
+    this.tipRole = el.querySelector('.photo-tip-role')
+    this.tipOrg = el.querySelector('.photo-tip-org')
+  }
+
+  /**
+   * Quelle carte se trouve sous le curseur ?
+   *
+   * Il n'y a pas d'élément HTML par photo : les plans vivent dans la scène.
+   * On repasse des pixels écran aux unités de la scène — le viewport couvre
+   * `viewport.width × viewport.height` unités centrées sur l'origine — puis on
+   * teste l'appartenance à chaque plan.
+   *
+   * La rotation induite par la courbure est ignorée : la boîte reste droite.
+   * L'écart tient en quelques pixels sur les bords, invisible pour décider
+   * quelle fiche afficher, et évite un test polygone par frame.
+   */
+  hitTest(clientX, clientY) {
+    if (!this.medias || !this.viewport) return -1
+    // Rectangle mis en cache : le relire à chaque frame forcerait un recalcul de
+    // mise en page pendant que la scène rend. Invalidé au redimensionnement.
+    const rect = this.rect || (this.rect = this.gl.canvas.getBoundingClientRect())
+    if (!rect.width || !rect.height) return -1
+    const wx = (((clientX - rect.left) / rect.width) * 2 - 1) * (this.viewport.width / 2)
+    const wy = -((((clientY - rect.top) / rect.height) * 2 - 1)) * (this.viewport.height / 2)
+    let best = -1, bestDist = Infinity
+    this.medias.forEach((m, i) => {
+      const dx = wx - m.plane.position.x, dy = wy - m.plane.position.y
+      if (Math.abs(dx) <= m.plane.scale.x / 2 && Math.abs(dy) <= m.plane.scale.y / 2) {
+        const d = dx * dx + dy * dy
+        if (d < bestDist) { bestDist = d; best = i }
+      }
+    })
+    return best
+  }
+
+  onPointerHover(e) {
+    // On ne mémorise que la position : le test est fait une fois par frame,
+    // un mousemove pouvant arriver plusieurs fois entre deux rendus.
+    if (this.pointer && this.pointer.x === e.clientX && this.pointer.y === e.clientY) return
+    this.pointer = { x: e.clientX, y: e.clientY }
+    this.pointerMoved = true
+  }
+
+  onPointerOut() {
+    this.pointer = null
+    this.hoverIndex = -1
+    if (this.tip) this.tip.classList.remove('is-on')
+  }
+
+  resolveHover() {
+    if (!this.tip || !this.pointer) return
+    // Inutile de retester tant que ni la souris ni la galerie n'ont bougé :
+    // le résultat serait identique.
+    const drifting = Math.abs(this.scroll.current - this.scroll.last) > 0.001
+    if (!this.pointerMoved && !drifting && this.hoverIndex !== -1) return
+    // Pendant un glissement l'utilisateur déplace la galerie : une fiche qui
+    // saute de carte en carte parasiterait le geste.
+    const idx = this.isDown ? -1 : this.hitTest(this.pointer.x, this.pointer.y)
+
+    if (idx !== this.hoverIndex) {
+      this.hoverIndex = idx
+      if (idx === -1) this.tip.classList.remove('is-on')
+      else {
+        const t = this.tips[idx % this.itemCount]
+        if (t) {
+          this.tipName.textContent = t.name || ''
+          this.tipRole.textContent = t.role || ''
+          this.tipOrg.textContent = t.org || ''
+          this.tip.classList.add('is-on')
+        }
+      }
+    }
+
+    // Le `transform` n'est réécrit que si la souris a bougé. Le curseur est
+    // souvent immobile pendant que la galerie dérive : écrire la même valeur à
+    // chaque frame invalidait le style pour rien.
+    if (this.pointerMoved && this.hoverIndex !== -1 && this.rect) {
+      this.pointerMoved = false
+      const x = this.pointer.x - this.rect.left + 20
+      const y = this.pointer.y - this.rect.top + 20
+      this.tip.style.transform = `translate3d(${x}px, ${y}px, 0)`
+    }
+  }
+
   onResize() {
+    this.rect = null
     this.screen = {
       width: this.container.clientWidth || 1,
       height: this.container.clientHeight || 1,
@@ -415,6 +521,7 @@ class App {
       if (this.idle > 60) this.scroll.target += this.autoDrift
     }
 
+    this.resolveHover()
     this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease)
     const direction = this.scroll.current > this.scroll.last ? 'right' : 'left'
     if (this.medias) this.medias.forEach((media) => media.update(this.scroll, direction))
@@ -424,6 +531,8 @@ class App {
 
   addEventListeners() {
     this.boundOnResize = this.onResize
+    this.boundOnPointerHover = this.onPointerHover
+    this.boundOnPointerOut = this.onPointerOut
     this.boundOnWheel = this.onWheel
     this.boundOnTouchDown = this.onTouchDown
     this.boundOnTouchMove = this.onTouchMove
@@ -433,6 +542,8 @@ class App {
     window.addEventListener('resize', this.boundOnResize)
     // Molette limitée au conteneur : la page continue de défiler normalement.
     this.container.addEventListener('wheel', this.boundOnWheel, { passive: true })
+    this.container.addEventListener('mousemove', this.boundOnPointerHover, { passive: true })
+    this.container.addEventListener('mouseleave', this.boundOnPointerOut)
     this.container.addEventListener('mousedown', this.boundOnTouchDown)
     window.addEventListener('mousemove', this.boundOnTouchMove)
     window.addEventListener('mouseup', this.boundOnTouchUp)
@@ -452,6 +563,8 @@ class App {
     window.cancelAnimationFrame(this.raf)
     window.removeEventListener('resize', this.boundOnResize)
     this.container.removeEventListener('wheel', this.boundOnWheel)
+    this.container.removeEventListener('mousemove', this.boundOnPointerHover)
+    this.container.removeEventListener('mouseleave', this.boundOnPointerOut)
     this.container.removeEventListener('mousedown', this.boundOnTouchDown)
     window.removeEventListener('mousemove', this.boundOnTouchMove)
     window.removeEventListener('mouseup', this.boundOnTouchUp)
@@ -459,6 +572,7 @@ class App {
     window.removeEventListener('touchmove', this.boundOnTouchMove)
     window.removeEventListener('touchend', this.boundOnTouchUp)
     this.observer?.disconnect()
+    this.tip?.remove()
 
     const canvas = this.renderer?.gl?.canvas
     if (canvas?.parentNode) canvas.parentNode.removeChild(canvas)
@@ -473,6 +587,7 @@ export default function CircularGallery({
   scrollSpeed = 2,
   scrollEase = 0.045,
   autoDrift = 0.06,
+  tips = [],
   textColor = '#D4AF6A',
   font = '500 26px "Plus Jakarta Sans", sans-serif',
   className = '',
@@ -495,9 +610,10 @@ export default function CircularGallery({
       scrollSpeed,
       scrollEase,
       autoDrift,
+      tips,
     })
     return () => app.destroy()
-  }, [items, bend, borderRadius, scrollSpeed, scrollEase, autoDrift, textColor, font])
+  }, [items, bend, borderRadius, scrollSpeed, scrollEase, autoDrift, textColor, font, tips])
 
   return <div ref={containerRef} className={`circular-gallery ${className}`} style={style} />
 }

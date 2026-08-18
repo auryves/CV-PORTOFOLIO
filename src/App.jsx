@@ -424,6 +424,8 @@ const PHOTOS = [
 // Références stables : CircularGallery et ZoomParallax se réinitialisent si le
 // tableau change d'identité à chaque rendu (le WebGL rechargerait ses textures).
 const GALLERY_ITEMS = PHOTOS.map((p) => ({ image: `/photos/${p.file}`, text: p.name }))
+// Fiches de l'infobulle, dans le même ordre que GALLERY_ITEMS.
+const GALLERY_TIPS = PHOTOS.map((p) => ({ name: p.name, role: p.role, org: p.org }))
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
@@ -1505,9 +1507,10 @@ function Networking() {
                 bend={2.6}
                 borderRadius={0.045}
                 textColor="#D4AF6A"
+                tips={GALLERY_TIPS}
               />
             </div>
-            <p className="gallery-hint">Glissez ou utilisez la molette pour faire tourner</p>
+            <p className="gallery-hint">Survolez une photo · glissez pour faire tourner</p>
           </>
         ) : (
         <div
