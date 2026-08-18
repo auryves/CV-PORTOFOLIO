@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap, reducedMotion, refreshSoon } from '../motion'
+import Icon from './Icon'
 
 /* ────────────────────────────────────────────────────────────────────────────
  * Pile de cartes épinglée — d'après StickyCard_002 (Skiper UI, @gurvinder-singh02),
@@ -69,7 +70,7 @@ export default function StickyCerts({ items = [] }) {
             >
               <div className="cert-plate-bar" />
               <header className="cert-plate-head">
-                <span className="cert-plate-icon">{c.icon}</span>
+                <span className="cert-plate-icon"><Icon name={c.icon} size={26} /></span>
                 <span className="cert-plate-index">
                   {String(i + 1).padStart(2, '0')} <i>/ {String(items.length).padStart(2, '0')}</i>
                 </span>

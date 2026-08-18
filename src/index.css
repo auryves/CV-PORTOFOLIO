@@ -1260,3 +1260,17 @@ html.lenis, html.lenis body { height: auto; }
   .ok-check-ring, .ok-check-mark { animation: none; stroke-dashoffset: 0; }
   .cert-plate-link:active { transform: none; }
 }
+
+/* Code pays en capitales espacées plutôt qu'un drapeau emoji : huit SVG de
+   drapeaux auraient introduit des aplats de couleur étrangers à la palette,
+   et l'emoji change d'aspect selon le système. */
+.ex-flag {
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 0.22em;
+  color: rgba(212,175,106,0.7);
+  border: 1px solid rgba(212,175,106,0.25);
+  border-radius: 2px;
+  padding: 4px 9px;
+  width: max-content;
+  margin-bottom: 14px;
+}

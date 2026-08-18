@@ -11,6 +11,7 @@ import CircularGallery from './components/CircularGallery'
 import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
 import PhotoTip from './components/PhotoTip'
+import Icon from './components/Icon'
 import OrgMarquee from './components/OrgMarquee'
 import MobileDock from './components/MobileDock'
 import StaggerLink from './components/StaggerLink'
@@ -182,15 +183,15 @@ const EXCHANGES = [
   // ── Afrique — BRVM au 4 août 2026 (richbourse.com), capitalisation au
   //    3 août 2026 (lejecos.com) ; JSE / NGX / GSE au 29 juillet 2026
   //    (mansamarkets.com) ──
-  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: '🇨🇮', desc: '47 sociétés cotées, 8 pays d\'Afrique de l\'Ouest', cap: '18 700 Mds FCFA', idx: 'BRVM Composite · 485,89', featured: true },
-  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: '🇿🇦', desc: 'Plus grande bourse africaine par capitalisation', cap: '~1 350 Mds $', idx: 'JSE All Share · 109 904' },
-  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: '🇳🇬', desc: 'ASI au-dessus de 245 000 pts — sommet historique en 2026', cap: '~117 Mds $', idx: 'NGX ASI · 246 678' },
-  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: '🇬🇭', desc: 'GSE-CI installé au-dessus de 15 000 pts en 2026', cap: '~23 Mds $', idx: 'GSE Composite · 15 449' },
+  { name: 'BRVM', city: 'Abidjan', country: 'Zone UEMOA', flag: 'CI', desc: '47 sociétés cotées, 8 pays d\'Afrique de l\'Ouest', cap: '18 700 Mds FCFA', idx: 'BRVM Composite · 485,89', featured: true },
+  { name: 'JSE', city: 'Johannesburg', country: 'Afrique du Sud', flag: 'ZA', desc: 'Plus grande bourse africaine par capitalisation', cap: '~1 350 Mds $', idx: 'JSE All Share · 109 904' },
+  { name: 'NGX', city: 'Lagos', country: 'Nigeria', flag: 'NG', desc: 'ASI au-dessus de 245 000 pts — sommet historique en 2026', cap: '~117 Mds $', idx: 'NGX ASI · 246 678' },
+  { name: 'GSE', city: 'Accra', country: 'Ghana', flag: 'GH', desc: 'GSE-CI installé au-dessus de 15 000 pts en 2026', cap: '~23 Mds $', idx: 'GSE Composite · 15 449' },
   // ── Marchés mondiaux — clôture du 4 août 2026 ──
-  { name: 'NYSE', city: 'New York', country: 'États-Unis', flag: '🇺🇸', desc: 'Plus grande bourse mondiale — S&P 500 à un record le 4 août 2026', cap: '~30 000 Mds $', idx: 'S&P 500 · 7 600 pts', global: true },
-  { name: 'LSE', city: 'Londres', country: 'Royaume-Uni', flag: '🇬🇧', desc: 'Hub financier mondial, premier marché européen coté en livre sterling', cap: '~3 800 Mds $', idx: 'FTSE 100 · 10 884 pts', global: true },
-  { name: 'JPX', city: 'Tokyo', country: 'Japon', flag: '🇯🇵', desc: '3ᵉ capitalisation mondiale — Nikkei proche de ses plus hauts', cap: '~6 500 Mds $', idx: 'Nikkei 225 · 63 958 pts', global: true },
-  { name: 'Euronext', city: 'Paris', country: 'France', flag: '🇫🇷', desc: 'Première bourse continentale européenne, cœur de la finance de la zone euro', cap: '~3 300 Mds $', idx: 'CAC 40 · 8 610 pts', global: true },
+  { name: 'NYSE', city: 'New York', country: 'États-Unis', flag: 'US', desc: 'Plus grande bourse mondiale — S&P 500 à un record le 4 août 2026', cap: '~30 000 Mds $', idx: 'S&P 500 · 7 600 pts', global: true },
+  { name: 'LSE', city: 'Londres', country: 'Royaume-Uni', flag: 'GB', desc: 'Hub financier mondial, premier marché européen coté en livre sterling', cap: '~3 800 Mds $', idx: 'FTSE 100 · 10 884 pts', global: true },
+  { name: 'JPX', city: 'Tokyo', country: 'Japon', flag: 'JP', desc: '3ᵉ capitalisation mondiale — Nikkei proche de ses plus hauts', cap: '~6 500 Mds $', idx: 'Nikkei 225 · 63 958 pts', global: true },
+  { name: 'Euronext', city: 'Paris', country: 'France', flag: 'FR', desc: 'Première bourse continentale européenne, cœur de la finance de la zone euro', cap: '~3 300 Mds $', idx: 'CAC 40 · 8 610 pts', global: true },
 ]
 
 // ── watchlist BRVM ────────────────────────────────────────────────────────────
@@ -223,21 +224,21 @@ const LINKEDIN_POSTS = [
     excerpt: 'Une phrase de Stan Zézé-Bayard m\'a marqué : "Les populations voient encore l\'assurance comme une dépense, pas comme une protection." L\'éducation économique est essentielle pour construire une économie plus forte.',
     date: 'Mai 2025',
     tags: ['Assurance', 'CNPS', 'Finance africaine'],
-    icon: '🏛️',
+    icon: 'bank',
   },
   {
     title: 'Lancement de la Bloomfield Review',
     excerpt: 'Présent au lancement du premier magazine d\'intelligence économique. Échanges avec Paul-Harry Aithnard (DG Ecobank CI), José-Félix Dié (DG CGF Gestion), Steven Bédi (DG PUSH CI) et Edith Brou Bleu.',
     date: 'Avril 2025',
     tags: ['Intelligence économique', 'Networking', 'Finance CI'],
-    icon: '📰',
+    icon: 'news',
   },
   {
     title: 'Salon de l\'Épargne, de l\'Investissement et du Patrimoine',
     excerpt: '"Épargner n\'est pas une question de montant, mais une question de réflexe." Rencontres avec Paul-Harry Aithnard (Ecobank) et Katier Bamba (DG Wave CI). Il faut oser approcher, oser poser des questions.',
     date: 'Mars 2025',
     tags: ['Épargne', 'Wave CI', 'Investissement'],
-    icon: '💰',
+    icon: 'money',
   },
 ]
 
@@ -249,7 +250,7 @@ const CERTIFICATIONS = [
     date: 'Avril 2026',
     badge: 'PECB · Microsoft Partner',
     color: '#B57BEE',
-    icon: '📊',
+    icon: 'chart',
     file: '/certs/kobotoolbox.pdf',
   },
   {
@@ -258,7 +259,7 @@ const CERTIFICATIONS = [
     date: '28 Novembre 2025',
     badge: 'Zurich Foundation',
     color: '#D4AF6A',
-    icon: '🌍',
+    icon: 'globe',
     file: '/certs/Bedje Ahimon raphet jacques auryves.pdf',
   },
   {
@@ -267,7 +268,7 @@ const CERTIFICATIONS = [
     date: '27 Novembre 2025',
     badge: 'Certificat de Réussite',
     color: '#4ade80',
-    icon: '🚀',
+    icon: 'rocket',
     file: '/certs/Certificate_of_Completion.pdf',
   },
   {
@@ -276,7 +277,7 @@ const CERTIFICATIONS = [
     date: '4 Octobre 2024',
     badge: '22.5h · Débutant à Expert',
     color: '#60a5fa',
-    icon: '💼',
+    icon: 'briefcase',
     file: '/certs/certificat pack microsoft.pdf',
   },
   {
@@ -285,7 +286,7 @@ const CERTIFICATIONS = [
     date: '14 Mai 2025',
     badge: 'Course Certificate',
     color: '#4ade80',
-    icon: '📝',
+    icon: 'doc',
     file: '/certs/Coursera 6BH9WQOSCRDC.pdf',
   },
   {
@@ -294,7 +295,7 @@ const CERTIFICATIONS = [
     date: '14 Mai 2025',
     badge: 'Course Certificate',
     color: '#4ade80',
-    icon: '📈',
+    icon: 'trend',
     file: '/certs/Coursera KJ1J40I8FRB5.pdf',
   },
   {
@@ -303,7 +304,7 @@ const CERTIFICATIONS = [
     date: '14 Mai 2025',
     badge: 'Course Certificate',
     color: '#4ade80',
-    icon: '☁️',
+    icon: 'cloud',
     file: '/certs/Coursera QO8HDXXN96TT.pdf',
   },
   {
@@ -312,7 +313,7 @@ const CERTIFICATIONS = [
     date: '14 Mai 2025',
     badge: 'Course Certificate',
     color: '#f87171',
-    icon: '✉️',
+    icon: 'mail',
     file: '/certs/Coursera ZUIGNYSR48U1.pdf',
   },
   {
@@ -321,7 +322,7 @@ const CERTIFICATIONS = [
     date: '15 Mai 2025',
     badge: 'Project Certificate',
     color: '#60a5fa',
-    icon: '📄',
+    icon: 'file',
     file: '/certs/Coursera F4I8U3R6I81G.pdf',
   },
 ]
@@ -441,10 +442,10 @@ const ORGANISATIONS = [
 ]
 
 const DIFFERENTIATORS = [
-  { icon: '📊', title: 'Je construis, je ne théorise pas', desc: "Deux applications fintech réelles, concrètes et en développement actif — pas des maquettes ni des concepts." },
-  { icon: '🏛️', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
-  { icon: '📈', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
-  { icon: '🌍', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je suis NYSE, LSE, JPX, CAC 40 et l'ensemble des marchés africains. L'Afrique financière mondiale est mon terrain de jeu." },
+  { icon: 'chart', title: 'Je construis, je ne théorise pas', desc: "Deux applications fintech réelles, concrètes et en développement actif — pas des maquettes ni des concepts." },
+  { icon: 'bank', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
+  { icon: 'trend', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
+  { icon: 'globe', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je suis NYSE, LSE, JPX, CAC 40 et l'ensemble des marchés africains. L'Afrique financière mondiale est mon terrain de jeu." },
 ]
 
 // ── particles ─────────────────────────────────────────────────────────────────
@@ -912,7 +913,7 @@ function About() {
               Étudiant en Licence 3 de Finance Digitale à l'EMSP Abidjan. Je développe des applications fintech qui transforment les marchés financiers africains, tout en suivant au quotidien les indices de la BRVM et les places boursières du continent et du monde.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, marginBottom: 40, border: '1px solid rgba(255,255,255,0.06)' }}>
-              {[['📍', 'Localisation', 'Abidjan, Cocody Riviera Palmeraie'], ['🎓', 'Formation', 'Finance Digitale — EMSP'], ['📱', 'Téléphone', '+225 01 41 56 41 16'], ['✉️', 'Email', 'auryvesb@gmail.com']].map(([, l, v]) => (
+              {[['pin', 'Localisation', 'Abidjan, Cocody Riviera Palmeraie'], ['cap', 'Formation', 'Finance Digitale — EMSP'], ['phone', 'Téléphone', '+225 01 41 56 41 16'], ['mail', 'Email', 'auryvesb@gmail.com']].map(([, l, v]) => (
                 <div key={l} style={{ padding: '20px', borderRight: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                   <div className="label" style={{ marginBottom: 8 }}>{l}</div>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{v}</div>
@@ -920,7 +921,7 @@ function About() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <a href="mailto:auryvesb@gmail.com" className="btn-prim">✉️ Email</a>
+              <a href="mailto:auryvesb@gmail.com" className="btn-prim"><Icon name="mail" size={15} /> Email</a>
               <a href="https://linkedin.com/in/auryves-bedje-2981bb331" target="_blank" rel="noreferrer" className="btn-gold">💼 LinkedIn</a>
             </div>
           </motion.div>
@@ -1070,7 +1071,7 @@ function ExchangeCard({ ex, i }) {
           Mondial
         </div>
       )}
-      <div style={{ fontSize: 28, marginBottom: 10 }}>{ex.flag}</div>
+      <div className="ex-flag">{ex.flag}</div>
       <div className="serif" style={{ fontSize: 22, fontWeight: 400, color: ex.featured ? '#D4AF6A' : 'white', marginBottom: 4 }}>{ex.name}</div>
       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10, letterSpacing: '0.05em' }}>{ex.city} · {ex.country}</div>
       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: 10, fontWeight: 300 }}>{ex.desc}</p>
@@ -1099,7 +1100,7 @@ function PourquoiMoi() {
               style={{ padding: '40px 32px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s' }}
               whileHover={{ backgroundColor: 'rgba(181,123,238,0.06)' }}
             >
-              <div style={{ fontSize: 36, marginBottom: 20 }}>{d.icon}</div>
+              <div style={{ marginBottom: 20, color: '#D4AF6A' }}><Icon name={d.icon} size={30} /></div>
               <h3 className="serif" style={{ fontSize: 20, fontWeight: 400, color: 'white', marginBottom: 16, lineHeight: 1.3 }}>{d.title}</h3>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, fontWeight: 300 }}>{d.desc}</p>
             </motion.div>
@@ -1581,7 +1582,7 @@ function Publications() {
               style={{ padding: '36px 32px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s', position: 'relative', overflow: 'hidden' }}
               whileHover={{ backgroundColor: 'rgba(181,123,238,0.04)' }}
             >
-              <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 28 }}>{post.icon}</div>
+              <div style={{ position: 'absolute', top: 20, right: 20, color: 'rgba(212,175,106,0.55)' }}><Icon name={post.icon} size={22} /></div>
               <div className="label" style={{ marginBottom: 16, color: 'rgba(212,175,106,0.6)' }}>{post.date}</div>
               <h3 className="serif" style={{ fontSize: 20, fontWeight: 300, color: 'white', marginBottom: 16, lineHeight: 1.4, paddingRight: 40 }}>{post.title}</h3>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, marginBottom: 20, fontStyle: 'italic' }}>
@@ -1637,7 +1638,7 @@ function Contact() {
             <div style={{ marginTop: 32 }}>
               <a href="https://wa.me/2250141564116" target="_blank" rel="noreferrer"
                 style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 28px', borderRadius: 2, background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)', color: 'rgba(37,211,102,0.8)', textDecoration: 'none', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>
-                💬 &nbsp;Message WhatsApp direct
+                <Icon name="chat" size={16} /> &nbsp;Message WhatsApp direct
               </a>
             </div>
           </motion.div>
