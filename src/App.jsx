@@ -794,7 +794,7 @@ function Hero() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d(1) }}
             className="label" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 32, height: 1, background: 'rgba(212,175,106,0.4)' }} />
-            Finance Digitale · EMSP Abidjan · Côte d'Ivoire 🇨🇮
+            Finance Digitale · EMSP Abidjan · Côte d'Ivoire
           </motion.div>
 
           <div style={{ overflow: 'hidden', marginBottom: 12 }}>
@@ -992,7 +992,7 @@ function MarchesAfricains() {
         {/* Bourses africaines */}
         <div style={{ marginBottom: 64 }}>
           <motion.div {...fadeUp(0.05)} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div className="label">🌍 Bourses africaines</div>
+            <div className="label" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Icon name="globe" size={14} />Bourses africaines</div>
             <div className="divider-gold" />
           </motion.div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1539,7 +1539,7 @@ function Networking() {
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 4 }}>{p.name}</div>
                   <div style={{ fontSize: 11, color: '#D4AF6A', letterSpacing: '0.06em', marginBottom: 6 }}>{p.role}</div>
                   <div className="photo-info-org" style={{ fontSize: 11, color: 'rgba(181,123,238,0.8)', letterSpacing: '0.04em', marginBottom: 6 }}>{p.org}</div>
-                  <div className="photo-info-event" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>📍 {p.event}</div>
+                  <div className="photo-info-event" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}><Icon name="pin" size={11} />{p.event}</div>
                 </div>
               </div>
               {/* Fiche sous la photo */}
@@ -1723,11 +1723,11 @@ function Footer() {
           <div>
             <div className="label" style={{ marginBottom: 20 }}>Contact</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {[['✉️ Email', 'mailto:auryvesb@gmail.com'], ['💬 WhatsApp', 'https://wa.me/2250141564116'], ['💼 LinkedIn', 'https://linkedin.com/in/auryves-bedje-2981bb331']].map(([l, h]) => (
+              {[['mail', 'Email', 'mailto:auryvesb@gmail.com'], ['chat', 'WhatsApp', 'https://wa.me/2250141564116'], ['briefcase', 'LinkedIn', 'https://linkedin.com/in/auryves-bedje-2981bb331']].map(([ic, l, h]) => (
                 <a key={l} href={h} target={h.startsWith('http') ? '_blank' : undefined} rel="noreferrer"
-                  style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.3s' }}
-                  onMouseEnter={e => e.target.style.color = '#B57BEE'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}
-                >{l}</a>
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 9, fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.3s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#B57BEE'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+                ><Icon name={ic} size={15} />{l}</a>
               ))}
             </div>
           </div>
@@ -1735,7 +1735,7 @@ function Footer() {
         <div className="divider" />
         <div style={{ marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <p className="label" style={{ color: 'rgba(255,255,255,0.2)' }}>© 2026 · Abidjan, Côte d'Ivoire</p>
-          <p className="label" style={{ color: 'rgba(255,255,255,0.15)' }}>Construire la finance africaine de demain 🌍</p>
+          <p className="label" style={{ color: 'rgba(255,255,255,0.15)' }}>Construire la finance africaine de demain</p>
         </div>
       </div>
     </footer>
@@ -1774,7 +1774,7 @@ function WhatsAppFloat() {
             textDecoration: 'none',
           }}
         >
-          💬
+          <Icon name="chat" size={20} />
         </motion.a>
       )}
     </AnimatePresence>

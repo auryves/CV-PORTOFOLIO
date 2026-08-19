@@ -422,9 +422,11 @@ class App {
    * `viewport.width × viewport.height` unités centrées sur l'origine — puis on
    * teste l'appartenance à chaque plan.
    *
-   * La rotation induite par la courbure est ignorée : la boîte reste droite.
-   * L'écart tient en quelques pixels sur les bords, invisible pour décider
-   * quelle fiche afficher, et évite un test polygone par frame.
+   * La rotation induite par la courbure est prise en compte : le point est
+   * ramené dans le repère local de chaque plan par une rotation inverse, avant
+   * le test de boîte. Sans ça la zone sensible restait un rectangle droit sur
+   * des cartes inclinées jusqu'à plusieurs degrés — les coins ne répondaient
+   * pas, et l'infobulle s'éteignait en plein milieu d'une photo.
    */
   hitTest(clientX, clientY) {
     if (!this.medias || !this.viewport) return -1
@@ -436,9 +438,16 @@ class App {
     const wy = -((((clientY - rect.top) / rect.height) * 2 - 1)) * (this.viewport.height / 2)
     let best = -1, bestDist = Infinity
     this.medias.forEach((m, i) => {
-      const dx = wx - m.plane.position.x, dy = wy - m.plane.position.y
-      if (Math.abs(dx) <= m.plane.scale.x / 2 && Math.abs(dy) <= m.plane.scale.y / 2) {
-        const d = dx * dx + dy * dy
+      const dx = wx - m.plane.position.x
+      const dy = wy - m.plane.position.y
+      // Rotation inverse : on repasse dans le repère de la carte, où la boîte
+      // redevient droite et le test trivial.
+      const a = -m.plane.rotation.z
+      const cos = Math.cos(a), sin = Math.sin(a)
+      const lx = dx * cos - dy * sin
+      const ly = dx * sin + dy * cos
+      if (Math.abs(lx) <= m.plane.scale.x / 2 && Math.abs(ly) <= m.plane.scale.y / 2) {
+        const d = lx * lx + ly * ly
         if (d < bestDist) { bestDist = d; best = i }
       }
     })
