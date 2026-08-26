@@ -661,9 +661,12 @@ function HeroWebGL() {
 
     const build = () => {
       points = []
-      // Boucle quadratique : passer de 110 à 80 points retire environ 40 % des
-      // comparaisons, pour une densité visuelle quasi identique.
-      const n = Math.min(80, Math.round((el.width * el.height) / 15000))
+      // Densité rétablie à 110. La réduire à 80 avait retiré près de la moitié
+      // des liaisons — elles croissent avec le carré du nombre de points — et la
+      // constellation s'était visiblement clairsemée. Ce n'était pas le bon
+      // levier : le coût venait des appels de dessin, réglé par le regroupement
+      // en paliers ci-dessous. Ce qui reste ici n'est que de l'arithmétique.
+      const n = Math.min(110, Math.round((el.width * el.height) / 11000))
       for (let i = 0; i < n; i++) {
         const size = Math.random() * 1.6 + 0.7
         points.push({
