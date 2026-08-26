@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { useForm, ValidationError } from '@formspree/react'
 import { gsap, ScrollTrigger, reducedMotion, isTouch } from './motion'
@@ -7,7 +7,7 @@ import { useParallax, useMediaQuery } from './hooks/useMotionFx'
 import Preloader from './components/Preloader'
 import TextRevealBlock from './components/TextRevealBlock'
 import StickyCerts from './components/StickyCerts'
-import CircularGallery from './components/CircularGallery'
+import CoverflowCarousel from './components/CoverflowCarousel'
 import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
 import Icon from './components/Icon'
@@ -421,11 +421,17 @@ const PHOTOS = [
   },
 ]
 
-// Références stables : CircularGallery et ZoomParallax se réinitialisent si le
-// tableau change d'identité à chaque rendu (le WebGL rechargerait ses textures).
-const GALLERY_ITEMS = PHOTOS.map((p) => ({ image: `/photos/${p.file}`, text: p.name }))
-// Fiches de l'infobulle, dans le même ordre que GALLERY_ITEMS.
-const GALLERY_TIPS = PHOTOS.map((p) => ({ name: p.name, role: p.role, org: p.org }))
+// Références stables : ZoomParallax se réinitialise si le tableau change
+// d'identité à chaque rendu.
+// Diapositives du carrousel : la légende porte l'identité, ce qui rend inutile
+// l'infobulle au survol que la galerie WebGL exigeait.
+const COVERFLOW_SLIDES = PHOTOS.map((p) => ({
+  src: `/photos/${p.file}`,
+  alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
+  title: p.name,
+  subtitle: p.role,
+  org: p.org,
+}))
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
@@ -1364,194 +1370,23 @@ function NetworkingImmersion() {
 
 // ── networking (galerie) ──────────────────────────────────────────────────────
 function Networking() {
-  const scrollRef = useRef(null)
-  const [canLeft, setCanLeft] = useState(false)
-  const [canRight, setCanRight] = useState(true)
-  const paused = useRef(false)
-  const rafRef = useRef(null)
-  // WebGL sur desktop, carrousel tactile natif sur mobile : la galerie circulaire
-  // charge sept textures et se pilote à la molette, deux choses qui n'ont pas de
-  // sens sur un écran tactile de 6 pouces.
-  const isDesktop = useMediaQuery('(min-width: 769px)')
-  // L'infobulle au survol a été retirée : chaque changement d'état relançait un
-  // rendu React de toute la section, galerie WebGL comprise. Les noms sont déjà
-  // gravés en doré sous chaque photo par le shader — l'information ne se perd pas.
-
-  const checkScroll = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    setCanLeft(el.scrollLeft > 4)
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4)
-  }, [])
-
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    checkScroll()
-    el.addEventListener('scroll', checkScroll, { passive: true })
-
-    // Défilement automatique sur tous les formats. Sur mobile il remplace la
-    // traversée zoom retirée : la galerie avance seule au lieu d'attendre un
-    // geste, et le swipe reste possible à tout moment.
-    const mob = window.matchMedia('(max-width: 768px)').matches
-    let pos = el.scrollLeft
-    const speed = mob ? 0.35 : 0.6
-    const animate = () => {
-      if (!paused.current && el) {
-        pos += speed
-        // La liste est doublée dans le rendu : revenir à mi-parcours reprend au
-        // même visuel, la boucle est invisible.
-        if (pos >= el.scrollWidth / 2) pos = 0
-        el.scrollLeft = pos
-      }
-      rafRef.current = requestAnimationFrame(animate)
-    }
-    rafRef.current = requestAnimationFrame(animate)
-
-    // Le doigt reprend la main : on suspend pendant le geste, puis on reprend à
-    // la position atteinte pour éviter le saut en arrière.
-    let resumeTimer
-    const holdStart = () => {
-      clearTimeout(resumeTimer)
-      paused.current = true
-    }
-    const holdEnd = () => {
-      clearTimeout(resumeTimer)
-      resumeTimer = setTimeout(() => {
-        pos = el.scrollLeft
-        paused.current = false
-      }, 2500)
-    }
-    el.addEventListener('touchstart', holdStart, { passive: true })
-    el.addEventListener('touchend', holdEnd, { passive: true })
-
-    return () => {
-      el.removeEventListener('scroll', checkScroll)
-      el.removeEventListener('touchstart', holdStart)
-      el.removeEventListener('touchend', holdEnd)
-      clearTimeout(resumeTimer)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [checkScroll])
-
-  const [tappedIdx, setTappedIdx] = useState(null)
-  const touchStartX = useRef(0)
-  const touchStartY = useRef(0)
-
-  const scroll = dir => {
-    paused.current = true
-    scrollRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
-    setTimeout(() => { paused.current = false }, 3000)
-  }
-
-  const onTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX
-    touchStartY.current = e.touches[0].clientY
-  }
-
-  const onTouchEnd = (i, e) => {
-    const dx = Math.abs(e.changedTouches[0].clientX - touchStartX.current)
-    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current)
-    // seulement si c'est un vrai tap (pas un swipe)
-    if (dx < 8 && dy < 8) setTappedIdx(prev => prev === i ? null : i)
-  }
-
-  const orgMap = {
-    'Dr. Félix Edoh': 'Directeur Général de la BRVM (Bourse Régionale des Valeurs Mobilières de l\'Afrique de l\'Ouest)',
-    'Edith Brou Bleu': 'Journaliste spécialisée en économie, actrice des médias économiques en Côte d\'Ivoire',
-    'José-Félix Dié': 'Directeur Général de CGF Gestion, société de gestion d\'actifs de premier plan en CI',
-    'Paul-Harry Aithnard': 'Directeur Général d\'Ecobank Côte d\'Ivoire et Directeur Régional Exécutif de la zone UEMOA',
-    'Stan Zézé-Bayard': 'Directeur Général de Bloomfield Investment Corporation, première agence de notation africaine',
-    'Steven Bédi': 'Directeur Général de PUSH Côte d\'Ivoire, acteur majeur de la fintech ivoirienne',
-    'Katier Bamba': 'Directeur Général de Wave Côte d\'Ivoire, leader du Mobile Money en Afrique de l\'Ouest',
-  }
-
   return (
     <section id="networking" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <motion.div {...fadeUp()} style={{ marginBottom: 36 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Mes connexions</div>
           <div className="divider" />
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginTop: 32 }}>
-            <TextRevealBlock as="h2" className="display-lg">Dans les cercles<br />de la finance africaine</TextRevealBlock>
-            <div style={{ display: isDesktop ? 'none' : 'flex', gap: 12 }}>
-              <motion.button
-                onClick={() => scroll(-1)}
-                disabled={!canLeft}
-                whileHover={canLeft ? { scale: 1.05 } : {}}
-                whileTap={canLeft ? { scale: 0.95 } : {}}
-                className="carousel-btn"
-                style={{ opacity: canLeft ? 1 : 0.25 }}
-              >
-                ←
-              </motion.button>
-              <motion.button
-                onClick={() => scroll(1)}
-                disabled={!canRight}
-                whileHover={canRight ? { scale: 1.05 } : {}}
-                whileTap={canRight ? { scale: 0.95 } : {}}
-                className="carousel-btn"
-                style={{ opacity: canRight ? 1 : 0.25 }}
-              >
-                →
-              </motion.button>
-            </div>
-          </div>
+          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>
+            Dans les cercles de la finance africaine
+          </TextRevealBlock>
         </motion.div>
 
-        {isDesktop ? (
-          <>
-            <div className="circular-gallery-mask">
-              <CircularGallery
-                items={GALLERY_ITEMS}
-                bend={2.6}
-                borderRadius={0.045}
-                textColor="#D4AF6A"
-                tips={GALLERY_TIPS}
-              />
-            </div>
-            <p className="gallery-hint">Survolez une photo · glissez pour faire tourner</p>
-          </>
-        ) : (
-        <div
-          ref={scrollRef}
-          onMouseEnter={() => { paused.current = true }}
-          onMouseLeave={() => { paused.current = false }}
-          style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 8, touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
-        >
-          {[...PHOTOS, ...PHOTOS].map((p, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false }}
-              transition={{ duration: 0.6, delay: i * 0.06 }}
-              style={{ flexShrink: 0, width: 280 }}
-            >
-              <div
-                className={`photo-card${tappedIdx === i ? ' tapped' : ''}`}
-                style={{ aspectRatio: '3/4', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 0 }}
-                onTouchStart={onTouchStart}
-                onTouchEnd={(e) => onTouchEnd(i, e)}
-              >
-                <img src={`/photos/${p.file}`} alt={`Auryves Bedje avec ${p.name} — ${p.event}`} loading="lazy" />
-                <div className="photo-info">
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 4 }}>{p.name}</div>
-                  <div style={{ fontSize: 11, color: '#D4AF6A', letterSpacing: '0.06em', marginBottom: 6 }}>{p.role}</div>
-                  <div className="photo-info-org" style={{ fontSize: 11, color: 'rgba(181,123,238,0.8)', letterSpacing: '0.04em', marginBottom: 6 }}>{p.org}</div>
-                  <div className="photo-info-event" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}><Icon name="pin" size={11} />{p.event}</div>
-                </div>
-              </div>
-              {/* Fiche sous la photo */}
-              <div style={{ marginTop: 12, padding: '14px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 4 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', marginBottom: 4 }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: '#D4AF6A', marginBottom: 6 }}>{p.org}</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', lineHeight: 1.5 }}>{orgMap[p.name] || p.role}</div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        )}
+        {/* Un seul carrousel pour tous les formats : le Coverflow gère le tactile
+            nativement (pointer events + touch-action pan-y), ce qui rend inutile
+            le carrousel de secours qui doublait le code, faisait tourner sa
+            propre boucle rAF et portait sa propre logique tap-vs-swipe. */}
+        <CoverflowCarousel slides={COVERFLOW_SLIDES} label="Rencontres dans la finance africaine" />
+        <p className="gallery-hint">Glissez les photos · flèches du clavier</p>
 
         {/* Organisations — bandeau défilant éclairé au curseur */}
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48 }}>

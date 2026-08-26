@@ -31,6 +31,8 @@ const PATHS = {
   cap: <><path d="M2 9l10-5 10 5-10 5z" /><path d="M6 11v5c0 1.6 2.7 3 6 3s6-1.4 6-3v-5" /></>,
   phone: <><path d="M6 3h5l2 5-2.5 1.5a12 12 0 0 0 5 5L17 12l5 2v5a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3z" /></>,
   chat: <><path d="M4 5h16v11H9l-5 4z" /></>,
+  'chevron-left': <path d="M15 5l-7 7 7 7" />,
+  'chevron-right': <path d="M9 5l7 7-7 7" />,
 }
 
 export default function Icon({ name, size = 24, className = '', style, strokeWidth = 1.5 }) {
