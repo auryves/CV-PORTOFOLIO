@@ -650,11 +650,17 @@ function HeroWebGL() {
     const ctx = el.getContext('2d')
     let raf
     let points = []
+    // Tableaux réutilisés : les réallouer à chaque frame ferait travailler le
+    // ramasse-miettes soixante fois par seconde.
+    const BUCKETS = 4
+    const buckets = Array.from({ length: BUCKETS }, () => [])
     const mouse = { x: null, y: null, r: 190 }
 
     const build = () => {
       points = []
-      const n = Math.min(110, Math.round((el.width * el.height) / 11000))
+      // Boucle quadratique : passer de 110 à 80 points retire environ 40 % des
+      // comparaisons, pour une densité visuelle quasi identique.
+      const n = Math.min(80, Math.round((el.width * el.height) / 15000))
       for (let i = 0; i < n; i++) {
         const size = Math.random() * 1.6 + 0.7
         points.push({
@@ -701,20 +707,38 @@ function HeroWebGL() {
 
       // Les liens ne sont tracés qu'en deçà d'un seuil, et la comparaison se fait
       // sur le carré de la distance : pas de racine carrée dans la boucle interne.
+      //
+      // Les traits sont regroupés par paliers d'opacité. Chaque changement de
+      // `strokeStyle` impose un appel de dessin distinct : à un trait par appel,
+      // une frame chargée en demandait plusieurs centaines. En quatre paliers, il
+      // en reste quatre — la dégradation visuelle est invisible à 16 %
+      // d'opacité maximale.
       const maxSq = 128 * 128
+      for (let b = 0; b < BUCKETS; b++) buckets[b].length = 0
+
       for (let a = 0; a < points.length; a++) {
-        for (let b = a + 1; b < points.length; b++) {
-          const dx = points[a].x - points[b].x
-          const dy = points[a].y - points[b].y
+        for (let c = a + 1; c < points.length; c++) {
+          const dx = points[a].x - points[c].x
+          const dy = points[a].y - points[c].y
           const sq = dx * dx + dy * dy
           if (sq > maxSq) continue
-          ctx.strokeStyle = `rgba(181,123,238,${0.16 * (1 - sq / maxSq)})`
-          ctx.lineWidth = 1
-          ctx.beginPath()
-          ctx.moveTo(points[a].x, points[a].y)
-          ctx.lineTo(points[b].x, points[b].y)
-          ctx.stroke()
+          // Plus les points sont proches, plus le palier est opaque.
+          const level = Math.min(BUCKETS - 1, Math.floor((1 - sq / maxSq) * BUCKETS))
+          buckets[level].push(points[a].x, points[a].y, points[c].x, points[c].y)
         }
+      }
+
+      ctx.lineWidth = 1
+      for (let b = 0; b < BUCKETS; b++) {
+        const seg = buckets[b]
+        if (!seg.length) continue
+        ctx.strokeStyle = `rgba(181,123,238,${(0.16 * (b + 0.5)) / BUCKETS})`
+        ctx.beginPath()
+        for (let i = 0; i < seg.length; i += 4) {
+          ctx.moveTo(seg[i], seg[i + 1])
+          ctx.lineTo(seg[i + 2], seg[i + 3])
+        }
+        ctx.stroke()
       }
       raf = requestAnimationFrame(draw)
     }

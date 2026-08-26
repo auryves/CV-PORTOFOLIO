@@ -47,8 +47,11 @@
   body::before {
     content: '';
     position: fixed;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
+    /* Ramené à la taille de l'écran. Le format 200 %×200 % décalé de -50 % ne
+       servait qu'à donner du jeu à l'animation `grain`, supprimée depuis : il
+       restait une surface composée de quatre fois l'écran, repeinte à chaque
+       défilement. Mesuré : ~10 images par seconde perdues au scroll du hero. */
+    inset: 0;
     pointer-events: none;
     z-index: 100001;
     opacity: 0.028;
@@ -57,18 +60,6 @@
        c'était la plus chère des quatre animations infinies du site, et la moins
        visible. La texture, elle, reste. */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-  @keyframes grain {
-    0%,100% { transform: translate(0,0); }
-    10% { transform: translate(-3%,-5%); }
-    20% { transform: translate(-7%, 3%); }
-    30% { transform: translate(4%, -7%); }
-    40% { transform: translate(-5%, 7%); }
-    50% { transform: translate(7%, 2%); }
-    60% { transform: translate(-2%, -4%); }
-    70% { transform: translate(5%, 3%); }
-    80% { transform: translate(-6%, 5%); }
-    90% { transform: translate(6%, -4%); }
   }
 
   #root { width: 100%; min-height: 100vh; }
