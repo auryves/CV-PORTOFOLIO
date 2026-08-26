@@ -456,9 +456,12 @@ const DIFFERENTIATORS = [
 ]
 
 // ── particles ─────────────────────────────────────────────────────────────────
-const PDATA = Array.from({ length: 18 }, (_, i) => ({
+// Ramené de 18 à 10 : chaque particule est un élément composé séparément,
+// translaté et pivoté en continu. Elles produisaient l'essentiel des tâches
+// longues mesurées au scroll sur processeur bridé, pour un décor à peine visible.
+const PDATA = Array.from({ length: 10 }, (_, i) => ({
   id: i, size: 1 + (i % 3),
-  left: (i * 5.55) % 100,
+  left: (i * 10) % 100,
   delay: (i * 1.2) % 20,
   dur: 14 + (i % 10),
   color: i % 4 === 0 ? '#D4AF6A' : '#B57BEE',
@@ -469,7 +472,7 @@ function Particles() {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {PDATA.map(p => (
-        <div key={p.id} className="particle" style={{ width: p.size, height: p.size, left: `${p.left}%`, background: p.color, opacity: p.opacity, animationDelay: `${p.delay}s`, animationDuration: `${p.dur}s`, boxShadow: `0 0 ${p.size * 4}px ${p.color}` }} />
+        <div key={p.id} className="particle" style={{ width: p.size, height: p.size, left: `${p.left}%`, background: p.color, opacity: p.opacity, animationDelay: `${p.delay}s`, animationDuration: `${p.dur}s` }} />
       ))}
     </div>
   )
@@ -801,9 +804,12 @@ function Hero() {
   return (
     <section id="hero" ref={ref} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: 'clamp(100px, 15vw, 140px) clamp(16px, 4vw, 32px) 80px' }}>
       <HeroWebGL />
-      <div className="orb" style={{ width: 500, height: 500, top: '5%', left: '-12%', background: '#B57BEE' }} />
-      <div className="orb" style={{ width: 350, height: 350, bottom: '10%', right: '-8%', background: '#6C3AED', animationDelay: '3s' }} />
-      <div className="orb" style={{ width: 250, height: 250, top: '40%', right: '30%', background: '#D4AF6A', animationDelay: '6s' }} />
+      {/* Les trois orbes flous sont remplacés par des dégradés radiaux peints dans
+          le fond de la section (voir `.hero-glow`). Un `filter: blur(90px)` sur un
+          bloc de 500 px force un rendu hors écran à chaque frame animée : mesuré à
+          neuf images par seconde sur processeur bridé. Un dégradé radial donne le
+          même halo, composé une seule fois. */}
+      <div className="hero-glow" aria-hidden="true" />
 
       <div style={{ maxWidth: 1200, margin: '0 auto' }} className="hero-grid">
         <motion.div style={{ y, opacity: op }}>

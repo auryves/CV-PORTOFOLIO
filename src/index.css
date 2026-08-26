@@ -1409,3 +1409,30 @@ html.lenis, html.lenis body { height: auto; }
   white-space: nowrap;
   border: 0;
 }
+
+
+/* ─── HALO DU HERO ───────────────────────────────────────────────────────────
+   Remplace trois `div` en `filter: blur(90px)` animés en boucle. Le flou
+   imposait un rendu hors écran à chaque frame ; les dégradés radiaux sont peints
+   une fois par le compositeur et ne coûtent rien au défilement. Positions et
+   teintes reprises des orbes d'origine.
+   ─────────────────────────────────────────────────────────────────────────── */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle 460px at 8% 26%,  rgba(181,123,238,0.13) 0%, transparent 68%),
+    radial-gradient(circle 330px at 96% 82%, rgba(108,58,237,0.12)  0%, transparent 68%),
+    radial-gradient(circle 240px at 68% 52%, rgba(212,175,106,0.09) 0%, transparent 68%);
+}
+@media (max-width: 768px) {
+  /* Sur petit écran ces halos couvraient presque tout le fond. */
+  .hero-glow { display: none; }
+}
+
+/* Particules : l'ombre portée était recalculée sur chaque élément à chaque frame
+   de sa translation. Le point lumineux vient désormais du dégradé radial du
+   fond, qui ne coûte rien. */
+.particle { box-shadow: none !important; }
