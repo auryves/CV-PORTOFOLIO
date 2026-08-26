@@ -1404,3 +1404,17 @@ html.lenis, html.lenis body { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   .cf-caption { animation: none; }
 }
+
+/* Région live du carrousel : lue par les lecteurs d'écran au changement de
+   photo, invisible à l'œil. `clip` plutôt que `display:none`, qui la retirerait
+   aussi de l'arbre d'accessibilité et annulerait l'annonce. */
+.cf-status {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

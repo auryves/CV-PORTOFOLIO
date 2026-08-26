@@ -47,6 +47,7 @@ export default function CoverflowCarousel({
   const targetRef = React.useRef(0)
   const widthRef = React.useRef(0)
   const rafRef = React.useRef(null)
+  const paintScheduled = React.useRef(null)
   const dragRef = React.useRef(null)
 
   const [selected, setSelected] = React.useState(0)
@@ -90,7 +91,15 @@ export default function CoverflowCarousel({
 
       // Une carte est téléportée à l'opposé exactement à mi-tour : elle doit donc
       // avoir disparu à ce moment, sinon le saut se voit.
-      const edge = loop ? Math.min(1, Math.max(0, count / 2 - distance)) : 1
+      //
+      // La largeur de la zone de fondu est ramenée à ce que l'anneau peut porter.
+      // Fixée à 1, elle dégénérait sur de très petites listes : à deux cartes la
+      // non-sélectionnée restait invisible en permanence, à une seule la carte
+      // centrale plafonnait à 50 % d'opacité.
+      const zone = Math.min(1, count / 2)
+      const edge = loop && count > 2
+        ? Math.min(1, Math.max(0, (count / 2 - distance) / zone))
+        : 1
       card.style.opacity = String(Math.max(0, 1 - fade * distance) * edge)
       card.style.zIndex = String(100 - Math.round(distance))
     })
@@ -125,23 +134,44 @@ export default function CoverflowCarousel({
     [count, loop]
   )
 
+  // Le clavier et le glissement écrivent tous deux dans `posRef`. Si une flèche
+  // arrive pendant un glissement, `settle` démarre sa boucle pendant que
+  // `onPointerMove` continue d'écrire : deux auteurs sur la même valeur, d'où
+  // des soubresauts. On clôt le glissement avant de céder la main au clavier.
+  const releaseDrag = React.useCallback(() => {
+    dragRef.current = null
+    targetRef.current = posRef.current
+  }, [])
+
   const goTo = React.useCallback(
     (index) => {
+      releaseDrag()
       // Emprunter le chemin le plus court plutôt que dérouler tout l'anneau.
       const target = loop
         ? index + Math.round((targetRef.current - index) / count) * count
         : index
       settle(clamp(target))
     },
-    [clamp, count, loop, settle]
+    [clamp, count, loop, releaseDrag, settle]
   )
 
   const nudge = React.useCallback(
-    (by) => settle(clamp(Math.round(targetRef.current) + by)),
-    [clamp, settle]
+    (by) => {
+      releaseDrag()
+      settle(clamp(Math.round(targetRef.current) + by))
+    },
+    [clamp, releaseDrag, settle]
   )
 
   const onPointerDown = (event) => {
+    // Sans ce garde, un clic droit ou molette maintenu faisait glisser le
+    // carrousel et parasitait le menu contextuel. Et un second doigt posé en
+    // cours de glissement réassignait le drag : le premier pointeur ne trouvait
+    // plus son `pointerup` et son geste restait en plan, sans calage final.
+    if (dragRef.current) return
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    if (event.isPrimary === false) return
+
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current)
       rafRef.current = null
@@ -173,7 +203,16 @@ export default function CoverflowCarousel({
 
     const index = indexAt(posRef.current)
     if (index !== selected) setSelected(index)
-    paint()
+
+    // `pointermove` peut se déclencher plus souvent que l'écran ne rafraîchit
+    // (souris à haute fréquence, événements tactiles coalescés). On ne peint
+    // qu'une fois par frame, comme le fait déjà `settle`.
+    if (paintScheduled.current === null) {
+      paintScheduled.current = requestAnimationFrame(() => {
+        paintScheduled.current = null
+        paint()
+      })
+    }
   }
 
   const endDrag = (event) => {
@@ -207,6 +246,7 @@ export default function CoverflowCarousel({
   React.useEffect(
     () => () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+      if (paintScheduled.current !== null) cancelAnimationFrame(paintScheduled.current)
     },
     []
   )
@@ -239,6 +279,12 @@ export default function CoverflowCarousel({
             }
           }}
           className="cf-frame"
+          role="group"
+          aria-roledescription="carrousel"
+          // C'est cet élément qui reçoit le focus et les flèches, pas le parent
+          // porteur du `role="region"`. Sans nom accessible ici, l'utilisateur
+          // au clavier atterrissait sur un div anonyme sans savoir quoi en faire.
+          aria-label={label + ' — flèches gauche et droite pour naviguer'}
           style={{
             perspective: 'calc(var(--cf-card) * ' + perspective + ')',
             // Le glissement horizontal nous revient ; la page garde le vertical.
@@ -253,6 +299,11 @@ export default function CoverflowCarousel({
                 role="group"
                 aria-roledescription="diapositive"
                 aria-label={index + 1 + ' sur ' + count}
+                // Seule la carte centrée est exposée à l'assistance. Les autres
+                // sont soit à opacité nulle, soit inclinées jusqu'à 82° : les
+                // laisser lisibles obligeait un lecteur d'écran à parcourir sept
+                // photos dont une seule est réellement à l'écran.
+                aria-hidden={index !== selected}
                 className="cf-card"
               >
                 <img
@@ -277,6 +328,12 @@ export default function CoverflowCarousel({
           </>
         )}
       </div>
+
+      {/* La légende change visuellement ; sans région live, rien ne le signalait
+          à un lecteur d'écran après un appui sur les flèches. */}
+      <p className="cf-status" role="status" aria-live="polite">
+        {active ? active.title + (active.subtitle ? ', ' + active.subtitle : '') : ''}
+      </p>
 
       {showCaption && active && active.title && (
         <div key={selected} className="cf-caption">
