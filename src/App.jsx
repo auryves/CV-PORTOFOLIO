@@ -7,19 +7,13 @@ import { useParallax, useMediaQuery } from './hooks/useMotionFx'
 import Preloader from './components/Preloader'
 import TextRevealBlock from './components/TextRevealBlock'
 import StickyCerts from './components/StickyCerts'
-import { OrbitalImageWheel } from './components/OrbitalImageWheel'
+import CoverflowCarousel from './components/CoverflowCarousel'
 import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
 import Icon from './components/Icon'
 import OrgMarquee from './components/OrgMarquee'
 import MobileDock from './components/MobileDock'
 import StaggerLink from './components/StaggerLink'
-import {
-  MotionNavigationMenu,
-  MotionNavigationMenuList,
-  MotionNavigationMenuItem,
-  MotionNavigationMenuLink,
-} from './components/MotionNavigationMenu'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -431,16 +425,12 @@ const PHOTOS = [
 // d'identité à chaque rendu.
 // Diapositives du carrousel : la légende porte l'identité, ce qui rend inutile
 // l'infobulle au survol que la galerie WebGL exigeait.
-// Liste doublée. Sept photos réparties sur 360° laissent 51° entre voisines,
-// soit près de 200 px de plongée d'une carte à l'autre : l'arc était illisible,
-// trois cartes à des hauteurs très différentes et une coupée hors écran.
-// Quatorze items ramènent l'écart à 26°, et la courbe redevient continue.
-const WHEEL_IMAGES = [...PHOTOS, ...PHOTOS].map((p, i) => ({
+const COVERFLOW_SLIDES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
-  label: p.name,
+  title: p.name,
   subtitle: p.role,
-  key: `${p.file}-${i}`,
+  org: p.org,
 }))
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
@@ -567,25 +557,11 @@ function Navbar() {
           <a href="#hero" className="serif" style={{ fontSize: 20, fontWeight: 300, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textDecoration: 'none' }}>
             Auryves <span className="grad-gold">Bedje</span>
           </a>
-          {/* Menu à surbrillance glissante. Seuls List / Item / Link sont
-              utilisés : les sept liens pointent vers des ancres de la page, il
-              n'y a aucun sous-menu à déplier, donc ni Trigger, ni Content, ni
-              Viewport. */}
-          <MotionNavigationMenu className="hidden md:flex">
-            <MotionNavigationMenuList highlightClassName="nav-highlight">
-              {links.map(([l, h, id]) => (
-                <MotionNavigationMenuItem key={h}>
-                  <MotionNavigationMenuLink
-                    href={h}
-                    data-active={activeSection === id ? 'true' : undefined}
-                    className="nav-mlink"
-                  >
-                    {l}
-                  </MotionNavigationMenuLink>
-                </MotionNavigationMenuItem>
-              ))}
-            </MotionNavigationMenuList>
-          </MotionNavigationMenu>
+          <nav className="hidden md:flex items-center gap-8">
+            {links.map(([l, h, id]) => (
+              <StaggerLink key={h} href={h} active={activeSection === id}>{l}</StaggerLink>
+            ))}
+          </nav>
           <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '9px 24px', fontSize: 11 }}>Contact</a>
           {/* Hamburger — large touch area */}
           <button
@@ -1427,7 +1403,6 @@ function NetworkingImmersion() {
 
 // ── networking (galerie) ──────────────────────────────────────────────────────
 function Networking() {
-  const isDesktop = useMediaQuery('(min-width: 769px)')
   return (
     <section id="networking" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -1439,24 +1414,12 @@ function Networking() {
           </TextRevealBlock>
         </motion.div>
 
-        {/* Roue resserrée : un grand diamètre étalait l'arc sur toute la
-            largeur et ne laissait voir que trois cartes très espacées. Un
-            diamètre proche de la largeur du cadre les rapproche et en montre
-            cinq. `dim` bas et `blur` fort font fondre les cartes lointaines
-            dans le fond sombre, au lieu de les laisser traîner, floues, sous
-            la légende. */}
-        <OrbitalImageWheel
-          images={WHEEL_IMAGES}
-          wheelSize={isDesktop ? 1100 : 900}
-          cropRatio={isDesktop ? 0.54 : 0.58}
-          itemWidth={isDesktop ? 200 : 130}
-          itemHeight={isDesktop ? 265 : 170}
-          scrollLength={isDesktop ? 280 : 220}
-          captionOffset={isDesktop ? 12 : 26}
-          dim={10}
-          blur={10}
-          focusSpread={0.4}
-        />
+        {/* Un seul carrousel pour tous les formats : le Coverflow gère le tactile
+            nativement (pointer events + touch-action pan-y), ce qui rend inutile
+            le carrousel de secours qui doublait le code, faisait tourner sa
+            propre boucle rAF et portait sa propre logique tap-vs-swipe. */}
+        <CoverflowCarousel slides={COVERFLOW_SLIDES} label="Rencontres dans la finance africaine" />
+        <p className="gallery-hint">Glissez les photos · flèches du clavier</p>
 
         {/* Organisations — bandeau défilant éclairé au curseur */}
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48 }}>

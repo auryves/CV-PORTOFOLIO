@@ -33,7 +33,6 @@ const PATHS = {
   chat: <><path d="M4 5h16v11H9l-5 4z" /></>,
   'chevron-left': <path d="M15 5l-7 7 7 7" />,
   'chevron-right': <path d="M9 5l7 7-7 7" />,
-  'chevron-down': <path d="M5 9l7 7 7-7" />,
 }
 
 export default function Icon({ name, size = 24, className = '', style, strokeWidth = 1.5 }) {
