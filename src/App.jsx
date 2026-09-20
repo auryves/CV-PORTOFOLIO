@@ -4,6 +4,7 @@ import { useForm, ValidationError } from '@formspree/react'
 import { gsap, ScrollTrigger, reducedMotion, isTouch } from './motion'
 import { initSmoothScroll, destroySmoothScroll, scrollToTop } from './smoothScroll'
 import { useParallax, useMediaQuery } from './hooks/useMotionFx'
+import { ScrollXCarousel, ScrollXCarouselContainer, ScrollXCarouselWrap, ScrollXCarouselProgress } from './components/ScrollXCarousel'
 import Preloader from './components/Preloader'
 import TextRevealBlock from './components/TextRevealBlock'
 import StickyCerts from './components/StickyCerts'
@@ -1014,6 +1015,7 @@ function Projects() {
 
 // ── marchés africains + mondiaux ──────────────────────────────────────────────
 function MarchesAfricains() {
+  const isDesktop = useMediaQuery('(min-width: 769px)')
   const african = EXCHANGES.filter(e => !e.global)
   const global = EXCHANGES.filter(e => e.global)
   return (
@@ -1028,31 +1030,66 @@ function MarchesAfricains() {
           </p>
         </motion.div>
 
-        {/* Bourses africaines */}
-        <div style={{ marginBottom: 64 }}>
-          <motion.div {...fadeUp(0.05)} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div className="label" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Icon name="globe" size={14} />Bourses africaines</div>
-            <div className="divider-gold" />
-          </motion.div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
-            {african.map((ex, i) => (
-              <ExchangeCard key={ex.name} ex={ex} i={i} />
-            ))}
+        {/* Les huit places tiennent sur une seule ligne qui glisse au
+            défilement : la grille les empilait sur trois rangées, ce qui
+            cassait la comparaison Afrique / monde que la section raconte.
+            Sur téléphone la grille reste — figer un bloc et le faire glisser
+            à l'horizontale sur 390 px de large ne montrerait qu'une carte à
+            la fois, pour un scroll trois fois plus long. */}
+        {isDesktop ? (
+          <div style={{ marginBottom: 80 }}>
+            <ScrollXCarousel className="h-[220vh]">
+              <ScrollXCarouselContainer className="h-screen flex flex-col justify-center">
+                {/* Le titre vit dans le bloc collant : posé au-dessus du
+                    carrousel, il défilait hors cadre dès les premiers pixels
+                    et la ligne de cartes glissait sans intitulé. */}
+                <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div className="label" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Icon name="globe" size={14} />Places africaines et mondiales</div>
+                  <div className="divider-gold" />
+                </div>
+                <ScrollXCarouselWrap xRange={['0%', '-52%']} className="flex gap-px">
+                  {EXCHANGES.map((ex, i) => (
+                    <div key={ex.name} style={{ width: 320, flexShrink: 0 }}>
+                      <ExchangeCard ex={ex} i={i} noReveal />
+                    </div>
+                  ))}
+                </ScrollXCarouselWrap>
+                <ScrollXCarouselProgress
+                  className="mt-10 h-px w-full bg-white/10"
+                  progressStyle="h-px w-full bg-[rgba(212,175,106,0.6)]"
+                />
+              </ScrollXCarouselContainer>
+            </ScrollXCarousel>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Bourses africaines */}
+            <div style={{ marginBottom: 64 }}>
+              <motion.div {...fadeUp(0.05)} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div className="label" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Icon name="globe" size={14} />Bourses africaines</div>
+                <div className="divider-gold" />
+              </motion.div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
+                {african.map((ex, i) => (
+                  <ExchangeCard key={ex.name} ex={ex} i={i} />
+                ))}
+              </div>
+            </div>
 
-        {/* Marchés mondiaux de référence */}
-        <div style={{ marginBottom: 80 }}>
-          <motion.div {...fadeUp(0.05)} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div className="label">🌐 Marchés mondiaux de référence</div>
-            <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, rgba(181,123,238,0.4), transparent)' }} />
-          </motion.div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(181,123,238,0.08)' }}>
-            {global.map((ex, i) => (
-              <ExchangeCard key={ex.name} ex={ex} i={i + african.length} />
-            ))}
-          </div>
-        </div>
+            {/* Marchés mondiaux de référence */}
+            <div style={{ marginBottom: 80 }}>
+              <motion.div {...fadeUp(0.05)} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div className="label" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Icon name="globe" size={14} />Marchés mondiaux de référence</div>
+                <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg, transparent, rgba(181,123,238,0.4), transparent)' }} />
+              </motion.div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(181,123,238,0.08)' }}>
+                {global.map((ex, i) => (
+                  <ExchangeCard key={ex.name} ex={ex} i={i + african.length} />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Watchlist */}
         <div>
@@ -1088,9 +1125,12 @@ function MarchesAfricains() {
   )
 }
 
-function ExchangeCard({ ex, i }) {
+// `noReveal` sert au carrousel horizontal : la révélation en fondu s'y
+// déclenchait carte par carte, et les cartes encore hors cadre gardaient leur
+// décalage vertical — la ligne arrivait en escalier au lieu d'être alignée.
+function ExchangeCard({ ex, i, noReveal = false }) {
   return (
-    <motion.div {...fadeUp(i * 0.07)}
+    <motion.div {...(noReveal ? {} : fadeUp(i * 0.07))}
       style={{
         padding: '24px',
         background: ex.featured ? 'rgba(212,175,106,0.05)' : ex.global ? 'rgba(181,123,238,0.03)' : 'rgba(255,255,255,0.02)',
