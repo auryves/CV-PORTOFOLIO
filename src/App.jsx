@@ -1439,23 +1439,23 @@ function Networking() {
           </TextRevealBlock>
         </motion.div>
 
-        {/* Un seul carrousel pour tous les formats : le Coverflow gère le tactile
-            nativement (pointer events + touch-action pan-y), ce qui rend inutile
-            le carrousel de secours qui doublait le code, faisait tourner sa
-            propre boucle rAF et portait sa propre logique tap-vs-swipe. */}
-        {/* Grand diamètre et découpe basse : le sommet de la roue remonte vers
-            le haut du cadre, ce qui laisse la légende dégagée et garde les
-            cartes lointaines dans le champ plutôt que coupées au bord.
-            Le diamètre doit suivre la largeur d'écran — 2000 px sur un
-            téléphone de 390 px ne laissait qu'une carte géante hors cadre. */}
+        {/* Roue resserrée : un grand diamètre étalait l'arc sur toute la
+            largeur et ne laissait voir que trois cartes très espacées. Un
+            diamètre proche de la largeur du cadre les rapproche et en montre
+            cinq. `dim` bas et `blur` fort font fondre les cartes lointaines
+            dans le fond sombre, au lieu de les laisser traîner, floues, sous
+            la légende. */}
         <OrbitalImageWheel
           images={WHEEL_IMAGES}
-          wheelSize={isDesktop ? 2000 : 900}
-          cropRatio={isDesktop ? 0.72 : 0.58}
-          itemWidth={isDesktop ? 180 : 130}
-          itemHeight={isDesktop ? 240 : 170}
+          wheelSize={isDesktop ? 1100 : 900}
+          cropRatio={isDesktop ? 0.54 : 0.58}
+          itemWidth={isDesktop ? 200 : 130}
+          itemHeight={isDesktop ? 265 : 170}
           scrollLength={isDesktop ? 280 : 220}
-          captionOffset={isDesktop ? 24 : 26}
+          captionOffset={isDesktop ? 12 : 26}
+          dim={10}
+          blur={10}
+          focusSpread={0.4}
         />
 
         {/* Organisations — bandeau défilant éclairé au curseur */}
