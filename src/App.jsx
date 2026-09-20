@@ -14,6 +14,12 @@ import Icon from './components/Icon'
 import OrgMarquee from './components/OrgMarquee'
 import MobileDock from './components/MobileDock'
 import StaggerLink from './components/StaggerLink'
+import {
+  MotionNavigationMenu,
+  MotionNavigationMenuList,
+  MotionNavigationMenuItem,
+  MotionNavigationMenuLink,
+} from './components/MotionNavigationMenu'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -556,11 +562,25 @@ function Navbar() {
           <a href="#hero" className="serif" style={{ fontSize: 20, fontWeight: 300, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textDecoration: 'none' }}>
             Auryves <span className="grad-gold">Bedje</span>
           </a>
-          <nav className="hidden md:flex items-center gap-8">
-            {links.map(([l, h, id]) => (
-              <StaggerLink key={h} href={h} active={activeSection === id}>{l}</StaggerLink>
-            ))}
-          </nav>
+          {/* Menu à surbrillance glissante. Seuls List / Item / Link sont
+              utilisés : les sept liens pointent vers des ancres de la page, il
+              n'y a aucun sous-menu à déplier, donc ni Trigger, ni Content, ni
+              Viewport. */}
+          <MotionNavigationMenu className="hidden md:flex">
+            <MotionNavigationMenuList highlightClassName="nav-highlight">
+              {links.map(([l, h, id]) => (
+                <MotionNavigationMenuItem key={h}>
+                  <MotionNavigationMenuLink
+                    href={h}
+                    data-active={activeSection === id ? 'true' : undefined}
+                    className="nav-mlink"
+                  >
+                    {l}
+                  </MotionNavigationMenuLink>
+                </MotionNavigationMenuItem>
+              ))}
+            </MotionNavigationMenuList>
+          </MotionNavigationMenu>
           <a href="#contact" className="hidden md:inline-flex btn-prim" style={{ padding: '9px 24px', fontSize: 11 }}>Contact</a>
           {/* Hamburger — large touch area */}
           <button
