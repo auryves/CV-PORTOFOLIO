@@ -1443,23 +1443,36 @@ html.lenis, html.lenis body { height: auto; }
    règles, la surbrillance serait transparente et les liens sans couleur.
    ─────────────────────────────────────────────────────────────────────────── */
 .nav-highlight {
-  background: linear-gradient(140deg, rgba(181,123,238,0.22), rgba(212,175,106,0.16));
-  border: 1px solid rgba(212,175,106,0.28);
+  background: rgba(212,175,106,0.10);
+  border: 1px solid rgba(212,175,106,0.32);
   border-radius: 2px;
 }
 .nav-mlink {
+  position: relative;
   display: inline-flex; align-items: center;
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.15em;
+  /* Resserré : 14 px de part et d'autre plus l'espacement du composant
+     étiraient les sept liens sur toute la largeur et cassaient le bloc. */
+  padding: 7px 11px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.42);
   text-decoration: none;
   white-space: nowrap;
   border-radius: 2px;
   transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.nav-mlink:hover { color: rgba(255,255,255,0.92); }
-/* La section visible garde sa marque même quand la surbrillance est ailleurs. */
+.nav-mlink:hover { color: rgba(255,255,255,0.95); }
+
+/* La section visible porte un repère permanent. Sans lui, la barre au repos
+   n'était qu'une rangée de texte gris : la surbrillance ne vit qu'au survol,
+   elle ne dit rien de l'endroit où l'on se trouve. */
 .nav-mlink[data-active='true'] { color: var(--gold); }
+.nav-mlink[data-active='true']::after {
+  content: '';
+  position: absolute;
+  left: 11px; right: 11px; bottom: 2px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}

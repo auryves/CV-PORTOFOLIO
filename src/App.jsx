@@ -431,11 +431,16 @@ const PHOTOS = [
 // d'identité à chaque rendu.
 // Diapositives du carrousel : la légende porte l'identité, ce qui rend inutile
 // l'infobulle au survol que la galerie WebGL exigeait.
-const WHEEL_IMAGES = PHOTOS.map((p) => ({
+// Liste doublée. Sept photos réparties sur 360° laissent 51° entre voisines,
+// soit près de 200 px de plongée d'une carte à l'autre : l'arc était illisible,
+// trois cartes à des hauteurs très différentes et une coupée hors écran.
+// Quatorze items ramènent l'écart à 26°, et la courbe redevient continue.
+const WHEEL_IMAGES = [...PHOTOS, ...PHOTOS].map((p, i) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
   label: p.name,
   subtitle: p.role,
+  key: `${p.file}-${i}`,
 }))
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
@@ -1422,6 +1427,7 @@ function NetworkingImmersion() {
 
 // ── networking (galerie) ──────────────────────────────────────────────────────
 function Networking() {
+  const isDesktop = useMediaQuery('(min-width: 769px)')
   return (
     <section id="networking" className="section-pad" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -1437,16 +1443,19 @@ function Networking() {
             nativement (pointer events + touch-action pan-y), ce qui rend inutile
             le carrousel de secours qui doublait le code, faisait tourner sa
             propre boucle rAF et portait sa propre logique tap-vs-swipe. */}
-        {/* Roue réglée pour sept photos : le diamètre par défaut (1815 px) les
-            espaçait de 815 px le long de la circonférence, et deux seulement
-            tenaient à l'écran. */}
+        {/* Grand diamètre et découpe basse : le sommet de la roue remonte vers
+            le haut du cadre, ce qui laisse la légende dégagée et garde les
+            cartes lointaines dans le champ plutôt que coupées au bord.
+            Le diamètre doit suivre la largeur d'écran — 2000 px sur un
+            téléphone de 390 px ne laissait qu'une carte géante hors cadre. */}
         <OrbitalImageWheel
           images={WHEEL_IMAGES}
-          wheelSize={1100}
-          cropRatio={0.72}
-          itemWidth={200}
-          itemHeight={270}
-          scrollLength={260}
+          wheelSize={isDesktop ? 2000 : 900}
+          cropRatio={isDesktop ? 0.72 : 0.58}
+          itemWidth={isDesktop ? 180 : 130}
+          itemHeight={isDesktop ? 240 : 170}
+          scrollLength={isDesktop ? 280 : 220}
+          captionOffset={isDesktop ? 24 : 26}
         />
 
         {/* Organisations — bandeau défilant éclairé au curseur */}
