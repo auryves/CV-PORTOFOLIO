@@ -7,7 +7,7 @@ import { useParallax, useMediaQuery } from './hooks/useMotionFx'
 import Preloader from './components/Preloader'
 import TextRevealBlock from './components/TextRevealBlock'
 import StickyCerts from './components/StickyCerts'
-import CoverflowCarousel from './components/CoverflowCarousel'
+import { OrbitalImageWheel } from './components/OrbitalImageWheel'
 import ZoomParallax from './components/ZoomParallax'
 import ActionButton from './components/ActionButton'
 import Icon from './components/Icon'
@@ -425,12 +425,11 @@ const PHOTOS = [
 // d'identité à chaque rendu.
 // Diapositives du carrousel : la légende porte l'identité, ce qui rend inutile
 // l'infobulle au survol que la galerie WebGL exigeait.
-const COVERFLOW_SLIDES = PHOTOS.map((p) => ({
+const WHEEL_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
   alt: `Auryves Bedje avec ${p.name} — ${p.event}`,
-  title: p.name,
+  label: p.name,
   subtitle: p.role,
-  org: p.org,
 }))
 const ZOOM_IMAGES = PHOTOS.map((p) => ({
   src: `/photos/${p.file}`,
@@ -1418,8 +1417,17 @@ function Networking() {
             nativement (pointer events + touch-action pan-y), ce qui rend inutile
             le carrousel de secours qui doublait le code, faisait tourner sa
             propre boucle rAF et portait sa propre logique tap-vs-swipe. */}
-        <CoverflowCarousel slides={COVERFLOW_SLIDES} label="Rencontres dans la finance africaine" />
-        <p className="gallery-hint">Glissez les photos · flèches du clavier</p>
+        {/* Roue réglée pour sept photos : le diamètre par défaut (1815 px) les
+            espaçait de 815 px le long de la circonférence, et deux seulement
+            tenaient à l'écran. */}
+        <OrbitalImageWheel
+          images={WHEEL_IMAGES}
+          wheelSize={1100}
+          cropRatio={0.72}
+          itemWidth={200}
+          itemHeight={270}
+          scrollLength={260}
+        />
 
         {/* Organisations — bandeau défilant éclairé au curseur */}
         <motion.div {...fadeUp(0.4)} style={{ marginTop: 48 }}>
