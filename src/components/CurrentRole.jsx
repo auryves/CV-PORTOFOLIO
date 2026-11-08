@@ -24,9 +24,9 @@ const CANDLES = [
 ]
 
 const FACTS = [
-  { to: 8, suffix: '', label: 'Pays de l’UEMOA', dec: 0 },
-  { to: 47, suffix: '', label: 'Sociétés cotées', dec: 0 },
-  { to: 18700, suffix: ' Mds', label: 'FCFA de capitalisation', dec: 0 },
+  { to: 8, suffix: '', label: 'Pays de l’UEMOA' },
+  { to: 47, suffix: '', label: 'Sociétés cotées' },
+  { to: 18700, suffix: ' Mds', label: 'FCFA de capitalisation' },
 ]
 
 const MISSIONS = [
@@ -122,8 +122,11 @@ function Fact({ to, suffix, label }) {
   }, [to, suffix])
   return (
     <div className="cr-fact">
-      <div ref={ref} className="serif grad-gold cr-fact-num" />
-      <div className="label" style={{ marginTop: 8 }}>{label}</div>
+      {/* Le compteur défile de 0 à la valeur : un lecteur d'écran lirait « 0 ».
+          Il entend la valeur finale, le chiffre animé lui est masqué. */}
+      <span className="sr-only">{to.toLocaleString('fr-FR')}{suffix} {label}</span>
+      <div ref={ref} className="serif grad-gold cr-fact-num" aria-hidden="true" />
+      <div className="label" style={{ marginTop: 8 }} aria-hidden="true">{label}</div>
     </div>
   )
 }
@@ -156,12 +159,12 @@ export default function CurrentRole() {
           </div>
           <div data-cr-reveal className="divider" />
           <h2 data-cr-reveal className="display-lg" style={{ marginTop: 32, marginBottom: 20 }}>
-            Au cœur de la <span className="grad-gold shimmer-text">BRVM</span>
+            Au cœur de la <span className="shimmer-text">BRVM</span>
           </h2>
           <p data-cr-reveal style={{ fontSize: 16, lineHeight: 1.8, color: 'rgba(255,255,255,0.5)', fontWeight: 300, marginBottom: 12 }}>
             <strong style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>Listing &amp; Market Development Analyst Intern</strong> à la Bourse Régionale des Valeurs Mobilières, au sein de l’Antenne Nationale de Bourse de Côte d’Ivoire (ANB-CI).
           </p>
-          <p data-cr-reveal style={{ fontSize: 13, color: 'rgba(212,175,106,0.6)', letterSpacing: '0.06em', marginBottom: 32 }}>
+          <p data-cr-reveal style={{ fontSize: 13, color: 'rgba(212,175,106,0.85)', letterSpacing: '0.06em', marginBottom: 32 }}>
             Après un stage en Equity Research chez Sika Finance
           </p>
           <ul data-cr-reveal className="cr-missions">
@@ -182,7 +185,7 @@ export default function CurrentRole() {
             <div className="cr-facts">
               {FACTS.map((f) => <Fact key={f.label} {...f} />)}
             </div>
-            <div style={{ marginTop: 16, fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.06em' }}>
+            <div style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em' }}>
               Chiffres : BRVM / richbourse.com, lejecos.com — août 2026. Graphique décoratif.
             </div>
           </div>

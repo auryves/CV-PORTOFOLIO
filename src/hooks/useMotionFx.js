@@ -117,7 +117,7 @@ export function useMediaQuery(query) {
 // page, qui n'écrit que deux variables CSS — aucun rendu React, aucun layout.
 export function useSpotlight() {
   useEffect(() => {
-    if (typeof window === 'undefined' || window.matchMedia('(hover: none)').matches) return
+    if (typeof window === 'undefined' || isTouch()) return
     const onMove = (e) => {
       const card = e.target.closest?.('.spotlight')
       if (!card) return

@@ -16,7 +16,7 @@
     --dark-3: #12122A;
     --glass: rgba(255,255,255,0.04);
     --glass-border: rgba(181,123,238,0.12);
-    --text-muted: rgba(255,255,255,0.38);
+    --text-muted: rgba(255,255,255,0.5); /* 5,3:1 sur #07070F — WCAG AA (était 3,5:1) */
     --text-dim: rgba(255,255,255,0.6);
     --ticker-h: 36px;
     --navbar-h: 62px;
@@ -1546,7 +1546,7 @@ html.lenis, html.lenis body { height: auto; }
   position: absolute; bottom: 4px; right: 0;
   display: flex; gap: 18px;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.55);
   pointer-events: none;
 }
 .market-globe-legend span { display: inline-flex; align-items: center; gap: 6px; }
@@ -1564,4 +1564,13 @@ html.lenis, html.lenis body { height: auto; }
 
 @media (prefers-reduced-motion: reduce) {
   .shimmer-text, .beam-card, .cr-live { animation: none; }
+}
+/* Mode contraste élevé (Windows) : le texte en `background-clip: text` devient
+   invisible — on revient à une couleur système. */
+@media (forced-colors: active) {
+  .shimmer-text { background: none; color: CanvasText; animation: none; }
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }

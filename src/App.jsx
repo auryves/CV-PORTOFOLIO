@@ -1012,6 +1012,9 @@ function Projects() {
 // ── marchés africains + mondiaux ──────────────────────────────────────────────
 function MarchesAfricains() {
   const isDesktop = useMediaQuery('(min-width: 769px)')
+  // Le globe n'est pas monté en reduced-motion : ni consigne ni cadre vide.
+  const calm = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const showGlobe = isDesktop && !calm
   const african = EXCHANGES.filter(e => !e.global)
   const global = EXCHANGES.filter(e => e.global)
   return (
@@ -1026,9 +1029,9 @@ function MarchesAfricains() {
               <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, maxWidth: 600, fontWeight: 300, lineHeight: 1.7 }}>
                 Depuis la BRVM, je suis les marchés africains au quotidien, tout en me comparant aux grandes places mondiales — NYSE, LSE, Nikkei et CAC 40.
               </p>
-              {isDesktop && <p className="label" style={{ marginTop: 20, color: 'rgba(255,255,255,0.25)' }}>Faites glisser le globe ↔</p>}
+              {showGlobe && <p className="label" aria-hidden="true" style={{ marginTop: 20 }}>Faites glisser le globe ↔</p>}
             </div>
-            {isDesktop && <MarketGlobe height={420} />}
+            {showGlobe && <MarketGlobe height={420} />}
           </div>
         </motion.div>
 
@@ -1157,7 +1160,7 @@ function ExchangeCard({ ex, i, noReveal = false }) {
       <div className="serif" style={{ fontSize: 22, fontWeight: 400, color: ex.featured ? '#D4AF6A' : 'white', marginBottom: 4 }}>{ex.name}</div>
       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10, letterSpacing: '0.05em' }}>{ex.city} · {ex.country}</div>
       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: 10, fontWeight: 300 }}>{ex.desc}</p>
-      <div style={{ fontSize: 11, color: 'rgba(212,175,106,0.6)', letterSpacing: '0.05em', marginBottom: 4 }}>Cap. : {ex.cap}</div>
+      <div style={{ fontSize: 11, color: 'rgba(212,175,106,0.8)', letterSpacing: '0.05em', marginBottom: 4 }}>Cap. : {ex.cap}</div>
       {ex.idx && <div style={{ fontSize: 11, color: ex.global ? 'rgba(181,123,238,0.7)' : 'rgba(212,175,106,0.5)', letterSpacing: '0.04em' }}>↗ {ex.idx}</div>}
     </motion.div>
   )

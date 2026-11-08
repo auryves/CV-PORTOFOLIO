@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { reducedMotion, isMobile } from '../motion'
 
 /* ────────────────────────────────────────────────────────────────────────────
  * Globe des places boursières — Three.js, chargé à la demande.
@@ -31,11 +32,10 @@ const LAV = 0xb57bee
 export default function MarketGlobe({ height = 420 }) {
   const host = useRef(null)
   const [enabled, setEnabled] = useState(false)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 769px)').matches
-    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!desktop || calm || !host.current) return
+    if (isMobile() || reducedMotion() || !host.current) return
     // Le chunk Three.js n'est téléchargé qu'à l'approche du globe.
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) { setEnabled(true); io.disconnect() }
@@ -55,7 +55,14 @@ export default function MarketGlobe({ height = 420 }) {
 
       const w = el.clientWidth
       const h = el.clientHeight
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+      let renderer
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+      } catch {
+        // WebGL indisponible (désactivé, pilote en liste noire…) : pas de globe.
+        setFailed(true)
+        return
+      }
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
       renderer.setSize(w, h)
       el.appendChild(renderer.domElement)
@@ -144,7 +151,9 @@ export default function MarketGlobe({ height = 420 }) {
         const rMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, side: THREE.DoubleSide })
         const ring = new THREE.Mesh(ringGeo, rMat)
         ring.position.copy(p)
-        ring.lookAt(p.clone().multiplyScalar(2))
+        // Orientation en repère local (tangente à la sphère) : `lookAt` prend
+        // une cible en coordonnées monde et ignorait l'inclinaison du globe.
+        ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), p.clone().normalize())
         globe.add(ring)
         pulses.push({ ring, mat: rMat, phase: Math.random(), big })
         disposables.push(mat, rMat)
@@ -173,40 +182,57 @@ export default function MarketGlobe({ height = 420 }) {
       // ── interaction : glisser pour tourner, inertie au relâchement
       let dragging = false
       let lastX = 0
-      let velocity = 0
-      const onDown = (e) => { dragging = true; lastX = e.clientX; el.setPointerCapture?.(e.pointerId) }
+      let lastMove = 0
+      let velocity = 0 // rad par image de référence (60 Hz)
+      let spin = 0 // rotation accumulée par l'utilisateur
+      const onDown = (e) => { dragging = true; velocity = 0; lastX = e.clientX; lastMove = performance.now(); el.setPointerCapture?.(e.pointerId) }
       const onMove = (e) => {
         if (!dragging) return
         const dx = e.clientX - lastX
         lastX = e.clientX
+        lastMove = performance.now()
         velocity = dx * 0.005
-        globe.rotation.y += velocity
+        spin += velocity
       }
-      const onUp = () => { dragging = false }
+      const onUp = () => {
+        // Relâché après un temps d'arrêt : pas d'inertie résiduelle.
+        if (performance.now() - lastMove > 80) velocity = 0
+        dragging = false
+      }
       el.addEventListener('pointerdown', onDown)
       el.addEventListener('pointermove', onMove)
       el.addEventListener('pointerup', onUp)
       el.addEventListener('pointerleave', onUp)
+      el.addEventListener('pointercancel', onUp)
 
       const onResize = () => {
         const nw = el.clientWidth
         const nh = el.clientHeight
+        if (!nw || !nh) return
         renderer.setSize(nw, nh)
         camera.aspect = nw / nh
         camera.updateProjectionMatrix()
       }
-      window.addEventListener('resize', onResize)
+      // Le conteneur suit la grille (colonne, barre de défilement…), pas
+      // seulement la fenêtre.
+      const ro = new ResizeObserver(onResize)
+      ro.observe(el)
 
       const clock = new THREE.Clock()
+      let t = 0 // temps de rendu cumulé, figé tant que le globe est hors champ
       let raf = null
       const tick = () => {
-        const t = clock.getElapsedTime()
+        // Pas indexés sur le temps réel : même rendu à 60, 120 ou 144 Hz.
+        const dt = Math.min(clock.getDelta(), 0.1)
+        const frames = dt * 60
+        t += dt
         if (!dragging) {
-          velocity *= 0.94
-          // Oscillation lente autour d'Abidjan plutôt qu'une rotation complète :
-          // la BRVM reste visible, les autres places entrent et sortent du champ.
-          globe.rotation.y += velocity + Math.sin(t * 0.25) * 0.0012
+          spin += velocity * frames
+          velocity *= Math.pow(0.94, frames)
         }
+        // Oscillation lente centrée sur Abidjan plutôt qu'une rotation complète :
+        // la BRVM reste visible, les autres places entrent et sortent du champ.
+        globe.rotation.y = spin + Math.sin(t * 0.25) * 0.3
         arcs.forEach((a) => {
           const p = Math.min(1, Math.max(0, (t - 0.4 - a.delay) / 1.4))
           const eased = 1 - Math.pow(1 - p, 3)
@@ -222,7 +248,7 @@ export default function MarketGlobe({ height = 420 }) {
       }
 
       const vis = new IntersectionObserver(([e]) => {
-        if (e.isIntersecting) { if (!raf) { clock.start(); tick() } }
+        if (e.isIntersecting) { if (!raf) { clock.getDelta(); tick() } }
         else { cancelAnimationFrame(raf); raf = null }
       })
       vis.observe(el)
@@ -230,22 +256,28 @@ export default function MarketGlobe({ height = 420 }) {
       cleanup = () => {
         cancelAnimationFrame(raf)
         vis.disconnect()
-        window.removeEventListener('resize', onResize)
+        ro.disconnect()
         el.removeEventListener('pointerdown', onDown)
         el.removeEventListener('pointermove', onMove)
         el.removeEventListener('pointerup', onUp)
         el.removeEventListener('pointerleave', onUp)
+        el.removeEventListener('pointercancel', onUp)
         disposables.forEach((d) => d.dispose())
         renderer.dispose()
+        // Libère le contexte tout de suite : sinon chaque remontage (passage
+        // mobile ↔ desktop) en laisse un vivant jusqu'à la limite du navigateur.
+        renderer.forceContextLoss()
         renderer.domElement.remove()
       }
-    })
+    }).catch(() => { if (!disposed) setFailed(true) })
 
     return () => { disposed = true; cleanup() }
   }, [enabled])
 
+  if (failed) return null
+
   return (
-    <div className="market-globe" style={{ height }}>
+    <div className="market-globe" style={{ height }} aria-hidden="true">
       <div ref={host} className="market-globe-canvas" aria-hidden="true" />
       <div className="market-globe-legend">
         <span><i style={{ background: '#D4AF6A' }} />BRVM &amp; Afrique</span>
