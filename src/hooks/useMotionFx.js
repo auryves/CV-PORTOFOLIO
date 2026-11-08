@@ -111,3 +111,21 @@ export function useMediaQuery(query) {
   }, [query])
   return matches
 }
+
+// Projecteur « spotlight » (motif 21st.dev) : un halo suit le curseur à
+// l'intérieur des cartes `.spotlight`. Un seul écouteur délégué pour toute la
+// page, qui n'écrit que deux variables CSS — aucun rendu React, aucun layout.
+export function useSpotlight() {
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.matchMedia('(hover: none)').matches) return
+    const onMove = (e) => {
+      const card = e.target.closest?.('.spotlight')
+      if (!card) return
+      const r = card.getBoundingClientRect()
+      card.style.setProperty('--mx', `${e.clientX - r.left}px`)
+      card.style.setProperty('--my', `${e.clientY - r.top}px`)
+    }
+    document.addEventListener('pointermove', onMove, { passive: true })
+    return () => document.removeEventListener('pointermove', onMove)
+  }, [])
+}

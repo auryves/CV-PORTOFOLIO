@@ -1436,3 +1436,132 @@ html.lenis, html.lenis body { height: auto; }
    de sa translation. Le point lumineux vient désormais du dégradé radial du
    fond, qui ne coûte rien. */
 .particle { box-shadow: none !important; }
+
+/* ─── NOUVELLE COUCHE D'ANIMATIONS ─────────────────────────────────────────── */
+
+/* Texte miroitant (motif « shimmer » 21st.dev) : un reflet doré traverse le
+   texte. Une seule propriété animée (background-position), composée par le GPU. */
+.shimmer-text {
+  background: linear-gradient(110deg, #D4AF6A 35%, #FFF3D1 50%, #D4AF6A 65%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 4.5s linear infinite;
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+
+/* Projecteur qui suit le curseur (voir useSpotlight). */
+.spotlight { position: relative; isolation: isolate; }
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity .4s ease;
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), rgba(212,175,106,0.10), rgba(181,123,238,0.05) 40%, transparent 70%);
+  z-index: -1;
+}
+.spotlight:hover::after { opacity: 1; }
+
+/* ── Section « Aujourd'hui » ── */
+.cr-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 72px;
+  align-items: center;
+}
+.cr-live {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74,222,128,0.6);
+  animation: livePulse 2s ease-out infinite;
+}
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.55); }
+  100% { box-shadow: 0 0 0 12px rgba(74,222,128,0); }
+}
+.cr-missions { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.cr-missions li {
+  position: relative;
+  padding-left: 28px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 300;
+  line-height: 1.6;
+}
+.cr-missions li::before {
+  content: '';
+  position: absolute; left: 0; top: 10px;
+  width: 16px; height: 1px;
+  background: linear-gradient(90deg, #D4AF6A, transparent);
+}
+.cr-badge {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #D4AF6A; border: 1px solid rgba(212,175,106,0.4);
+  padding: 5px 10px; border-radius: 2px;
+}
+.cr-facts {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-top: 24px; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.cr-fact-num { font-size: clamp(22px, 2.6vw, 30px); font-weight: 300; line-height: 1; white-space: nowrap; }
+.cc-chart { width: 100%; height: 200px; display: block; overflow: visible; }
+
+/* Faisceau qui parcourt la bordure (motif « border beam ») : un dégradé
+   conique tourne derrière un intérieur opaque ; seul le liseré de 1 px reste
+   visible. `@property` permet d'animer l'angle sans JavaScript. */
+@property --beam-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+.beam-card {
+  position: relative;
+  padding: 1px;
+  border-radius: 6px;
+  background: conic-gradient(from var(--beam-angle), rgba(255,255,255,0.06) 0deg, rgba(255,255,255,0.06) 250deg, #B57BEE 300deg, #F0D08A 340deg, rgba(255,255,255,0.06) 360deg);
+  animation: beamSpin 6s linear infinite;
+  box-shadow: 0 30px 80px -30px rgba(181,123,238,0.25);
+}
+@keyframes beamSpin { to { --beam-angle: 360deg; } }
+.beam-card-inner {
+  border-radius: 5px;
+  background: linear-gradient(160deg, #0f0f22, #08080f 70%);
+  padding: 28px 28px 22px;
+}
+
+/* ── Globe des marchés ── */
+.marches-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+}
+.market-globe { position: relative; width: 100%; }
+.market-globe-canvas { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; }
+.market-globe-canvas:active { cursor: grabbing; }
+.market-globe-legend {
+  position: absolute; bottom: 4px; right: 0;
+  display: flex; gap: 18px;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+.market-globe-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.market-globe-legend i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+@media (max-width: 900px) {
+  .cr-grid { grid-template-columns: 1fr; gap: 48px; }
+  .marches-head { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .cr-facts { gap: 10px; }
+  .beam-card-inner { padding: 22px 18px 18px; }
+  .cc-chart { height: 160px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-text, .beam-card, .cr-live { animation: none; }
+}
