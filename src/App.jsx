@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'fra
 import { useForm, ValidationError } from '@formspree/react'
 import { gsap, ScrollTrigger, reducedMotion, isTouch } from './motion'
 import { initSmoothScroll, destroySmoothScroll, scrollToTop } from './smoothScroll'
-import { useParallax, useMediaQuery } from './hooks/useMotionFx'
+import { useParallax, useMediaQuery, useSpotlight } from './hooks/useMotionFx'
 import { ScrollXCarousel, ScrollXCarouselContainer, ScrollXCarouselWrap, ScrollXCarouselProgress } from './components/ScrollXCarousel'
 import Preloader from './components/Preloader'
 import TextRevealBlock from './components/TextRevealBlock'
@@ -15,6 +15,8 @@ import Icon from './components/Icon'
 import OrgMarquee from './components/OrgMarquee'
 import MobileDock from './components/MobileDock'
 import StaggerLink from './components/StaggerLink'
+import CurrentRole from './components/CurrentRole'
+import MarketGlobe from './components/MarketGlobe'
 import './index.css'
 
 // ── animation helpers ──────────────────────────────────────────────────────────
@@ -212,7 +214,7 @@ const TESTIMONIALS = [
     role: 'Directeur · Sika Finance',
     // Énoncé comme un fait, sans prêter d'intention à son auteur : la dédicace
     // précède l'embauche, la présenter comme une recommandation serait inexact.
-    context: 'Dédicace dans le magazine Sika Finance — où je suis aujourd\'hui Equity Research Intern',
+    context: 'Dédicace dans le magazine Sika Finance — où j\'ai ensuite effectué mon stage en Equity Research',
     initial: 'DA',
   },
 ]
@@ -328,7 +330,7 @@ const CERTIFICATIONS = [
 ]
 
 // ── données ───────────────────────────────────────────────────────────────────
-const TITLES = ['Equity Research Analyst', 'Analyste Marchés BRVM', 'Fintech Builder', 'Entrepreneur Fintech Africain']
+const TITLES = ['Listing & Market Development', 'Analyste Marchés BRVM', 'Equity Research', 'Fintech Builder']
 
 const PROJECTS = [
   { n: '01', name: 'My Invest', cat: 'Investissement Participatif', desc: "Plateforme permettant aux particuliers d'investir dans les TPE/PME africaines. Revenue-based financing — remboursement indexé sur les revenus quotidiens des entreprises.", tags: ['React Native', 'Supabase', 'Mobile Money', 'IA'], status: 'En développement', statusColor: '#4ade80' },
@@ -361,7 +363,8 @@ const SKILLS = [
 ]
 
 const TIMELINE = [
-  { date: 'Juin 2026 — Présent', title: 'Equity Research Intern', sub: 'Sika Finance · Abidjan', desc: "Couverture de valeurs cotées à la BRVM et rédaction de notes de recherche. Analyse fondamentale appliquée aux émetteurs de la zone UEMOA, au sein de la référence ivoirienne de l'information financière." },
+  { date: '2026 — Présent', title: 'Listing & Market Development Analyst Intern', sub: 'BRVM · Antenne Nationale de Bourse de Côte d\'Ivoire (ANB-CI)', desc: "Au cœur de la Bourse Régionale des Valeurs Mobilières : accompagnement des entreprises candidates à la cotation, promotion du marché financier régional auprès des émetteurs et des investisseurs de Côte d'Ivoire." },
+  { date: 'Juin 2026', title: 'Equity Research Intern', sub: 'Sika Finance · Abidjan', desc: "Couverture de valeurs cotées à la BRVM et rédaction de notes de recherche. Analyse fondamentale appliquée aux émetteurs de la zone UEMOA, au sein de la référence ivoirienne de l'information financière." },
   { date: '2024 — Présent', title: 'Licence 3 Finance Digitale', sub: 'EMSP Abidjan', desc: "Spécialisation marchés financiers africains, fintech et gestion d'actifs. Suivi quotidien de la BRVM et des marchés continentaux." },
   { date: '2024', title: 'Certification Microsoft Office', sub: 'Pack Complet · Udemy', desc: 'Excel avancé, Power BI, Word, PowerPoint, Outlook — 22,5h de formation, niveau débutant à expert.' },
   { date: '2024 — 2025', title: '2 Applications Fintech', sub: 'En développement', desc: 'MY INVEST (investissement participatif) et MY INVEST SOCIAL (crowdfunding solidaire).' },
@@ -371,13 +374,6 @@ const TIMELINE = [
 ]
 
 const PHOTOS = [
-  {
-    file: 'AB X DR FELIX EDOH.jpeg',
-    name: 'Dr. Félix Edoh',
-    role: 'Directeur Général',
-    org: 'BRVM — Bourse Régionale des Valeurs Mobilières',
-    event: 'Conférence BRVM · Abidjan',
-  },
   {
     file: 'AB X EDITH BROU BLEU.jpeg',
     name: 'Edith Brou Bleu',
@@ -451,7 +447,7 @@ const ORGANISATIONS = [
 
 const DIFFERENTIATORS = [
   { icon: 'chart', title: 'Je construis, je ne théorise pas', desc: "Deux applications fintech réelles, concrètes et en développement actif — pas des maquettes ni des concepts." },
-  { icon: 'bank', title: 'Dans les cercles qui comptent', desc: "Présent aux Table Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de la BRVM, CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
+  { icon: 'bank', title: 'Dans les cercles qui comptent', desc: "En stage à la BRVM, présent aux Tables Rondes Bloomfield Intelligence, en contact direct avec les dirigeants de CGF Gestion, Ecobank, Wave CI et les acteurs clés de la finance africaine." },
   { icon: 'trend', title: 'Finance + Tech = ma dualité', desc: "Je comprends les marchés ET je construis des outils pour les analyser. Cette dualité est ma valeur ajoutée dans un secteur fintech en pleine explosion." },
   { icon: 'globe', title: 'Vision continentale', desc: "Je ne vois pas seulement la BRVM — je suis NYSE, LSE, JPX, CAC 40 et l'ensemble des marchés africains. L'Afrique financière mondiale est mon terrain de jeu." },
 ]
@@ -827,7 +823,7 @@ function Hero() {
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80', display: 'inline-block', flexShrink: 0, marginTop: 7 }} />
             <span style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF6A', lineHeight: 1.6 }}>
-              En poste · Equity Research · Sika Finance
+              En poste · <span className="shimmer-text">Listing &amp; Market Development · BRVM</span>
             </span>
           </motion.div>
 
@@ -906,8 +902,8 @@ function Hero() {
               className="glass-gold"
               style={{ position: 'absolute', bottom: -16, right: -16, padding: '12px 18px', borderRadius: 4 }}
             >
-              <div style={{ fontSize: 9, letterSpacing: '0.2em', color: 'rgba(212,175,106,0.6)', textTransform: 'uppercase', marginBottom: 4 }}>Spécialiste</div>
-              <div className="grad-gold serif" style={{ fontSize: 16, fontWeight: 400 }}>Marchés BRVM</div>
+              <div style={{ fontSize: 9, letterSpacing: '0.2em', color: 'rgba(212,175,106,0.6)', textTransform: 'uppercase', marginBottom: 4 }}>En poste</div>
+              <div className="grad-gold serif" style={{ fontSize: 16, fontWeight: 400 }}>BRVM · ANB-CI</div>
             </motion.div>
           </div>
         </motion.div>
@@ -1016,6 +1012,9 @@ function Projects() {
 // ── marchés africains + mondiaux ──────────────────────────────────────────────
 function MarchesAfricains() {
   const isDesktop = useMediaQuery('(min-width: 769px)')
+  // Le globe n'est pas monté en reduced-motion : ni consigne ni cadre vide.
+  const calm = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const showGlobe = isDesktop && !calm
   const african = EXCHANGES.filter(e => !e.global)
   const global = EXCHANGES.filter(e => e.global)
   return (
@@ -1024,10 +1023,16 @@ function MarchesAfricains() {
         <motion.div {...fadeUp()} style={{ marginBottom: 80 }}>
           <div className="label-gold" style={{ marginBottom: 20 }}>Ma passion</div>
           <div className="divider" />
-          <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Les Marchés Financiers</TextRevealBlock>
-          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, maxWidth: 600, fontWeight: 300, lineHeight: 1.7 }}>
-            Je suis les marchés africains au quotidien, tout en me comparant aux grandes places mondiales — NYSE, LSE, Nikkei et CAC 40.
-          </p>
+          <div className="marches-head">
+            <div>
+              <TextRevealBlock as="h2" className="display-lg" style={{ marginTop: 32 }}>Les Marchés Financiers</TextRevealBlock>
+              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 16, maxWidth: 600, fontWeight: 300, lineHeight: 1.7 }}>
+                Depuis la BRVM, je suis les marchés africains au quotidien, tout en me comparant aux grandes places mondiales — NYSE, LSE, Nikkei et CAC 40.
+              </p>
+              {showGlobe && <p className="label" aria-hidden="true" style={{ marginTop: 20 }}>Faites glisser le globe ↔</p>}
+            </div>
+            {showGlobe && <MarketGlobe height={420} />}
+          </div>
         </motion.div>
 
         {/* Les huit places tiennent sur une seule ligne qui glisse au
@@ -1099,7 +1104,7 @@ function MarchesAfricains() {
           </motion.div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
             {BRVM_WATCHLIST.map((v, i) => (
-              <motion.div key={v.name} {...fadeUp(i * 0.08)}
+              <motion.div key={v.name} {...fadeUp(i * 0.08)} className="spotlight"
                 style={{ padding: '24px 28px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s' }}
                 whileHover={{ backgroundColor: 'rgba(181,123,238,0.05)' }}
               >
@@ -1117,7 +1122,7 @@ function MarchesAfricains() {
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, fontWeight: 300, maxWidth: 800 }}>
               "La BRVM reste sous-valorisée par rapport aux marchés émergents mondiaux. Avec la digitalisation des services financiers en Afrique de l'Ouest et la croissance du Mobile Money, les valeurs télécoms (SONATEL, ORANGE CI) et les banques régionales constituent selon moi les meilleurs vecteurs de performance à moyen terme."
             </p>
-            <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(212,175,106,0.5)', letterSpacing: '0.1em' }}>— Auryves Bedje, Equity Research Intern · Sika Finance</div>
+            <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(212,175,106,0.5)', letterSpacing: '0.1em' }}>— Auryves Bedje, Listing &amp; Market Development Analyst Intern · BRVM</div>
           </motion.div>
         </div>
       </div>
@@ -1130,7 +1135,7 @@ function MarchesAfricains() {
 // décalage vertical — la ligne arrivait en escalier au lieu d'être alignée.
 function ExchangeCard({ ex, i, noReveal = false }) {
   return (
-    <motion.div {...(noReveal ? {} : fadeUp(i * 0.07))}
+    <motion.div {...(noReveal ? {} : fadeUp(i * 0.07))} className="spotlight"
       style={{
         padding: '24px',
         background: ex.featured ? 'rgba(212,175,106,0.05)' : ex.global ? 'rgba(181,123,238,0.03)' : 'rgba(255,255,255,0.02)',
@@ -1155,7 +1160,7 @@ function ExchangeCard({ ex, i, noReveal = false }) {
       <div className="serif" style={{ fontSize: 22, fontWeight: 400, color: ex.featured ? '#D4AF6A' : 'white', marginBottom: 4 }}>{ex.name}</div>
       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10, letterSpacing: '0.05em' }}>{ex.city} · {ex.country}</div>
       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: 10, fontWeight: 300 }}>{ex.desc}</p>
-      <div style={{ fontSize: 11, color: 'rgba(212,175,106,0.6)', letterSpacing: '0.05em', marginBottom: 4 }}>Cap. : {ex.cap}</div>
+      <div style={{ fontSize: 11, color: 'rgba(212,175,106,0.8)', letterSpacing: '0.05em', marginBottom: 4 }}>Cap. : {ex.cap}</div>
       {ex.idx && <div style={{ fontSize: 11, color: ex.global ? 'rgba(181,123,238,0.7)' : 'rgba(212,175,106,0.5)', letterSpacing: '0.04em' }}>↗ {ex.idx}</div>}
     </motion.div>
   )
@@ -1176,7 +1181,7 @@ function PourquoiMoi() {
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
           {DIFFERENTIATORS.map((d, i) => (
-            <motion.div key={d.title} {...fadeUp(i * 0.1)}
+            <motion.div key={d.title} {...fadeUp(i * 0.1)} className="spotlight"
               style={{ padding: '40px 32px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s' }}
               whileHover={{ backgroundColor: 'rgba(181,123,238,0.06)' }}
             >
@@ -1312,7 +1317,7 @@ function CVSection() {
           <motion.div {...fadeUp(0.1)} className="cv-section">
             <div className="label" style={{ marginBottom: 16 }}>Profil</div>
             <p style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>
-              Equity Research Intern chez Sika Finance depuis juin 2026 : couverture de valeurs et rédaction de notes de recherche sur la BRVM. Licence 3 de Finance Digitale à l'EMSP Abidjan, soutenance à venir. Je prépare une candidature en Master de finance de marché.
+              Listing & Market Development Analyst Intern à la BRVM (Antenne Nationale de Bourse de Côte d'Ivoire), après un stage en Equity Research chez Sika Finance (couverture de valeurs et notes de recherche). Licence 3 de Finance Digitale à l'EMSP Abidjan, soutenance à venir. Je prépare une candidature en Master de finance de marché.
             </p>
           </motion.div>
           <motion.div {...fadeUp(0.15)} className="cv-section">
@@ -1412,7 +1417,7 @@ function Timeline() {
         {TIMELINE.map((t, i) => (
           <motion.div key={i} {...fadeUp(i * 0.12)} className="tl-item" style={{ marginBottom: 40 }}>
             <div className="tl-dot" />
-            <div className="glass" style={{ padding: '28px 32px', borderRadius: 4, marginLeft: 8 }}>
+            <div className="glass spotlight" style={{ padding: '28px 32px', borderRadius: 4, marginLeft: 8 }}>
               <div className="label" style={{ marginBottom: 8 }}>{t.date}</div>
               <div className="serif" style={{ fontSize: 22, fontWeight: 300, color: 'white', marginBottom: 6 }}>{t.title}</div>
               <div style={{ fontSize: 13, color: '#D4AF6A', marginBottom: 12 }}>{t.sub}</div>
@@ -1487,7 +1492,7 @@ function Publications() {
         </motion.div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 1, border: '1px solid rgba(255,255,255,0.06)' }}>
           {LINKEDIN_POSTS.map((post, i) => (
-            <motion.div key={i} {...fadeUp(i * 0.1)}
+            <motion.div key={i} {...fadeUp(i * 0.1)} className="spotlight"
               style={{ padding: '36px 32px', background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', transition: 'background 0.3s', position: 'relative', overflow: 'hidden' }}
               whileHover={{ backgroundColor: 'rgba(181,123,238,0.04)' }}
             >
@@ -1617,7 +1622,7 @@ function Footer() {
           <div>
             <div className="serif grad-mix" style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.1em', marginBottom: 16 }}>Auryves Bedje</div>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', lineHeight: 1.7, fontWeight: 300, maxWidth: 240 }}>
-              Étudiant Finance Digitale · EMSP Abidjan · Fintech Builder · Analyste BRVM
+              Listing & Market Development · BRVM · Finance Digitale EMSP · Fintech Builder
             </p>
           </div>
           <div>
@@ -1717,6 +1722,7 @@ function BackToTop() {
 // ── app ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const [loaded, setLoaded] = useState(false)
+  useSpotlight()
 
   useEffect(() => {
     initSmoothScroll()
@@ -1745,6 +1751,7 @@ export default function App() {
             <Navbar />
             <main>
               <Hero />
+              <CurrentRole />
               <About />
               <Projects />
               <MarchesAfricains />
